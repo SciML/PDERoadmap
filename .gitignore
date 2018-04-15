@@ -1,0 +1,11 @@
+*.md.pdf
+*-cache.yaml
+*.aux
+*.fls
+*.log
+*.pdf
+*.gz
+_minted*
+*.fdb_latexmk
+*.bbl
+*.blg
