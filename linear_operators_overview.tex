@@ -199,7 +199,7 @@
 		\end{bmatrix}\right) = A\cdot Q_b\label{affine_relation_1}
 		\end{align}
 		\begin{align}
-		R(A-[A[:,1:I_L] A[:,\hat{I}-I_H+1:\hat{I}]]\cdot([B[:,1:I_L] B[:,\hat{I}-I_H+1:\hat{I}]]^{-1} B)) = A\cdot Q_a\label{affine_relation_2}
+		(A-[A[:,1:I_L] A[:,\hat{I}-I_H+1:\hat{I}]]\cdot([B[:,1:I_L] B[:,\hat{I}-I_H+1:\hat{I}]]^{-1} B))\cdot R^{'} = A\cdot Q_a\label{affine_relation_2}
 		\end{align}		
 Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\hat{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left([B[:,1:I_L] B[:,\hat{I}-I_H+1:\hat{I}]]^{-1}\begin{bmatrix}
 		\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
@@ -272,48 +272,31 @@ With this process,
 	\item The system of equations to solve for $u(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
-We can re-define the problem as 
+Consider
 \begin{align}
-\A u(x) &= x\label{HJBE_reflecting_barriers_PDE}\\
-\text{where }\A&\equiv r - \frac{1}{2}\partial_{xx}
+(r- \A u(x)) &= x\label{HJBE_reflecting_barriers_PDE}\\
+\text{where }\A&\equiv \frac{1}{2}\partial_{xx}
 \end{align}
-We first consider a one-dimension case where $x\in [0, 1]$. Let $I_L = I_H = 1$ and thereby $\Delta  = \frac{1}{\hat{I}}$ and $\hat{I} = I+2$. The matrix form of operator $\A$ can be defined as
+We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. The matrix form of operator $\A$ can be defined as
 \begin{align}
-A &= r\cdot \mathbf{I}_{\hat{I}\times\hat{I}}-\underbrace{\begin{bmatrix}
--1&1&0&\dots&0&0&0\\
+A &= \begin{bmatrix}
 1&-2&1&\dots&0&0&0\\
 0&1&-2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-2&1&0\\
-0&0&0&\cdots&1&-2&1\\
-0&0&0&\cdots&0&1&-1
-\end{bmatrix}}_{\equiv A}\frac{\Delta^{-2}}{2}\nonumber\\
-&=
-\begin{bmatrix}
-2r\Delta^2+1&-1&0&\dots&0&0&0\\
--1&2r\Delta^2+2&-1&\dots&0&0&0\\
-0&-1&2r\Delta^2+2&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&2r\Delta^2+2&-1&0\\
-0&0&0&\cdots&-1&2r\Delta^2+2&-1\\
-0&0&0&\cdots&0&-1&2r\Delta^2+1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
+0&0&0&\cdots&1&-2&1
+\end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
 \end{align}
 
-where the dimension of A is $\hat{I}\times\hat{I}$.\\
-Since $x\in[0, 1]$, we have boundary conditions 
-\begin{align}
-\A u(\underline{x}) &= 0\\
-\A u(\bar{x})& = 1
-\end{align}
-Then we can define $B$ as
+where the dimension of A is $I\times\hat{I}$.\\
+By reflecting barriers, we can define $B$ as
 \begin{equation}
-B\cdot\hat{u} =\underbrace{\frac{\Delta^{-2}}{2}\begin{bmatrix}
-2r\Delta^2+1&-1&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&2r\Delta^2+1
-\end{bmatrix}}_{\equiv B}\cdot\hat{u} = \begin{bmatrix}
+B\cdot\hat{u} =\begin{bmatrix}
+-1&1&0&\dots&0&0&0\\
+0&0&0&\cdots&0&-1&1
+\end{bmatrix}_{I_B\times \hat{I}}\cdot\hat{u} = \begin{bmatrix}
 0\\
-1
+0
 \end{bmatrix}
 \end{equation}
 where $\hat{u} = \begin{bmatrix}
@@ -323,6 +306,7 @@ u(x_1)\\
 u(x_I)\\
 u(x_{I+1})
 \end{bmatrix}_{\hat{I}\times 1}$.\\
+This implies $u(x_0) = u(x_1)$ and $u(x_{I+1}) = u(x_I)$.\\
 $R$ is defined as 
 \begin{equation}
 R\cdot \hat{u} =\begin{bmatrix}
@@ -338,43 +322,24 @@ u(x_2)\\
 u(x_I)
 \end{bmatrix} \equiv u\in \R^{I} 
 \end{equation}
-According to \eqref{HJBE_reflecting_barriers_PDE}, we can identify $x_0$ and $x_{I+1}$ by following relations
-\begin{align}
-&\begin{cases}
-\frac{\Delta^{-2}}{2}\begin{bmatrix}
--1&2r\Delta^2+2&-1&\dots&0&0&0
-\end{bmatrix}\cdot \hat{u} &= x_1\\
-\\[.05cm]
-\frac{\Delta^{-2}}{2}\begin{bmatrix}
-0&0&0&\cdots&-1&2r\Delta^2+2&-1
-\end{bmatrix}\cdot \hat{u}& = x_I
-\end{cases}\\
-&\begin{cases}
-u(x_0) &= (2r\Delta^2+2)u(x_1)-u(x_2) - \frac{2}{\Delta^{-2}}x_1\\
-u(x_{I+1})&=(2r\Delta^2+1)u(x_I)-u(x-{I_1})-\frac{2}{\Delta^{-2}}x_I
-\end{cases}
-\end{align}
-Thus, $Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where
+$Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where 
 \begin{equation}
 Q_a = \begin{bmatrix}
-2r\Delta^2+2&-1&\cdots&0&0\\
-1&0&\cdots&0&0\\
-0&1&\cdots&0&0\\
+1& 0&\dots&0&0\\
+1&0&\dots&0&0\\
+0&1&\dots&0&0\\
 \vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&\cdots&1&0\\
-0&0&\cdots&0&1\\
-0&0&\cdots&-1&2r\Delta^2+2
-\end{bmatrix}_{\hat{I}\times I}\quad\text{and}\quad Q_b = \begin{bmatrix}
--\frac{2}{\Delta^{-2}}x_1\\
-0\\
+0&0&\dots&1&0\\
+0&0&\dots&0&1\\
+0&0&\dots&0&1
+\end{bmatrix}_{\hat{I}\times I}\quad , Q_b = \begin{bmatrix}
 0\\
 \vdots\\
-0\\
-0\\
--\frac{2}{\Delta^{-2}}x_{I}
+0
 \end{bmatrix}_{\hat{I}\times 1}
 \end{equation}
-Then we should be able to express $\hat{u}$ in terms of $A$, $B$, $R$, and $Q$ as in \eqref{affine_relation_1} and \eqref{affine_relation_2}.
+
+Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 \subsection{Stationary HJBE with a Lower Absorbing Barrier}
 Take the stochastic process
@@ -386,7 +351,7 @@ $$
 \A \equiv \frac{1}{2}\D[xx]
 $$
 
-For the absorbing barrier, when solving for the HJBE assume that $u'(\underbar{x}) = \underbar{x}$ and $u'(\bar{x}) = 0$
+For the absorbing barrier, when solving for the HJBE assume that $u(\underbar{x}) = \underbar{x}$ and $u'(\bar{x}) = 0$
 
 
 With this process,
@@ -396,47 +361,26 @@ With this process,
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 
-Again, we can re-define the problem as 
+Again, we first consider a one-dimension case where $x\in [a, b]$ and $a<b \in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. The matrix form of operator $\A$ cis still defined as
 \begin{align}
-\A u(x) &= x\label{HJBE_lower_absorbing_barriers_PDE}\\
-\text{where }\A&\equiv r - \frac{1}{2}\partial_{xx}
-\end{align}
-We first consider a one-dimension case where $x\in [0, 1]$. Let $I_L = I_H = 1$ and thereby $\Delta  = \frac{1}{\bar{I}}$ and $\hat{I} = I+2$. The matrix form of operator $\A$ can be defined as
-\begin{align}
-A &= r\cdot \mathbf{I}_{\hat{I}\times\hat{I}}-\underbrace{\begin{bmatrix}
--2&1&0&\dots&0&0&0\\
+A &= \begin{bmatrix}
 1&-2&1&\dots&0&0&0\\
 0&1&-2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-2&1&0\\
-0&0&0&\cdots&1&-2&1\\
-0&0&0&\cdots&0&1&-1
-\end{bmatrix}}_{\equiv A}\frac{\Delta^{-2}}{2}\nonumber\\
-&=
-\begin{bmatrix}
-2r\Delta^2+2&-1&0&\dots&0&0&0\\
--1&2r\Delta^2+2&-1&\dots&0&0&0\\
-0&-1&2r\Delta^2+2&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&2r\Delta^2+2&-1&0\\
-0&0&0&\cdots&-1&2r\Delta^2+2&-1\\
-0&0&0&\cdots&0&-1&2r\Delta^2+1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
+0&0&0&\cdots&1&-2&1
+\end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
 \end{align}
-where the dimension of A is $\hat{I}\times\hat{I}$.\\
-Since $x\in[0, 1]$, we have boundary conditions 
-\begin{align}
-\A u(\underline{x}) &= 0\\
-\A u(\bar{x})& = 1
-\end{align}
-Then we can define $B$ as
+
+where the dimension of A is $I\times\hat{I}$.\\
+According to lower absorbing barrier, we can define $B$ as
 \begin{equation}
-B\cdot\hat{u} =\underbrace{\frac{\Delta^{-2}}{2}\begin{bmatrix}
-2r\Delta^2+1&-1&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&2r\Delta^2+1
-\end{bmatrix}}_{\equiv B}\cdot\hat{u} = \begin{bmatrix}
-0\\
-1
+B\cdot\hat{u} =\begin{bmatrix}
+1&0&0&\dots&0&0&0\\
+0&0&0&\cdots&0&-1&1
+\end{bmatrix}_{I_B\times \hat{I}}\cdot\hat{u} = \begin{bmatrix}
+a\\
+0
 \end{bmatrix}
 \end{equation}
 where $\hat{u} = \begin{bmatrix}
@@ -446,6 +390,7 @@ u(x_1)\\
 u(x_I)\\
 u(x_{I+1})
 \end{bmatrix}_{\hat{I}\times 1}$.\\
+This implies $u(x_0) = a$ and $u(x_{I+1}) = u(x_I)$.\\
 $R$ is defined as 
 \begin{equation}
 R\cdot \hat{u} =\begin{bmatrix}
@@ -459,44 +404,27 @@ u(x_1)\\
 u(x_2)\\
 \vdots\\
 u(x_I)
-\end{bmatrix} \in \R^{I} 
+\end{bmatrix} \equiv u\in \R^{I} 
 \end{equation}
-According to \eqref{HJBE_lower_absorbing_barriers_PDE}, we can identify $x_0$ and $x_{I+1}$ by following relations
-\begin{align}
-&\begin{cases}
-\frac{\Delta^{-2}}{2}\begin{bmatrix}
--1&2r\Delta^2+2&-1&\dots&0&0&0
-\end{bmatrix}\cdot \hat{u} &= x_1\\
-\frac{\Delta^{-2}}{2}\begin{bmatrix}
-0&0&0&\cdots&-1&2r\Delta^2+2&-1
-\end{bmatrix}\cdot \hat{u}& = x_I
-\end{cases}\\
-&\begin{cases}
-u(x_0) &= (2r\Delta^2+2)u(x_1)-u(x_2) - \frac{2}{\Delta^{-2}}x_1\\
-u(x_{I+1})&=(2r\Delta^2+1)u(x_I)-u(x-{I_1})-\frac{2}{\Delta^{-2}}x_I
-\end{cases}
-\end{align}
-Thus, $Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where
+$Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where 
 \begin{equation}
 Q_a = \begin{bmatrix}
-2r\Delta^2+2&-1&\cdots&0&0\\
-1&0&\cdots&0&0\\
-0&1&\cdots&0&0\\
+0& 0&\dots&0&0\\
+1&0&\dots&0&0\\
+0&1&\dots&0&0\\
 \vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&\cdots&1&0\\
-0&0&\cdots&0&1\\
-0&0&\cdots&-1&2r\Delta^2+2
-\end{bmatrix}_{\hat{I}\times I}\quad\text{and}\quad Q_b = \begin{bmatrix}
--\frac{2}{\Delta^{-2}}x_1\\
-0\\
+0&0&\dots&1&0\\
+0&0&\dots&0&1\\
+0&0&\dots&0&1
+\end{bmatrix}_{\hat{I}\times I}\quad , Q_b = \begin{bmatrix}
+a\\
 0\\
 \vdots\\
-0\\
-0\\
--\frac{2}{\Delta^{-2}}x_{I}
+0
 \end{bmatrix}_{\hat{I}\times 1}
 \end{equation}
-Then we should be able to express $\hat{u}$ in terms of $A$, $B$, $R$, and $Q$ as in \eqref{affine_relation_1} and \eqref{affine_relation_2}.
+
+Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 \subsection{Stationary HJBE with Only Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
@@ -514,15 +442,104 @@ With this process,
 	\item Write julia code to solve for $u(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
-
-Again, we can re-define the problem as 
+Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
+Consider
 \begin{align}
-\A u(x) &= x\label{HJBE_with_only_drift_PDE}\\
-\text{where }\A&\equiv r -\mu\partial_{x}
+(r- \A u(x)) &= x\label{HJBE_PDE_with_drifts}\\
+\text{where }\A&\equiv \mu\partial_{x}
 \end{align}
-We first consider a one-dimension case where $x\in [0, 1]$. Let $I_L = I_H = 1$ and thereby $\Delta  = \frac{1}{\bar{I}}$ and $\hat{I} = I+2$. 
+We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. 
 
-Define $\mu^{+} = \max\{\mu, 0\}$ and $\mu^{-} = \min\{\mu, 0\}$ and we use backward difference when drift is negative and forward difference when drift is positive.
+As $\mu>0$, we choose the forward first difference and the matrix form of operator $\A$ can be defined as
+\begin{align}
+A &= \begin{bmatrix}
+0&-1&1&0&\dots&0&0&0\\
+0&0&-1&1&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&0&\dots&-1&1&0\\
+0&0&0&0&\cdots&0&-1&1
+\end{bmatrix}\cdot\mu\Delta^{-1}\nonumber
+\end{align}
+
+where the dimension of A is $I\times\hat{I}$.
+
+As $\mu<0$, we choose the backward difference and the matrix form of operator $\A$ can be defined as
+\begin{align}
+A &= \begin{bmatrix}
+-1&1&0&\dots&0&0&0&0\\
+0&-1&1&\dots&0&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&-1&1&0&0\\
+0&0&0&\cdots&0&-1&1&0
+\end{bmatrix}\cdot (-\mu)\Delta^{-1}\nonumber
+\end{align}
+
+where the dimension of A is $I\times\hat{I}$.
+
+So for $\forall\mu$, we can generally define $A$ as
+
+\begin{align}
+A &= \begin{bmatrix}
+-\mu^-&\mu^--\mu^+&\mu^+&\dots&0&0&0&0\\
+0&-\mu^-&\mu^--\mu^+&\dots&0&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&-\mu^-&\mu^--\mu^+&\mu^+&0\\
+0&0&0&\cdots&0&-\mu^-&\mu^--\mu^+&\mu^+
+\end{bmatrix}\cdot \Delta^{-1}\nonumber
+\end{align}
+
+$R$ is defined as 
+\begin{equation}
+R\cdot \hat{u} =\begin{bmatrix}
+0&1&0&\cdots&0&0\\
+0&0&1&\cdots&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
+0&0&0&\cdots&1&0
+\end{bmatrix}_{I\times\hat{I}}\cdot \hat{u}		 
+=\begin{bmatrix}
+u(x_1)\\
+u(x_2)\\
+\vdots\\
+u(x_I)
+\end{bmatrix} \equiv u\in \R^{I} 
+\end{equation}
+
+With the absorbing barriers $u(\underbrace{x}) = \underbrace{x}$ and $u(\bar{x}) = \bar{x}$,  
+\begin{equation}
+B\cdot\hat{u} =\begin{bmatrix}
+1&0&0&\dots&0&0&0\\
+0&0&0&\cdots&0&0&1
+\end{bmatrix}_{I_B\times \hat{I}}\cdot\hat{u} = \begin{bmatrix}
+a\\
+b
+\end{bmatrix}
+\end{equation}
+where $\hat{u} = \begin{bmatrix}
+u(x_0)\\
+u(x_1)\\
+\vdots\\
+u(x_I)\\
+u(x_{I+1})
+\end{bmatrix}_{\hat{I}\times 1}$.\\
+This implies $u(x_0) = a$ and $u(x_{I+1}) = b$. So we can define 
+\begin{equation}
+Q_a = \begin{bmatrix}
+0& 0&\dots&0&0\\
+1&0&\dots&0&0\\
+0&1&\dots&0&0\\
+\vdots&\vdots&\ddots&\vdots&\vdots\\
+0&0&\dots&1&0\\
+0&0&\dots&0&1\\
+0&0&\dots&0&0
+\end{bmatrix}_{\hat{I}\times I}\quad , Q_b = \begin{bmatrix}
+a\\
+0\\
+\vdots\\
+b
+\end{bmatrix}_{\hat{I}\times 1}
+\end{equation}
+
+Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
@@ -542,6 +559,26 @@ With this process,
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
+We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. 
+
+By combining operators $A$ from previous sections, in this case $A$ is defined as
+\begin{align}
+A = \begin{bmatrix}
+X&Y&Z&\dots&0&0&0\\
+0&X&Y&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&Y&Z&0\\
+0&0&0&\cdots&X&Y&Z
+\end{bmatrix}\cdot \Delta^{-2}\nonumber
+\end{align}
+where
+\begin{align*}
+X &= -\mu^-\Delta+\frac{\sigma^2}{2}\\
+Y &= (\mu^--\mu^+)\Delta-\sigma^2\\
+Z &=\mu^+\Delta+\frac{\sigma^2}{2}
+\end{align*}
+
+Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
@@ -566,4 +603,27 @@ With this process,
 	\end{itemize}
 \end{itemize}
 
+We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. 
+
+Define $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
+
+This case is similar with the previous one but with variable drift and variance. Now the operator A is defined as
+\begin{align}
+A = \begin{bmatrix}
+X_0&Y_0&Z_0&\dots&0&0&0\\
+0&X_1&Y_1&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&Y_I&Z_I&0\\
+0&0&0&\cdots&X_{I+1}&Y_{I+1}&Z_{I+1}
+\end{bmatrix}\cdot \Delta^{-2}\nonumber
+\end{align}
+where
+\begin{align*}
+X_i &= -\bar{\mu}^-x_i\Delta+\frac{(\bar{\sigma}x_i)^2}{2}\\
+Y_i &= (\bar{\mu}^--\bar{\mu}^+)x_i\Delta-(\bar{\sigma}x_i)^2\\
+Z_i &=\bar{\mu}^+x_i\Delta+\frac{(\bar{\sigma}x_i)^2}{2}\\
+i & = 0, 1, 2,\dots, I, I+1
+\end{align*}
+
+Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 \end{document}
