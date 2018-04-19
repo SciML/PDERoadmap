@@ -25,12 +25,12 @@
 	\date{}
 	\maketitle
 	\section{Overview of Notation}
-	To set some notation,
+	To set some notation:
 	\paragraph{General}
 	
 	The following expressions are used in the document:
 	\begin{itemize}
-		\item Given an operator (or infinitesimal generator) associated with a particular stochastic process, $\A$.\footnote{See \url{https://en.wikipedia.org/wiki/Infinitesimal_generator_(stochastic_processes)} for some formulas and interpretation for diffusions, and \url{https://en.wikipedia.org/wiki/Transition_rate_matrix} for the generator of continuous-time Markov chains.}  The purpose of these notes is to discretize $\A$ on this grid using finite differences
+		\item Given an operator (or infinitesimal generator) associated with a particular stochastic process, $\mathcal{L}$\footnote{See \url{https://en.wikipedia.org/wiki/Infinitesimal_generator_(stochastic_processes)} for some formulas and interpretation for diffusions, and \url{https://en.wikipedia.org/wiki/Transition_rate_matrix} for the generator of continuous-time Markov chains.}.  The purpose of these notes is to discretize $\mathcal{L}$ on this grid using finite differences
 		%	 \item Where appropriate, we will define the adjoint of the operator $\A$ as $\A^*$.  This is useful when trying to solve for the evolution of distributions (rather than solving for the value functions).
 		\item For a given variable $q$, define the notation $q^{-} \equiv \min\set{q,0}$ and $q^{+} \equiv \max\set{q,0}$, which will be useful for defining finite-differences with an upwind scheme.  This can apply to vectors as well. For example, $q_k^{-} = q_k$ if $q_k < 0$ and $0$ if $q_k > 0$, and $q_k^{-} \equiv \set{q^{-}_k}_{k=1}^{K}$.
 		\item Let $\mathbb{W}_t$ be Brownian motion
@@ -50,14 +50,14 @@
 	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
 	\textbf{TODO:} Explain the $R, Q, B, A$ etc. for the general notation from \url{https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/260}.  The idea here is to make sure we understand everything about the ghost nodes, boundary values, etc.
 	\begin{itemize}
-		\item A is defined as the discretization of the partial differential operator in use.
+		\item L is defined as the discretization of the partial differential operator in use.
 		
 		\item B is the boundary condition operator. For one dimension, we can define B as:
 		\begin{equation}
-		B\cdot \hat{u} = z
+		B\cdot \hat{u} = b
 		\label{B_operator_block}
 		\end{equation}
-		for any $\hat{u}$ in the space of functions that satisfy the boundary conditions $z$. The size of B is $K_{B} \times \hat{K}$ and the size of $z$ is $K_{B} \times 1$.
+		for any $\hat{u}$ in the space of functions that satisfy the boundary conditions $b$. The size of B is $K_{B} \times \hat{K}$ and the size of $b$ is $K_{B} \times 1$.
 		
 		Notice that B is not necessarily unique. The choice of B is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator B.
 		
@@ -73,7 +73,7 @@
 		for any $\hat{u}$ that satisfies the border conditions. (Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary). $Q$ has size $\hat{K} \times K$.
 		Q also has a second relation: 
 		\begin{equation}
-		B\cdot Q\cdot u  = z
+		B\cdot Q\cdot u  = b
 		\label{Q_operator_2}
 		\end{equation}
 		
@@ -84,25 +84,26 @@
 	
 		\subsection{Affine relations:}
 		\begin{itemize}
-			\item Now let's focus on solving an expression like $\hat{u}^d = A \hat{u}$, where the superscript $d$ means the discretized version of the variable. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
+			\item Now let's focus on solving an expression like $\hat{u}^d = L \hat{u}$, where the superscript $d$ means the discretized version of the variable. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $K_B$ columns, that $J[:,\mathbb{S}_B]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in \mathbb{S}_B$. 
+			Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
 		
 			\begin{align}
-			A[:,\mathbb{S}_B] \cdot\left(B[:,\mathbb{S}_B]^{-1} z \right) = A\cdot Q_b\label{affine_relation_1}
+			L[:,\mathbb{S}_B] \cdot\left(B[:,\mathbb{S}_B]^{-1} b \right) = L\cdot Q_b\label{affine_relation_1}
 			\end{align}
 			\begin{align}
-			(A-A[:,\mathbb{S}_B] \cdot(B[:,\mathbb{S}_B]^{-1} B))\cdot R^{'} = A\cdot Q_a\label{affine_relation_2}
+			(L-L[:,\mathbb{S}_B] \cdot(B[:,\mathbb{S}_B]^{-1} B))\cdot R^{'} = L\cdot Q_a\label{affine_relation_2}
 			\end{align}		
 		
-			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\hat{K}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left(B[:,\mathbb{S}_B]^{-1} z \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \eqref{affine_relation_1} holds.
+			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\hat{K}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left(B[:,\mathbb{S}_B]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \eqref{affine_relation_1} holds.
 		
 			Multiply both sides of \eqref{affine_relation_2} by $\hat{u}$, we can roughly rewrite the relation as
 			\begin{equation}
-			R(A\cdot \hat{u}-A\cdot Q_b) = A\cdot Q_a\cdot \hat{u}
+			(L\cdot \hat{u}-L\cdot Q_b) \cdot R' = L\cdot Q_a\cdot \hat{u}
 			\end{equation}
-			so $A\cdot \hat{u}-A\cdot Q_b$ will be a discretized $\hat{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A\cdot Q_b$. 
+			so $L\cdot \hat{u}-L\cdot Q_b$ will be a discretized $\hat{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $L\cdot Q_b$. 
 		
-			However, we are not sure if $R$ should exist on the left of \eqref{affine_relation_2} since R by definition is a restriction operator and $R(A\cdot \hat{u}-A\cdot Q_b)$ only contains information from interiors.
-			\iffalse % we already solved this by changing R place in the equation
+			However, we are not sure if $R$ should exist on the left of \eqref{affine_relation_2} since R by definition is a restriction operator and $(L\cdot \hat{u}-L\cdot Q_b)\cdot R'$ only contains information from interiors.
+			\iffalse % we already solved this by changing R place in the equation. It seems to be right, since Steven reported that now both affine relationships hold for the examples
 			Also the size of the LHS of \eqref{affine_relation_2} is $K\times \hat{K}$, but the size of the RHS is $\hat{I}\times I$ .
 			\fi
 			For now, while we work on better understanding those expressions, we will take them as given.
@@ -110,9 +111,9 @@
 		
 			Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\hat{u} = Qu$. 
 		
-			Therefore, we actually want to solve $\hat{u}^d = AQu$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
+			Therefore, we actually want to solve $\hat{u}^d = LQu$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
 			\begin{equation}
-			\hat{u} = AQ_au + AQ_b
+			\hat{u} = LQ_au + AQ_b
 			\end{equation}
 			Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
 		\end{itemize}	
@@ -124,14 +125,14 @@
 			\item \textbf{Dirichlet$_0$}: If you have any $u$ in the interior, its unique extension to satisfying the border conditions is sticking $0$'s on the ends, so both $Q$ is zero for all non interior grid points. Therefore, Q is linear, meaning $Q = Q_a$ and $Q_b$ is a null matrix.
 			
 			\item \textbf{Dirichlet}: The boundary is not dependent on any points in the interior, and therefore $Q_a$ is identical to the previous case, but now Q is no longer linear and
-	 		$Q_b$ is such that it is equal to zero for all interior points and equal to $z$ for all non interior points.
+	 		$Q_b$ is such that it is equal to zero for all interior points and equal to $b$ for all non interior points.
 			
 			\item \textbf{Neumann}: You have to pick a discretization of B. This defines linear relation between the interior points and the boundary conditions. For example, for the univariate case with non interior points being the first and the last ones on the grid ($K_B = 2$ and $\mathbb{S}_B = \{1,\hat{K}\}$), the first order discretization of the boundary derivative means that: 
 			
 			\begin{equation}
-				\frac{db}{dx} = \frac{\hat{u}[2] - \hat{u}[1]}{dx} = z[1]
+				\frac{db}{dx} = \frac{\hat{u}[2] - \hat{u}[1]}{dx} = b[1]
 			\end{equation}
-			and, therefore, $u[1] = u[2] - dx z[1]$. You can see that this implies that $Q_b = [dx\cdot z[1];\{0\}_1^K;dx\cdot z[\hat{K}]]$ and that $Q_a$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_a u = u[1] = \hat{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_a v = v[1] = u[2]$ and $Q_a v = v[I] = u[I-1]$, respectively.}.
+			and, therefore, $u[1] = u[2] - dx b[1]$. You can see that this implies that $Q_b = [dx\cdot b[1];\{0\}_1^K;dx\cdot b[\hat{K}]]$ and that $Q_a$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_a u = u[1] = \hat{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_a v = v[1] = u[2]$ and $Q_a v = v[I] = u[I-1]$, respectively.}.
 			
 		\end{enumerate}
 	\end{itemize}
@@ -139,9 +140,9 @@
 \section{Time-Invariant Stochastic Process Examples}
 Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (\underline{x}, \bar{x})$ where $-\infty < \underline{x} < \bar{x} < \infty$.  We will assume throughout that the domain is time-invariant.
 
-For a given $\A$ Then, if the payoff in state $x$ is $b(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $u(x)$ is,
+For a given $\mathcal{L}$ Then, if the payoff in state $x$ is $b(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $u(x)$ is,
 \begin{align}
-r u(x) &= b(x) + \A u(x)\label{eq:general-stationary-HJBE}
+r u(x) &= b(x) + \mathcal{L} u(x)\label{eq:general-stationary-HJBE}
 \end{align}
 subject to $\D[x]u(\underline{x}) = 0$ and $\D[x]u(\bar{x}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]u(\underline{x}) = \underline{u}$ which may be non-zero.
 
@@ -154,7 +155,7 @@ d x_t = d \W_t
 $$
 with reflecting barriers at $\underline{x}$ and $\bar{x})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
-	\A \equiv \frac{1}{2}\D[xx]
+	\mathcal{L} \equiv \frac{1}{2}\D[xx]
 $$
 
 With this process,
@@ -165,12 +166,12 @@ With this process,
 \end{itemize}
 Consider
 \begin{align}
-(r- \A u(x)) &= x\label{HJBE_reflecting_barriers_PDE}\\
-\text{where }\A&\equiv \frac{1}{2}\partial_{xx}
+(r- \mathcal{L} u(x)) &= x\label{HJBE_reflecting_barriers_PDE}\\
+\text{where }\mathcal{L}&\equiv \frac{1}{2}\partial_{xx}
 \end{align}
-We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. The matrix form of operator $\A$ can be defined as
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $\mathbb{S}_B = \{1,\hat{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\hat{K}}$, and $\hat{K} = K+2$. The matrix form of operator $\mathcal{L}$ can be defined as
 \begin{align}
-A &= \begin{bmatrix}
+L &= \begin{bmatrix}
 1&-2&1&\dots&0&0&0\\
 0&1&-2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -179,13 +180,13 @@ A &= \begin{bmatrix}
 \end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
 \end{align}
 
-where the dimension of A is $I\times\hat{I}$.\\
+where the dimension of L is $K\times\hat{K}$.\\
 By reflecting barriers, we can define $B$ as
 \begin{equation}
 B\cdot\hat{u} =\begin{bmatrix}
 -1&1&0&\dots&0&0&0\\
 0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{I_B\times \hat{I}}\cdot\hat{u} = \begin{bmatrix}
+\end{bmatrix}_{K_B\times \hat{K}}\cdot\hat{u} = \begin{bmatrix}
 0\\
 0
 \end{bmatrix}
@@ -194,10 +195,10 @@ where $\hat{u} = \begin{bmatrix}
 u(x_0)\\
 u(x_1)\\
 \vdots\\
-u(x_I)\\
-u(x_{I+1})
-\end{bmatrix}_{\hat{I}\times 1}$.\\
-This implies $u(x_0) = u(x_1)$ and $u(x_{I+1}) = u(x_I)$.\\
+u(x_K)\\
+u(x_{K+1})
+\end{bmatrix}_{\hat{K}\times 1}$.\\
+This implies $u(x_0) = u(x_1)$ and $u(x_{K+1}) = u(x_K)$.\\
 $R$ is defined as 
 \begin{equation}
 R\cdot \hat{u} =\begin{bmatrix}
@@ -205,13 +206,13 @@ R\cdot \hat{u} =\begin{bmatrix}
 0&0&1&\cdots&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
-\end{bmatrix}_{I\times\hat{I}}\cdot \hat{u}		 
+\end{bmatrix}_{K\times\hat{K}}\cdot \hat{u}		 
 =\begin{bmatrix}
 u(x_1)\\
 u(x_2)\\
 \vdots\\
-u(x_I)
-\end{bmatrix} \equiv u\in \R^{I} 
+u(x_K)
+\end{bmatrix} \equiv u\in \R^{K} 
 \end{equation}
 $Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where 
 \begin{equation}
@@ -223,11 +224,11 @@ Q_a = \begin{bmatrix}
 0&0&\dots&1&0\\
 0&0&\dots&0&1\\
 0&0&\dots&0&1
-\end{bmatrix}_{\hat{I}\times I}\quad , Q_b = \begin{bmatrix}
+\end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
 0\\
 \vdots\\
 0
-\end{bmatrix}_{\hat{I}\times 1}
+\end{bmatrix}_{\hat{K}\times 1}
 \end{equation}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
@@ -239,7 +240,7 @@ d x_t = d \W_t
 $$
 with an absorbing barrier at $\underline{x}$, and a reflecting barrier at $\bar{x})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
-\A \equiv \frac{1}{2}\D[xx]
+\mathcal{L} \equiv \frac{1}{2}\D[xx]
 $$
 
 For the absorbing barrier, when solving for the HJBE assume that $u(\underbar{x}) = \underbar{x}$ and $u'(\bar{x}) = 0$
@@ -252,9 +253,9 @@ With this process,
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 
-Again, we first consider a one-dimension case where $x\in [a, b]$ and $a<b \in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. The matrix form of operator $\A$ cis still defined as
+Again, we first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{x} < \bar{x} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $\mathbb{S}_B = \{1,\hat{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\hat{K}}$, and $\hat{K} = K+2$. The matrix form of operator $\mathcal{L}$ is still defined as
 \begin{align}
-A &= \begin{bmatrix}
+L &= \begin{bmatrix}
 1&-2&1&\dots&0&0&0\\
 0&1&-2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -263,14 +264,14 @@ A &= \begin{bmatrix}
 \end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
 \end{align}
 
-where the dimension of A is $I\times\hat{I}$.\\
+where the dimension of L is $K\times\hat{K}$.\\
 According to lower absorbing barrier, we can define $B$ as
 \begin{equation}
 B\cdot\hat{u} =\begin{bmatrix}
 1&0&0&\dots&0&0&0\\
 0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{I_B\times \hat{I}}\cdot\hat{u} = \begin{bmatrix}
-a\\
+\end{bmatrix}_{K_B\times \hat{K}}\cdot\hat{u} = \begin{bmatrix}
+\underline{\textit{\~{x}}}\\
 0
 \end{bmatrix}
 \end{equation}
@@ -278,10 +279,10 @@ where $\hat{u} = \begin{bmatrix}
 u(x_0)\\
 u(x_1)\\
 \vdots\\
-u(x_I)\\
-u(x_{I+1})
-\end{bmatrix}_{\hat{I}\times 1}$.\\
-This implies $u(x_0) = a$ and $u(x_{I+1}) = u(x_I)$.\\
+u(x_K)\\
+u(x_{K+1})
+\end{bmatrix}_{\hat{K}\times 1}$.\\
+This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = u(x_K)$.\\
 $R$ is defined as 
 \begin{equation}
 R\cdot \hat{u} =\begin{bmatrix}
@@ -289,13 +290,13 @@ R\cdot \hat{u} =\begin{bmatrix}
 0&0&1&\cdots&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
-\end{bmatrix}_{I\times\hat{I}}\cdot \hat{u}		 
+\end{bmatrix}_{K\times\hat{K}}\cdot \hat{u}		 
 =\begin{bmatrix}
 u(x_1)\\
 u(x_2)\\
 \vdots\\
 u(x_I)
-\end{bmatrix} \equiv u\in \R^{I} 
+\end{bmatrix} \equiv u\in \R^{K} 
 \end{equation}
 $Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where 
 \begin{equation}
@@ -307,12 +308,12 @@ Q_a = \begin{bmatrix}
 0&0&\dots&1&0\\
 0&0&\dots&0&1\\
 0&0&\dots&0&1
-\end{bmatrix}_{\hat{I}\times I}\quad , Q_b = \begin{bmatrix}
+\end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
 a\\
 0\\
 \vdots\\
 0
-\end{bmatrix}_{\hat{I}\times 1}
+\end{bmatrix}_{\hat{K}\times 1}
 \end{equation}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
@@ -324,7 +325,7 @@ d x_t = \mu dt
 $$
 With a generator
 $$
-	\A \equiv \mu \D[x]
+	\mathcal{L} \equiv \mu \D[x]
 $$
 With this process,
 \begin{itemize}
@@ -336,14 +337,14 @@ With this process,
 Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
 Consider
 \begin{align}
-(r- \A u(x)) &= x\label{HJBE_PDE_with_drifts}\\
-\text{where }\A&\equiv \mu\partial_{x}
+(r- \mathcal{L} u(x)) &= x\label{HJBE_PDE_with_drifts}\\
+\text{where }\mathcal{L}&\equiv \mu\partial_{x}
 \end{align}
-We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. 
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\hat{K}}$ and $\hat{K} = K+2$. 
 
-As $\mu>0$, we choose the forward first difference and the matrix form of operator $\A$ can be defined as
+As $\mu>0$, we choose the forward first difference and the matrix form of operator $\mathcal{L}$ can be defined as
 \begin{align}
-A &= \begin{bmatrix}
+L &= \begin{bmatrix}
 0&-1&1&0&\dots&0&0&0\\
 0&0&-1&1&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -352,11 +353,11 @@ A &= \begin{bmatrix}
 \end{bmatrix}\cdot\mu\Delta^{-1}\nonumber
 \end{align}
 
-where the dimension of A is $I\times\hat{I}$.
+where the dimension of L is $K\times\hat{K}$.
 
-As $\mu<0$, we choose the backward difference and the matrix form of operator $\A$ can be defined as
+As $\mu<0$, we choose the backward difference and the matrix form of operator $\mathcal{L}$ can be defined as
 \begin{align}
-A &= \begin{bmatrix}
+L &= \begin{bmatrix}
 -1&1&0&\dots&0&0&0&0\\
 0&-1&1&\dots&0&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
@@ -365,12 +366,12 @@ A &= \begin{bmatrix}
 \end{bmatrix}\cdot (-\mu)\Delta^{-1}\nonumber
 \end{align}
 
-where the dimension of A is $I\times\hat{I}$.
+where the dimension of $L$ is $K\times\hat{K}$.
 
-So for $\forall\mu$, we can generally define $A$ as
+So for $\forall\mu$, we can generally define $L$ as
 
 \begin{align}
-A &= \begin{bmatrix}
+L &= \begin{bmatrix}
 -\mu^-&\mu^--\mu^+&\mu^+&\dots&0&0&0&0\\
 0&-\mu^-&\mu^--\mu^+&\dots&0&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
@@ -386,33 +387,33 @@ R\cdot \hat{u} =\begin{bmatrix}
 0&0&1&\cdots&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
-\end{bmatrix}_{I\times\hat{I}}\cdot \hat{u}		 
+\end{bmatrix}_{K\times\hat{K}}\cdot \hat{u}		 
 =\begin{bmatrix}
 u(x_1)\\
 u(x_2)\\
 \vdots\\
-u(x_I)
-\end{bmatrix} \equiv u\in \R^{I} 
+u(x_K)
+\end{bmatrix} \equiv u\in \R^{K} 
 \end{equation}
 
-With the absorbing barriers $u(\underbrace{x}) = \underbrace{x}$ and $u(\bar{x}) = \bar{x}$,  
+With the absorbing barriers $u(\underline{x}) = \underline{x}$ and $u(\bar{x}) = \bar{x}$,  
 \begin{equation}
 B\cdot\hat{u} =\begin{bmatrix}
 1&0&0&\dots&0&0&0\\
 0&0&0&\cdots&0&0&1
-\end{bmatrix}_{I_B\times \hat{I}}\cdot\hat{u} = \begin{bmatrix}
-a\\
-b
+\end{bmatrix}_{K_B\times \hat{K}}\cdot\hat{u} = \begin{bmatrix}
+\underline{\textit{\~{x}}}\\
+\bar{\textit{\~{x}}}
 \end{bmatrix}
 \end{equation}
 where $\hat{u} = \begin{bmatrix}
 u(x_0)\\
 u(x_1)\\
 \vdots\\
-u(x_I)\\
-u(x_{I+1})
-\end{bmatrix}_{\hat{I}\times 1}$.\\
-This implies $u(x_0) = a$ and $u(x_{I+1}) = b$. So we can define 
+u(x_K)\\
+u(x_{K+1})
+\end{bmatrix}_{\hat{K}\times 1}$.\\
+This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = \bar{\textit{\~{x}}}$. So we can define 
 \begin{equation}
 Q_a = \begin{bmatrix}
 0& 0&\dots&0&0\\
@@ -422,12 +423,12 @@ Q_a = \begin{bmatrix}
 0&0&\dots&1&0\\
 0&0&\dots&0&1\\
 0&0&\dots&0&0
-\end{bmatrix}_{\hat{I}\times I}\quad , Q_b = \begin{bmatrix}
-a\\
+\end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
+\underline{\textit{\~{x}}}\\
 0\\
 \vdots\\
-b
-\end{bmatrix}_{\hat{I}\times 1}
+\bar{\textit{\~{x}}}
+\end{bmatrix}_{\hat{K}\times 1}
 \end{equation}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
@@ -440,7 +441,7 @@ d x_t = \mu dt + \sigma d\W_t
 $$
 With a generator
 $$
-	\A \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
+	\mathcal{L} \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
 $$
 With this process,
 \begin{itemize}
@@ -450,11 +451,11 @@ With this process,
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. 
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\hat{K}}$ and $\hat{K} = K+2$. 
 
-By combining operators $A$ from previous sections, in this case $A$ is defined as
+By combining operators $L$ from previous sections, in this case $L$ is defined as
 \begin{align}
-A = \begin{bmatrix}
+L = \begin{bmatrix}
 X&Y&Z&\dots&0&0&0\\
 0&X&Y&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -469,7 +470,7 @@ Y &= (\mu^--\mu^+)\Delta-\sigma^2\\
 Z &=\mu^+\Delta+\frac{\sigma^2}{2}
 \end{align*}
 
-Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
@@ -479,7 +480,7 @@ d x_t = \mu(x_t) dt + \sigma(x_t) d\W_t
 $$
 With a generator
 $$
-\A \equiv \mu(x) \D[x] + \frac{\sigma(x)^2}{2}\D[xx]
+\mathcal{L} \equiv \mu(x) \D[x] + \frac{\sigma(x)^2}{2}\D[xx]
 $$
 With this process,
 \begin{itemize}
@@ -489,31 +490,31 @@ With this process,
 	\begin{itemize}
 		\item Choose a $\mu(x)$ and $\sigma(x)$ functions, consider using geometric brownian motion as a test.  That is,
 		\begin{align}
-			\A &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
+			\mathcal{L} &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
 		\end{align}
 	\end{itemize}
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [a, b]$ and $a<b\in R$. Let $I_B = 2$ and thereby $\Delta  = \frac{b-a}{\hat{I}}$ and $\hat{I} = I+2$. 
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\hat{K}}$ and $\hat{K} = K+2$. 
 
 Define $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
 
-This case is similar with the previous one but with variable drift and variance. Now the operator A is defined as
+This case is similar with the previous one but with variable drift and variance. Now the operator $L$ is defined as
 \begin{align}
 A = \begin{bmatrix}
 X_0&Y_0&Z_0&\dots&0&0&0\\
 0&X_1&Y_1&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y_I&Z_I&0\\
-0&0&0&\cdots&X_{I+1}&Y_{I+1}&Z_{I+1}
+0&0&0&\cdots&X_{K+1}&Y_{K+1}&Z_{K+1}
 \end{bmatrix}\cdot \Delta^{-2}\nonumber
 \end{align}
 where
 \begin{align*}
-X_i &= -\bar{\mu}^-x_i\Delta+\frac{(\bar{\sigma}x_i)^2}{2}\\
-Y_i &= (\bar{\mu}^--\bar{\mu}^+)x_i\Delta-(\bar{\sigma}x_i)^2\\
-Z_i &=\bar{\mu}^+x_i\Delta+\frac{(\bar{\sigma}x_i)^2}{2}\\
-i & = 0, 1, 2,\dots, I, I+1
+X_k &= -\bar{\mu}^-x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
+Y_k &= (\bar{\mu}^--\bar{\mu}^+)x_k\Delta-(\bar{\sigma}x_k)^2\\
+Z_k &=\bar{\mu}^+x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
+k & = 0, 1, 2,\dots, K, K+1
 \end{align*}
 
 Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
