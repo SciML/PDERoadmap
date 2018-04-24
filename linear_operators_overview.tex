@@ -233,6 +233,41 @@ Q_a = \begin{bmatrix}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+To solve $\hat{u}(x)$, we first solve interiors according to \eqref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
+\begin{align}
+P\cdot\hat{u} &= x\label{solve_u_hat_cond_1}\\
+Q\cdot R\cdot\hat{u} &= Q\cdot u = Q_a\cdot u+Q_b = \hat{u}\label{solve_u_hat_cond_2}
+\end{align}
+where 
+\begin{align}
+P &= \begin{bmatrix}
+0&r&0&\cdots&0&0&0\\
+0&0&r&\cdots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\cdots&r&0&0\\
+0&0&0&\cdots&0&r&0\\
+\end{bmatrix}_{K\times\hat{K}}-L \nonumber \\
+&= \begin{bmatrix}
+-1&2(1+r\Delta^2)&-1&\dots&0&0&0\\
+0&-1&2(1+r\Delta^2)&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&2(1+r\Delta^2)&-1&0\\
+0&0&0&\cdots&-1&2(1+r\Delta^2)&-1
+\end{bmatrix}\frac{\Delta^{-2}}{2}
+\end{align}
+Substitute \eqref{solve_u_hat_cond_2} into \eqref{solve_u_hat_cond_1}, we get
+\begin{align}
+P\cdot(Q_a\cdot u+Q_b) = x
+\end{align}
+Since $Q_b = 0$ in this case, interiors are solve as
+\begin{align}
+u = (P\cdot Q_a)^{-1}x
+\end{align}
+Then, by \eqref{solve_u_hat_cond_2}, we can solve the extended state vector by
+\begin{align}
+\hat{u} = Q_a\cdot u+Q_b\label{solve_u_hat_in_terms_of_interiors}
+\end{align}
+
 \subsection{Stationary HJBE with a Lower Absorbing Barrier}
 Take the stochastic process
 $$
@@ -309,7 +344,7 @@ Q_a = \begin{bmatrix}
 0&0&\dots&0&1\\
 0&0&\dots&0&1
 \end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
-a\\
+\underline{\tilde{x}}\\
 0\\
 \vdots\\
 0
@@ -318,6 +353,15 @@ a\\
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+In this case, $P$ is the same as the one we have in the previous example. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
+\begin{align}
+P(Q_a\cdot u+Q_b) = x
+\end{align}
+With $Q_b\neq 0$, we can solve interiors as 
+\begin{align}
+u = (P\cdot Q_a)^{-1}\cdot(x-P\cdot Q_b)
+\end{align}
+Then, the extended state vector $\hat{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
 \subsection{Stationary HJBE with Only Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
 $$
@@ -372,11 +416,11 @@ So for $\forall\mu$, we can generally define $L$ as
 
 \begin{align}
 L &= \begin{bmatrix}
--\mu^-&\mu^--\mu^+&\mu^+&\dots&0&0&0&0\\
-0&-\mu^-&\mu^--\mu^+&\dots&0&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&-\mu^-&\mu^--\mu^+&\mu^+&0\\
-0&0&0&\cdots&0&-\mu^-&\mu^--\mu^+&\mu^+
+-\mu^-&\mu^--\mu^+&\mu^+&\dots&0&0&0\\
+0&-\mu^-&\mu^--\mu^+&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&\mu^--\mu^+&\mu^+&0\\
+0&0&0&\cdots&-\mu^-&\mu^--\mu^+&\mu^+
 \end{bmatrix}\cdot \Delta^{-1}\nonumber
 \end{align}
 
@@ -433,6 +477,21 @@ Q_a = \begin{bmatrix}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
+\begin{align}
+P = \begin{bmatrix}
+\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+&\dots&0&0&0\\
+0&\mu^-&r\Delta-(\mu^--\mu^+)&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
+0&0&0&\cdots&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
+\end{bmatrix}_{\hat{K}\times\hat{K}}\cdot \Delta^{-1}
+\end{align}
+Then similarly interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2} 
+\begin{align}
+u = (P\cdot Q_a)^{-1}(x-P\cdot Q_b)
+\end{align}
+Thus, the extended state vector $\hat{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
 
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
@@ -472,6 +531,18 @@ Z &=\mu^+\Delta+\frac{\sigma^2}{2}
 
 Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
+\begin{align}
+P = \begin{bmatrix}
+-X&r\Delta^2-Y&-Z&\dots&0&0&0\\
+0&-X&r\Delta^2-Y&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&r\Delta^2-Y&-Z&0\\
+0&0&0&\cdots&-X&r\Delta^2-Y&-Z
+\end{bmatrix}\cdot \Delta^{-2}
+\end{align}
+The rest steps for solving interiors, $u$, and the extended state vector $\hat{u}$, are similar with what we did for previous examples.
+
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
@@ -502,11 +573,11 @@ Define $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu},
 This case is similar with the previous one but with variable drift and variance. Now the operator $L$ is defined as
 \begin{align}
 A = \begin{bmatrix}
-X_0&Y_0&Z_0&\dots&0&0&0\\
-0&X_1&Y_1&\dots&0&0&0\\
+X_1&Y_1&Z_1&\dots&0&0&0\\
+0&X_2&Y_2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&Y_I&Z_I&0\\
-0&0&0&\cdots&X_{K+1}&Y_{K+1}&Z_{K+1}
+0&0&0&\dots&Y_{K-1}&Z_{K-1}&0\\
+0&0&0&\cdots&X_{K}&Y_{K}&Z_{K}
 \end{bmatrix}\cdot \Delta^{-2}\nonumber
 \end{align}
 where
@@ -514,11 +585,22 @@ where
 X_k &= -\bar{\mu}^-x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
 Y_k &= (\bar{\mu}^--\bar{\mu}^+)x_k\Delta-(\bar{\sigma}x_k)^2\\
 Z_k &=\bar{\mu}^+x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
-k & = 0, 1, 2,\dots, K, K+1
+k & = 1, 2,\dots, K
 \end{align*}
 
 Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
+\begin{align}
+P = \begin{bmatrix}
+-X_1&r\Delta^2-Y_1&-Z_1&\dots&0&0&0\\
+0&-X_2&r\Delta^2-Y_2&\dots&0&0&0\\
+\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+0&0&0&\dots&r\Delta^2-Y_{K-1}&-Z_{K-1}&0\\
+0&0&0&\cdots&-X_K&r\Delta^2-Y_K&-Z_K
+\end{bmatrix}\cdot \Delta^{-2}
+\end{align}
+The rest steps for solving interiors, $u$, and the extended state vector $\hat{u}$, are similar with what we did for previous examples.
 
 \iffalse % Algebra has some issues. B, R and Q are wrong.
 \section{The multivariate case}
