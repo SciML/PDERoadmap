@@ -38,6 +38,12 @@
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{K}$, $y$ has length $K$.
 		\item We will denote continuous functions, prior to discretization, like $\tilde{u}(x)$.  The discretization of $\tilde{u}(x)$ on $x$ is denoted $u \in \R^K$ and the discretization of $\tilde{u}(x)$ on $\bar{x}$ is $\bar{u} \in \R^{\bar{K}}$.
 		\item Moreover, define $S_B$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non non interior point, let's say, the first one and the last two grid points, then $K_B = 3$ and $S_B = \{1,\bar{K}-1,\bar{K}\}$\footnote{Notice that, by construction, the number of elements in $S_B$ is always $K_B$}.
+		\item Some special matrices to help in the composition notation:
+		\begin{itemize}
+			\item $\mathbf{I}_K$ is the $K\times K$ identity matrix.  Always drop the subscript when the dimensions are unambiguous, as it would be the same in the code.
+			\item $\mathbf{0}_N$ is the column vector of $N$ $0$
+			\item $\mathbf{0}_{N\times M}$ is the $N\times M$ matrix of $0$.  Generally cannot drop the subscript
+		\end{itemize}
 	\end{itemize}
 
 	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
@@ -137,6 +143,51 @@ subject to $\D[x]\tilde{u}(x^{\min}) = 0$ and $\D[x]\tilde{u}(x^{\max}) = 0$ for
 
 For a simple example of a payoff, choose $\tilde{b}(x) = x$.
 
+Since many of the examples will use the same boundary values and discretizations of the operators: define the discretization of the second-order derivative with central differences as
+\begin{align}
+	A_2 &\equiv \frac{1}{2 \Delta^2}\begin{bmatrix}
+	1&-2&1&\dots&0&0&0\\
+	0&1&-2&\dots&0&0&0\\
+	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+	0&0&0&\dots&-2&1&0\\
+	0&0&0&\cdots&1&-2&1
+\end{bmatrix}\label{eq:A-2}
+	\intertext{Next, define the discretization of the first-derivative (forward and backward) as}
+	A^+_1 &= \frac{1}{\Delta}\begin{bmatrix}
+	0&-1&1&0&\dots&0&0&0\\
+	0&0&-1&1&\dots&0&0&0\\
+	\vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+	0&0&0&0&\dots&-1&1&0\\
+	0&0&0&0&\cdots&0&-1&1
+	\end{bmatrix}\label{eq:A-1p}\\
+	A^{-}_1 &= \frac{1}{\Delta}\begin{bmatrix}
+	-1&1&0&\dots&0&0&0&0\\
+	0&-1&1&\dots&0&0&0&0\\
+	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
+	0&0&0&\dots&-1&1&0&0\\
+	0&0&0&\cdots&0&-1&1&0
+\end{bmatrix}\label{eq:A-1m}
+	\intertext{Next, notice that many of the $R$ matrix follow a simple pattern.  When $K_B = 2$ with a boundary point at both sides, }
+	R_2 &\equiv \begin{bmatrix} \mathbf{0}_K & \mathbf{I}_K & \mathbf{0}_K\end{bmatrix}\label{eq:R-2}\\
+	\intertext{A common $Q$ setup for this is,}
+	Q_{A,2} &\equiv \begin{bmatrix} \mathbf{0}_{1\times K} \\ \mathbf{I}_K \\ \mathbf{0}_{1\times K}\end{bmatrix}\label{eq:Q-A2}
+	\intertext{Next, define the $B$ associated with a reflection at both sides}
+	B_{RR} &\equiv \begin{bmatrix}
+	-1&1&0&\dots&0&0&0\\
+	0&0&0&\cdots&0&-1&1
+\end{bmatrix}_{2\times (K+2)}\label{eq:B-RR}
+	\intertext{Another for the $B$ associated with an absorbing barrier at both sides}
+	B_{AA} &\equiv \begin{bmatrix}
+	1&0&0&\dots&0&0&0\\
+	0&0&0&\cdots&0&0&1
+\end{bmatrix}_{2\times (K+2)}\label{eq:B-AA}
+\intertext{And another for an absorbing at the bottom and reflecting at the top,}
+B_{AR} &\equiv \begin{bmatrix}
+1&0&0&\dots&0&0&0\\
+0&0&0&\cdots&0&-1&1
+\end{bmatrix}_{2\times (K+2)}\label{eq:B-AR}
+\end{align}
+
 \subsection{Stationary HJBE with Reflecting Barriers}
 Take the stochastic process
 $$
@@ -166,7 +217,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-2&1&0\\
 0&0&0&\cdots&1&-2&1
-\end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
+\end{bmatrix}\frac{\Delta^{-2}}{2}
 \end{align}
 
 where the dimension of $A$ is $K\times\bar{K}$.\\
@@ -224,7 +275,7 @@ P &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\cdots&r&0&0\\
 0&0&0&\cdots&0&r&0\\
-\end{bmatrix}_{K\times\bar{K}}-A \nonumber \\
+\end{bmatrix}_{K\times\bar{K}}-A  \\
 &= \begin{bmatrix}
 -1&2(1+r\Delta^2)&-1&\dots&0&0&0\\
 0&-1&2(1+r\Delta^2)&\dots&0&0&0\\
@@ -274,7 +325,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-2&1&0\\
 0&0&0&\cdots&1&-2&1
-\end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
+\end{bmatrix}\frac{\Delta^{-2}}{2}
 \end{align}
 According to lower absorbing barrier, we can define $B$ as
 \begin{equation}
@@ -363,7 +414,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&0&\dots&-1&1&0\\
 0&0&0&0&\cdots&0&-1&1
-\end{bmatrix}\cdot\mu\Delta^{-1}\nonumber
+\end{bmatrix}\cdot\mu\Delta^{-1}
 \end{align}
 
 As $\mu<0$, we choose the backward difference and the matrix form of operator $\mathcal{L}$ can be defined as
@@ -374,7 +425,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-1&1&0&0\\
 0&0&0&\cdots&0&-1&1&0
-\end{bmatrix}\cdot (-\mu)\Delta^{-1}\nonumber
+\end{bmatrix}\cdot (-\mu)\Delta^{-1}
 \end{align}
 So for $\forall\mu$, we can generally define $A$ as
 
@@ -385,7 +436,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&\mu^--\mu^+&\mu^+&0\\
 0&0&0&\cdots&-\mu^-&\mu^--\mu^+&\mu^+
-\end{bmatrix}\cdot \Delta^{-1}\nonumber
+\end{bmatrix}\cdot \Delta^{-1}
 \end{align}
 
 $R$ is defined as
@@ -396,7 +447,7 @@ R\cdot \bar{u} =\begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
 \end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
-=equiv u\in \R^{K}
+=\equiv u\in \R^{K}
 \end{equation}
 
 With the absorbing barriers $u(x^{\min}) = x^{\min}$ and $u(x^{\max}) = x^{\max}$,
@@ -472,7 +523,7 @@ X&Y&Z&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y&Z&0\\
 0&0&0&\cdots&X&Y&Z
-\end{bmatrix}\cdot \Delta^{-2}\nonumber
+\end{bmatrix}\cdot \Delta^{-2}
 \end{align}
 where
 \begin{align*}
@@ -530,7 +581,7 @@ X_1&Y_1&Z_1&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y_{K-1}&Z_{K-1}&0\\
 0&0&0&\cdots&X_{K}&Y_{K}&Z_{K}
-\end{bmatrix}\cdot \Delta^{-2}\nonumber
+\end{bmatrix}\cdot \Delta^{-2}
 \end{align}
 where
 \begin{align*}
