@@ -13,147 +13,136 @@
 %Some macros
 \newcommand{\set}[1]{\ensuremath{\left\{{#1}\right\}}}
 \newcommand{\R}{\ensuremath{\mathbb{R}}}
-\newcommand{\D}[1][]{\ensuremath{\boldsymbol{\partial}_{#1}}}
-\newcommand{\W}{\ensuremath{\mathbb{W}}}
+\newcommand{\D}[1][]{\ensuremath{\partial_{#1}}}
 \newcommand{\A}{\ensuremath{\mathcal{A}}}
 
 
 \geometry{left=1in,right=1in,top=0.6in,bottom=1in}
 \begin{document}
-	\title{Discretizing Linear Operators Overview}
+	\title{Discretizing Linear and Affine Operators Overview}
 	\author{}
 	\date{}
 	\maketitle
 	\section{Overview of Notation}
-	To set some notation:
-	\paragraph{General}
-	
-	The following expressions are used in the document:
+	To set some notation and definitions
 	\begin{itemize}
 		\item Given an operator (or infinitesimal generator) associated with a particular stochastic process, $\mathcal{L}$\footnote{See \url{https://en.wikipedia.org/wiki/Infinitesimal_generator_(stochastic_processes)} for some formulas and interpretation for diffusions, and \url{https://en.wikipedia.org/wiki/Transition_rate_matrix} for the generator of continuous-time Markov chains.}.  The purpose of these notes is to discretize $\mathcal{L}$ on this grid using finite differences
 		%	 \item Where appropriate, we will define the adjoint of the operator $\A$ as $\A^*$.  This is useful when trying to solve for the evolution of distributions (rather than solving for the value functions).
-		\item For a given variable $q$, define the notation $q^{-} \equiv \min\set{q,0}$ and $q^{+} \equiv \max\set{q,0}$, which will be useful for defining finite-differences with an upwind scheme.  This can apply to vectors as well. For example, $q_k^{-} = q_k$ if $q_k < 0$ and $0$ if $q_k > 0$, and $q_k^{-} \equiv \set{q^{-}_k}_{k=1}^{K}$.
-		\item Let $\mathbb{W}_t$ be Brownian motion
-		\item Finally, derivatives are denoted by the operator $\D$ and univariate derivatives such as $\D[x]u(x) \equiv u'(x)$.
+		\item For a given variable $q$, define the notation $q^{-} \equiv \min\set{q,0}$ and $q^{+} \equiv \max\set{q,0}$, which will be useful for defining finite-differences with an upwind scheme.  This can apply to vectors as well. For example, $q_k^{-} = q_k$ if $q_k < 0$ and $0$ if $q_k > 0$, and $q^{-} \equiv \set{q^{-}_k}_{k=1}^{K}$.
+		\item Let $W_t$ be the Weiner process with the integral defined by the Ito interpretation
+		\item Finally, derivatives are denoted by the operator $\D$ and univariate derivatives such as $\D[x]\tilde{u}(x) \equiv u'(x)$.
+		\item Consider a univariate function of $x \in [x^{\min}, x^{\max}]$
+		\item Form a grid on the domain with $K$ points, $\set{x_k}_{k=1}^{K}$ with $x_1 = x^{\min}$ and $x_{K} = x^{\max}$ when. After discretizing, we can sometimes denote the grid with the variable name, i.e. $x \equiv \set{x_k}_{k=1}^{K}$. In the simple case of a uniform grid, $\Delta \equiv x_{k+1} - x_k$ for all $k < K$.
+		\item A core part of the discretization process will be to extend the variable onto the closure (i.e. including boundary points for the boundary conditions).  If there are $K$ points in the grid, and $K_B$ points in the boundary, then define $\bar{K} = K + K_B$ as the total set of points on the closure.
+		\item Denote grid on the closure as $\bar{x} \in \R^{\bar{K}}$.  The interior points on the grid match the grid on the closure, so that $\bar{x}_{k+K^{\min}_B} = x_{k}$ for $k = 1, \ldots K$ for the $K^{\min}_B$ is the number of points in the boundary to the left of the interior, $K^{\max}_B$ is the number of points to the right, and $K_B = K^{\min}_B + K^{\max}_B$
+		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{K}$, $y$ has length $K$.
+		\item We will denote continuous functions, prior to discretization, like $\tilde{u}(x)$.  The discretization of $\tilde{u}(x)$ on $x$ is denoted $u \in \R^K$ and the discretization of $\tilde{u}(x)$ on $\bar{x}$ is $\bar{u} \in \R^{\bar{K}}$.
+		\item Moreover, define $S_B$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non non interior point, let's say, the first one and the last two grid points, then $K_B = 3$ and $S_B = \{1,\bar{K}-1,\bar{K}\}$\footnote{Notice that, by construction, the number of elements in $S_B$ is always $K_B$}.
 	\end{itemize}
-	
-	\paragraph{Grids}Consider the univariate function of $x$:
-	\begin{itemize}
-		\item Consider we have $\hat{K}$ points, $\set{x_k}_{k=1}^{\hat{K}}$ with $x_1 = \underline{x}$ and $x_{\hat{K}} = \bar{x}$ when $x \in [\underline{x}, \bar{x}]$. After discretizing, we will often denote the grid with the variable name, i.e. $x \equiv \set{x_k}_{k=1}^{\hat{K}}$. In the simple case of a uniform grid, $\Delta \equiv x_{k+1} - x_k$ for all $k < \hat{K}$.
-		\item When we discretize a function, use the function name without arguments to denote the vector,  i.e. $\hat{u}(x)$ discretized on a grid $\set{x_k}_{k=1}^{\hat{K}}$  is $\hat{u} \equiv \set{\hat{u}(x_k)}_{k=1}^{\hat{K}} \in \R^{\hat{K}}$.
-		Use $k=1,... K$ as the grid in the interior. Moreover, define $K_{B}$ as the non interior grid points. Therefore, $\hat{K} = K + K_{B}$. Moreover, define $\mathbb{S}_B$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non non interior point, let's say, the first one and the last two grid points, then $K_B = 3$ and $\mathbb{S}_B = \{1,\hat{K}-1,\hat{K}\}$\footnote{Notice that, by construction, the number of elements in $\mathbb{S}_B$ is alwais $K_B$}.		
-		%Notice that the solution to the discretized function is $u \in R^{\hat{K}}$ if stationary. Seems irrelevant now
-		
-		\item For any arbitrary variable $y(x)$ defined in the whole space of $x$, we define $\hat{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\hat{y}$ has length $\hat{K}$, $y$ has length $K$.
-	\end{itemize}
-	
+
 	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
-	\textbf{TODO:} Explain the $R, Q, B, A$ etc. for the general notation from \url{https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/260}.  The idea here is to make sure we understand everything about the ghost nodes, boundary values, etc.
+	Take a differential operator $\mathcal{L}$, associated boundary conditions, and function $\tilde{u}(x)$.  We are interested in the discretized $\bar{u}\in \R^{\bar{K}}$.  The discretization process generates a $A \in \R^{K\times\bar{K}}, R \in \R^{K\times \bar{K}}, Q \in \R^{\bar{K}\times K}, B \in \R^{K_B \times \bar{K}},$ and $b \in \R^{K_B}$.  The $Q$ matrix can be decomposed into $Q_A \in \R^{\bar{K}\times K}$ and $Q_b \in \R^{\bar{K}}$.
 	\begin{itemize}
-		\item L is defined as the discretization of the partial differential operator in use.
-		
-		\item B is the boundary condition operator. For one dimension, we can define B as:
+		\item $A$ is the \textit{discretization of the differential operator}, and is independent of the boundary conditions.  Think of it as the stencil for the interior of the operator expanded to the closure.
+		\item $B$ is the \textit{boundary condition operator} and $b$ the \textit{oundary condition value} with
 		\begin{equation}
-		B\cdot \hat{u} = b
+		B\cdot \bar{u} = b
 		\label{B_operator_block}
 		\end{equation}
-		for any $\hat{u}$ in the space of functions that satisfy the boundary conditions $b$. The size of B is $K_{B} \times \hat{K}$ and the size of $b$ is $K_{B} \times 1$.
-		
-		Notice that B is not necessarily unique. The choice of B is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator B.
-		
-		\item R is the restriction operator which is defined by the domain. It removes columns which are not in the interior. Notice that R has size $K \times \hat{K}$ and, for an univariate process, we have:
+		for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$. The size of $B$ is $K_{B} \times \bar{K}$ and the size of $b$ is $K_{B} \times 1$.\footnote{
+Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.}
+		\item $R$ is the \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. Notice that $R$ has size $K \times \bar{K}$ and it fulfills
 		\begin{equation}
-		R\cdot \hat{u}  \equiv\set{u(x)} \in \R^{K} \label{R_operator}
+		R\cdot \bar{u} = u \label{R_operator}
 		\end{equation}
-		
-		\item Q is the operator that is defined as
-		\begin{equation}
-		Q \cdot R\cdot\hat{u} = \hat{u}\label{Q_operator_1}
-		\end{equation}
-		for any $\hat{u}$ that satisfies the border conditions. (Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary). $Q$ has size $\hat{K} \times K$.
-		Q also has a second relation: 
-		\begin{equation}
-		B\cdot Q\cdot u  = b
-		\label{Q_operator_2}
-		\end{equation}
-		
-		basically saying that it's a map from discretizations of functions in the interior to functions which satisfy the border conditions. In order to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.\\
-		Q is actually in general affine, meaning that $Q\cdot \hat{u} = Q_a\cdot \hat{u} + Q_b$. For example, the definition given of inner product make $Q\cdot x=b$ in an iterative solver converge to $Q_a\cdot x = b - Q_b$. From the relations, $Q_a$ is $\hat{K}\times K$ and $Q_b$ is of length $\hat{K}$. In order for $Q\cdot R\cdot u = u$ to hold for trivial $\hat{u}$, we need that $Q_b$ is zero except in the boundary rows.
-		
+
+		\item $Q$ is the \textit{boundary extrapolation operator} and is defined as fulfilling the following relationships
+		\begin{align}
+		Q \cdot R\cdot\bar{u} = \bar{u}\label{Q_operator_1}\\
+		B\cdot Q\cdot u  = b	\label{Q_operator_2}
+	\end{align}
+	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to the boundary yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
+		\item $Q$ is actually in general affine, meaning that
+		\begin{align}
+			Q\cdot \bar{u} &= Q_A\cdot \bar{u} + Q_b\label{Q_Affine}
+			\end{align}
+			For example, the definition given of inner product make $Q\cdot x=b$ in an iterative solver converge to $Q_A\cdot x = b - Q_b$. From the relations, $Q_A$ is $\bar{K}\times K$ and $Q_b$ is of length $\bar{K}$. In order for $Q\cdot R\cdot u = u$ to hold for trivial $\bar{u}$
+			\item \textbf{Fernando/Steven TODO: Does this conform? This doesn't look right...  Should some of these be $u$ vs. $\bar{u}$, etc?  See \cref{solve_u_hat_cond_2}}
 		\end{itemize}
-	
+
 		\subsection{Affine relations:}
+		\textbf{TODO: Fernando/Steven, I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text.  I got rid of the $d$ for discretization...}
 		\begin{itemize}
-			\item Now let's focus on solving an expression like $\hat{u}^d = L \hat{u}$, where the superscript $d$ means the discretized version of the variable. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $K_B$ columns, that $J[:,\mathbb{S}_B]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in \mathbb{S}_B$. 
+			\item Now let's focus on solving an expression like $\bar{u} = A \bar{u}$. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $K_B$ columns, that $J[:,S_B]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in S_B$.
 			Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
-		
+
 			\begin{align}
-			L[:,\mathbb{S}_B] \cdot\left(B[:,\mathbb{S}_B]^{-1} b \right) = L\cdot Q_b\label{affine_relation_1}
+			A [:,S_B] \cdot\left(B[:,S_B]^{-1} b \right) = A \cdot Q_b\label{affine_relation_1}
 			\end{align}
 			\begin{align}
-			(L-L[:,\mathbb{S}_B] \cdot(B[:,\mathbb{S}_B]^{-1} B))\cdot R^{'} = L\cdot Q_a\label{affine_relation_2}
-			\end{align}		
-		
-			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\hat{K}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left(B[:,\mathbb{S}_B]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \eqref{affine_relation_1} holds.
-		
-			Multiply both sides of \eqref{affine_relation_2} by $\hat{u}$, we can roughly rewrite the relation as
+			(A -A [:,S_B] \cdot(B[:,S_B]^{-1} B))\cdot R^{'} = A \cdot Q_A\label{affine_relation_2}
+			\end{align}
+
+			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{K}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left(B[:,S_B]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \eqref{affine_relation_1} holds.
+
+			Multiply both sides of \eqref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
 			\begin{equation}
-			(L\cdot \hat{u}-L\cdot Q_b) \cdot R' = L\cdot Q_a\cdot \hat{u}
+			(A \cdot \bar{u}-A \cdot Q_b) \cdot R' = A \cdot Q_A\cdot \bar{u}
 			\end{equation}
-			so $L\cdot \hat{u}-L\cdot Q_b$ will be a discretized $\hat{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $L\cdot Q_b$. 
-		
-			However, we are not sure if $R$ should exist on the left of \eqref{affine_relation_2} since R by definition is a restriction operator and $(L\cdot \hat{u}-L\cdot Q_b)\cdot R'$ only contains information from interiors.
+			so $A \cdot \bar{u}-A \cdot Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A \cdot Q_b$.
+
+			However, we are not sure if $R$ should exist on the left of \eqref{affine_relation_2} since R by definition is a restriction operator and $(A \cdot \bar{u}-A \cdot Q_b)\cdot R'$ only contains information from interiors.
 			\iffalse % we already solved this by changing R place in the equation. It seems to be right, since Steven reported that now both affine relationships hold for the examples
-			Also the size of the LHS of \eqref{affine_relation_2} is $K\times \hat{K}$, but the size of the RHS is $\hat{I}\times I$ .
+			Also the size of the LHS of \eqref{affine_relation_2} is $K\times \bar{K}$, but the size of the RHS is $\bar{I}\times I$ .
 			\fi
 			For now, while we work on better understanding those expressions, we will take them as given.
-		
-		
-			Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\hat{u} = Qu$. 
-		
-			Therefore, we actually want to solve $\hat{u}^d = LQu$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
+
+
+			Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\bar{u} = Q u$.
+
+			Therefore, we actually want to solve $\bar{u} = A Q u$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
 			\begin{equation}
-			\hat{u} = LQ_au + AQ_b
+			\bar{u} = A Q_A u + A Q_b
 			\end{equation}
 			Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
-		\end{itemize}	
-	
+		\end{itemize}
+
 	\subsection{Specific examples:}
 	\begin{itemize}
 		\item This shows that what's important and non-trivial is $Q$. It contains all of the information about both the boundaries and the domain from the two relations. So what is Q? Here's all of the relevant cases for finite differencing:
 		\begin{enumerate}
-			\item \textbf{Dirichlet$_0$}: If you have any $u$ in the interior, its unique extension to satisfying the border conditions is sticking $0$'s on the ends, so both $Q$ is zero for all non interior grid points. Therefore, Q is linear, meaning $Q = Q_a$ and $Q_b$ is a null matrix.
-			
-			\item \textbf{Dirichlet}: The boundary is not dependent on any points in the interior, and therefore $Q_a$ is identical to the previous case, but now Q is no longer linear and
+			\item \textbf{Dirichlet$_0$}: If you have any $u$ in the interior, its unique extension to satisfying the border conditions is sticking $0$'s on the ends, so both $Q$ is zero for all non interior grid points. Therefore, Q is linear, meaning $Q = Q_A$ and $Q_b$ is a null matrix.
+
+			\item \textbf{Dirichlet}: The boundary is not dependent on any points in the interior, and therefore $Q_A$ is identical to the previous case, but now Q is no longer linear and
 	 		$Q_b$ is such that it is equal to zero for all interior points and equal to $b$ for all non interior points.
-			
-			\item \textbf{Neumann}: You have to pick a discretization of B. This defines linear relation between the interior points and the boundary conditions. For example, for the univariate case with non interior points being the first and the last ones on the grid ($K_B = 2$ and $\mathbb{S}_B = \{1,\hat{K}\}$), the first order discretization of the boundary derivative means that: 
-			
+
+			\item \textbf{Neumann}: You have to pick a discretization of B. This defines linear relation between the interior points and the boundary conditions. For example, for the univariate case with non interior points being the first and the last ones on the grid ($K_B = 2$ and $S_B = \{1,\bar{K}\}$), the first order discretization of the boundary derivative means that:
+
 			\begin{equation}
-				\frac{db}{dx} = \frac{\hat{u}[2] - \hat{u}[1]}{dx} = b[1]
+				\frac{db}{dx} = \frac{\bar{u}[2] - \bar{u}[1]}{dx} = b[1]
 			\end{equation}
-			and, therefore, $u[1] = u[2] - dx b[1]$. You can see that this implies that $Q_b = [dx\cdot b[1];\{0\}_1^K;dx\cdot b[\hat{K}]]$ and that $Q_a$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_a u = u[1] = \hat{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_a v = v[1] = u[2]$ and $Q_a v = v[I] = u[I-1]$, respectively.}.
-			
+			and, therefore, $u[1] = u[2] - dx b[1]$. You can see that this implies that $Q_b = [dx\cdot b[1];\{0\}_1^K;dx\cdot b[\bar{K}]]$ and that $Q_A$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_A u = u[1] = \bar{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_A v = v[1] = u[2]$ and $Q_A v = v[I] = u[I-1]$, respectively.}.
+
 		\end{enumerate}
 	\end{itemize}
 
 \section{Time-Invariant Stochastic Process Examples}
-Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (\underline{x}, \bar{x})$ where $-\infty < \underline{x} < \bar{x} < \infty$.  We will assume throughout that the domain is time-invariant.
+Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
 
-For a given $\mathcal{L}$ Then, if the payoff in state $x$ is $b(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $u(x)$ is,
+For a given $\mathcal{L}$ Then, if the payoff in state $x$ is $\tilde{b}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
 \begin{align}
-r u(x) &= b(x) + \mathcal{L} u(x)\label{eq:general-stationary-HJBE}
+r \tilde{u}(x) &= \tilde{b}(x) + \mathcal{L} \tilde{u}(x)\label{eq:general-stationary-HJBE}
 \end{align}
-subject to $\D[x]u(\underline{x}) = 0$ and $\D[x]u(\bar{x}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]u(\underline{x}) = \underline{u}$ which may be non-zero.
+subject to $\D[x]\tilde{u}(x^{\min}) = 0$ and $\D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.
 
-For a simple example of a payoff, choose $b(x) = x$.
+For a simple example of a payoff, choose $\tilde{b}(x) = x$.
 
 \subsection{Stationary HJBE with Reflecting Barriers}
 Take the stochastic process
 $$
-d x_t = d \W_t
+d x_t = d W_t
 $$
-with reflecting barriers at $\underline{x}$ and $\bar{x})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
+with reflecting barriers at $x^{\min}$ and $x^{\max})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
 	\mathcal{L} \equiv \frac{1}{2}\D[xx]
 $$
@@ -161,17 +150,17 @@ $$
 With this process,
 \begin{itemize}
 	\item How to derive all of the matrices of \cref{sec:general}
-	\item The system of equations to solve for $u(x)$ in \cref{eq:general-stationary-HJBE}
+	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 Consider
 \begin{align}
-(r- \mathcal{L} u(x)) &= x\label{HJBE_reflecting_barriers_PDE}\\
+(r - \mathcal{L} )\tilde{u}(x) &= x\label{HJBE_reflecting_barriers_PDE}\\
 \text{where }\mathcal{L}&\equiv \frac{1}{2}\partial_{xx}
 \end{align}
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $\mathbb{S}_B = \{1,\hat{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\hat{K}}$, and $\hat{K} = K+2$. The matrix form of operator $\mathcal{L}$ can be defined as
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $S_B = \{1,\bar{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\bar{K}}$, and $\bar{K} = K+2$. The matrix form of operator $\mathcal{L}$ can be defined as
 \begin{align}
-L &= \begin{bmatrix}
+A &= \begin{bmatrix}
 1&-2&1&\dots&0&0&0\\
 0&1&-2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -180,43 +169,32 @@ L &= \begin{bmatrix}
 \end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
 \end{align}
 
-where the dimension of L is $K\times\hat{K}$.\\
+where the dimension of $A$ is $K\times\bar{K}$.\\
 By reflecting barriers, we can define $B$ as
 \begin{equation}
-B\cdot\hat{u} =\begin{bmatrix}
+B\cdot\bar{u} =\begin{bmatrix}
 -1&1&0&\dots&0&0&0\\
 0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{K_B\times \hat{K}}\cdot\hat{u} = \begin{bmatrix}
+\end{bmatrix}_{K_B\times \bar{K}}\cdot\bar{u} = \begin{bmatrix}
 0\\
 0
 \end{bmatrix}
 \end{equation}
-where $\hat{u} = \begin{bmatrix}
-u(x_0)\\
-u(x_1)\\
-\vdots\\
-u(x_K)\\
-u(x_{K+1})
-\end{bmatrix}_{\hat{K}\times 1}$.\\
-This implies $u(x_0) = u(x_1)$ and $u(x_{K+1}) = u(x_K)$.\\
-$R$ is defined as 
+where $\bar{u} \in \R_{\bar{K}}$.\\
+This implies $\bar{u}_0 = \bar{u}_1$ and $\bar{u}_{K+1} = \bar{u}_K$.\\
+$R$ is defined as
 \begin{equation}
-R\cdot \hat{u} =\begin{bmatrix}
+R\cdot \bar{u} =\begin{bmatrix}
 0&1&0&\cdots&0&0\\
 0&0&1&\cdots&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
-\end{bmatrix}_{K\times\hat{K}}\cdot \hat{u}		 
-=\begin{bmatrix}
-u(x_1)\\
-u(x_2)\\
-\vdots\\
-u(x_K)
-\end{bmatrix} \equiv u\in \R^{K} 
+\end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
+= u\in \R^{K}
 \end{equation}
-$Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where 
+$Q$ is defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
-Q_a = \begin{bmatrix}
+Q_A = \begin{bmatrix}
 1& 0&\dots&0&0\\
 1&0&\dots&0&0\\
 0&1&\dots&0&0\\
@@ -224,21 +202,21 @@ Q_a = \begin{bmatrix}
 0&0&\dots&1&0\\
 0&0&\dots&0&1\\
 0&0&\dots&0&1
-\end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
+\end{bmatrix}_{\bar{K}\times K}\quad , Q_b = \begin{bmatrix}
 0\\
 \vdots\\
 0
-\end{bmatrix}_{\hat{K}\times 1}
+\end{bmatrix}_{\bar{K}\times 1}
 \end{equation}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
-To solve $\hat{u}(x)$, we first solve interiors according to \eqref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
+To solve $\bar{u}(x)$, we first solve interiors according to \eqref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
 \begin{align}
-P\cdot\hat{u} &= x\label{solve_u_hat_cond_1}\\
-Q\cdot R\cdot\hat{u} &= Q\cdot u = Q_a\cdot u+Q_b = \hat{u}\label{solve_u_hat_cond_2}
+P\cdot\bar{u} &= x\label{solve_u_hat_cond_1}\\
+Q\cdot R\cdot\bar{u} &= Q\cdot u = Q_A\cdot u+Q_b = \bar{u}\label{solve_u_hat_cond_2}
 \end{align}
-where 
+where
 \begin{align}
 P &= \begin{bmatrix}
 0&r&0&\cdots&0&0&0\\
@@ -246,7 +224,7 @@ P &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\cdots&r&0&0\\
 0&0&0&\cdots&0&r&0\\
-\end{bmatrix}_{K\times\hat{K}}-L \nonumber \\
+\end{bmatrix}_{K\times\bar{K}}-A \nonumber \\
 &= \begin{bmatrix}
 -1&2(1+r\Delta^2)&-1&\dots&0&0&0\\
 0&-1&2(1+r\Delta^2)&\dots&0&0&0\\
@@ -257,40 +235,40 @@ P &= \begin{bmatrix}
 \end{align}
 Substitute \eqref{solve_u_hat_cond_2} into \eqref{solve_u_hat_cond_1}, we get
 \begin{align}
-P\cdot(Q_a\cdot u+Q_b) = x
+P\cdot(Q_A\cdot u+Q_b) = x
 \end{align}
 Since $Q_b = 0$ in this case, interiors are solve as
 \begin{align}
-u = (P\cdot Q_a)^{-1}x
+u = (P\cdot Q_A)^{-1}x
 \end{align}
 Then, by \eqref{solve_u_hat_cond_2}, we can solve the extended state vector by
 \begin{align}
-\hat{u} = Q_a\cdot u+Q_b\label{solve_u_hat_in_terms_of_interiors}
+\bar{u} = Q_A\cdot u+Q_b\label{solve_u_hat_in_terms_of_interiors}
 \end{align}
 
 \subsection{Stationary HJBE with a Lower Absorbing Barrier}
 Take the stochastic process
 $$
-d x_t = d \W_t
+d x_t = d W_t
 $$
-with an absorbing barrier at $\underline{x}$, and a reflecting barrier at $\bar{x})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
+with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
 \mathcal{L} \equiv \frac{1}{2}\D[xx]
 $$
 
-For the absorbing barrier, when solving for the HJBE assume that $u(\underbar{x}) = \underbar{x}$ and $u'(\bar{x}) = 0$
+For the absorbing barrier, when solving for the HJBE assume that $u(\underbar{x}) = \underbar{x}$ and $u'(x^{\max}) = 0$
 
 
 With this process,
 \begin{itemize}
 	\item How to derive all of the matrices of \cref{sec:general}
-	\item The system of equations to solve for $u(x)$ in \cref{eq:general-stationary-HJBE}
+	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 
-Again, we first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{x} < \bar{x} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $\mathbb{S}_B = \{1,\hat{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\hat{K}}$, and $\hat{K} = K+2$. The matrix form of operator $\mathcal{L}$ is still defined as
+Again, we first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $x^{\min} < x^{\max} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $S_B = \{1,\bar{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\bar{K}}$, and $\bar{K} = K+2$. The matrix form of operator $\mathcal{L}$ is still defined as
 \begin{align}
-L &= \begin{bmatrix}
+A &= \begin{bmatrix}
 1&-2&1&\dots&0&0&0\\
 0&1&-2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -298,44 +276,35 @@ L &= \begin{bmatrix}
 0&0&0&\cdots&1&-2&1
 \end{bmatrix}\frac{\Delta^{-2}}{2}\nonumber
 \end{align}
-
-where the dimension of L is $K\times\hat{K}$.\\
 According to lower absorbing barrier, we can define $B$ as
 \begin{equation}
-B\cdot\hat{u} =\begin{bmatrix}
+B\cdot\bar{u} =\begin{bmatrix}
 1&0&0&\dots&0&0&0\\
 0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{K_B\times \hat{K}}\cdot\hat{u} = \begin{bmatrix}
+\end{bmatrix}_{K_B\times \bar{K}}\cdot\bar{u} = \begin{bmatrix}
 \underline{\textit{\~{x}}}\\
 0
 \end{bmatrix}
-\end{equation}
-where $\hat{u} = \begin{bmatrix}
-u(x_0)\\
-u(x_1)\\
-\vdots\\
-u(x_K)\\
-u(x_{K+1})
-\end{bmatrix}_{\hat{K}\times 1}$.\\
+\end{equation}.\\
 This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = u(x_K)$.\\
-$R$ is defined as 
+$R$ is defined as
 \begin{equation}
-R\cdot \hat{u} =\begin{bmatrix}
+R\cdot \bar{u} =\begin{bmatrix}
 0&1&0&\cdots&0&0\\
 0&0&1&\cdots&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
-\end{bmatrix}_{K\times\hat{K}}\cdot \hat{u}		 
+\end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
 =\begin{bmatrix}
 u(x_1)\\
 u(x_2)\\
 \vdots\\
 u(x_I)
-\end{bmatrix} \equiv u\in \R^{K} 
+\end{bmatrix} \equiv u\in \R^{K}
 \end{equation}
-$Q$ is defined by $Q\cdot R\cdot\hat{u}\equiv Q_a\cdot R\cdot\hat{u}+Q_b = \hat{u}$, where 
+$Q$ is defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
-Q_a = \begin{bmatrix}
+Q_A = \begin{bmatrix}
 0& 0&\dots&0&0\\
 1&0&\dots&0&0\\
 0&1&\dots&0&0\\
@@ -343,25 +312,25 @@ Q_a = \begin{bmatrix}
 0&0&\dots&1&0\\
 0&0&\dots&0&1\\
 0&0&\dots&0&1
-\end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
+\end{bmatrix}_{\bar{K}\times K}\quad , Q_b = \begin{bmatrix}
 \underline{\tilde{x}}\\
 0\\
 \vdots\\
 0
-\end{bmatrix}_{\hat{K}\times 1}
+\end{bmatrix}_{\bar{K}\times 1}
 \end{equation}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 In this case, $P$ is the same as the one we have in the previous example. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
 \begin{align}
-P(Q_a\cdot u+Q_b) = x
+P(Q_A\cdot u+Q_b) = x
 \end{align}
-With $Q_b\neq 0$, we can solve interiors as 
+With $Q_b\neq 0$, we can solve interiors as
 \begin{align}
-u = (P\cdot Q_a)^{-1}\cdot(x-P\cdot Q_b)
+u = (P\cdot Q_A)^{-1}\cdot(x-P\cdot Q_b)
 \end{align}
-Then, the extended state vector $\hat{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
+Then, the extended state vector $\bar{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
 \subsection{Stationary HJBE with Only Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
 $$
@@ -374,21 +343,21 @@ $$
 With this process,
 \begin{itemize}
 	\item How to derive all of the matrices of \cref{sec:general}.  Be careful to use the appropriate upwind direction for the first order term.
-	\item The system of equations to solve for $u(x)$ in \cref{eq:general-stationary-HJBE}
-	\item Write julia code to solve for $u(x)$ with the grid
+	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
+	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
 Consider
 \begin{align}
-(r- \mathcal{L} u(x)) &= x\label{HJBE_PDE_with_drifts}\\
+(r - \mathcal{L} )\tilde{u}(x) &= x\label{HJBE_PDE_with_drifts}\\
 \text{where }\mathcal{L}&\equiv \mu\partial_{x}
 \end{align}
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\hat{K}}$ and $\hat{K} = K+2$. 
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\bar{K}}$ and $\bar{K} = K+2$.
 
 As $\mu>0$, we choose the forward first difference and the matrix form of operator $\mathcal{L}$ can be defined as
 \begin{align}
-L &= \begin{bmatrix}
+A &= \begin{bmatrix}
 0&-1&1&0&\dots&0&0&0\\
 0&0&-1&1&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -397,11 +366,9 @@ L &= \begin{bmatrix}
 \end{bmatrix}\cdot\mu\Delta^{-1}\nonumber
 \end{align}
 
-where the dimension of L is $K\times\hat{K}$.
-
 As $\mu<0$, we choose the backward difference and the matrix form of operator $\mathcal{L}$ can be defined as
 \begin{align}
-L &= \begin{bmatrix}
+A &= \begin{bmatrix}
 -1&1&0&\dots&0&0&0&0\\
 0&-1&1&\dots&0&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
@@ -409,13 +376,10 @@ L &= \begin{bmatrix}
 0&0&0&\cdots&0&-1&1&0
 \end{bmatrix}\cdot (-\mu)\Delta^{-1}\nonumber
 \end{align}
-
-where the dimension of $L$ is $K\times\hat{K}$.
-
-So for $\forall\mu$, we can generally define $L$ as
+So for $\forall\mu$, we can generally define $A$ as
 
 \begin{align}
-L &= \begin{bmatrix}
+A &= \begin{bmatrix}
 -\mu^-&\mu^--\mu^+&\mu^+&\dots&0&0&0\\
 0&-\mu^-&\mu^--\mu^+&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -424,42 +388,30 @@ L &= \begin{bmatrix}
 \end{bmatrix}\cdot \Delta^{-1}\nonumber
 \end{align}
 
-$R$ is defined as 
+$R$ is defined as
 \begin{equation}
-R\cdot \hat{u} =\begin{bmatrix}
+R\cdot \bar{u} =\begin{bmatrix}
 0&1&0&\cdots&0&0\\
 0&0&1&\cdots&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
 0&0&0&\cdots&1&0
-\end{bmatrix}_{K\times\hat{K}}\cdot \hat{u}		 
-=\begin{bmatrix}
-u(x_1)\\
-u(x_2)\\
-\vdots\\
-u(x_K)
-\end{bmatrix} \equiv u\in \R^{K} 
+\end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
+=equiv u\in \R^{K}
 \end{equation}
 
-With the absorbing barriers $u(\underline{x}) = \underline{x}$ and $u(\bar{x}) = \bar{x}$,  
+With the absorbing barriers $u(x^{\min}) = x^{\min}$ and $u(x^{\max}) = x^{\max}$,
 \begin{equation}
-B\cdot\hat{u} =\begin{bmatrix}
+B\cdot\bar{u} =\begin{bmatrix}
 1&0&0&\dots&0&0&0\\
 0&0&0&\cdots&0&0&1
-\end{bmatrix}_{K_B\times \hat{K}}\cdot\hat{u} = \begin{bmatrix}
+\end{bmatrix}_{K_B\times \bar{K}}\cdot\bar{u} = \begin{bmatrix}
 \underline{\textit{\~{x}}}\\
 \bar{\textit{\~{x}}}
 \end{bmatrix}
-\end{equation}
-where $\hat{u} = \begin{bmatrix}
-u(x_0)\\
-u(x_1)\\
-\vdots\\
-u(x_K)\\
-u(x_{K+1})
-\end{bmatrix}_{\hat{K}\times 1}$.\\
-This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = \bar{\textit{\~{x}}}$. So we can define 
+\end{equation}\\
+This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = \bar{\textit{\~{x}}}$. So we can define
 \begin{equation}
-Q_a = \begin{bmatrix}
+Q_A = \begin{bmatrix}
 0& 0&\dots&0&0\\
 1&0&\dots&0&0\\
 0&1&\dots&0&0\\
@@ -467,12 +419,12 @@ Q_a = \begin{bmatrix}
 0&0&\dots&1&0\\
 0&0&\dots&0&1\\
 0&0&\dots&0&0
-\end{bmatrix}_{\hat{K}\times K}\quad , Q_b = \begin{bmatrix}
+\end{bmatrix}_{\bar{K}\times K}\quad , Q_b = \begin{bmatrix}
 \underline{\textit{\~{x}}}\\
 0\\
 \vdots\\
 \bar{\textit{\~{x}}}
-\end{bmatrix}_{\hat{K}\times 1}
+\end{bmatrix}_{\bar{K}\times 1}
 \end{equation}
 
 Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
@@ -485,18 +437,18 @@ P = \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
 0&0&0&\cdots&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
-\end{bmatrix}_{\hat{K}\times\hat{K}}\cdot \Delta^{-1}
+\end{bmatrix}_{\bar{K}\times\bar{K}}\cdot \Delta^{-1}
 \end{align}
-Then similarly interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2} 
+Then similarly interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}
 \begin{align}
-u = (P\cdot Q_a)^{-1}(x-P\cdot Q_b)
+u = (P\cdot Q_A)^{-1}(x-P\cdot Q_b)
 \end{align}
-Thus, the extended state vector $\hat{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
+Thus, the extended state vector $\bar{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
 
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
 $$
-d x_t = \mu dt + \sigma d\W_t
+d x_t = \mu dt + \sigma d W_t
 $$
 With a generator
 $$
@@ -505,16 +457,16 @@ $$
 With this process,
 \begin{itemize}
 	\item How to derive all of the matrices of \cref{sec:general}.  Be careful to use the appropriate upwind direction for the first order term.
-	\item The system of equations to solve for $u(x)$ in \cref{eq:general-stationary-HJBE}
-	\item Write julia code to solve for $u(x)$ with the grid
+	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
+	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\hat{K}}$ and $\hat{K} = K+2$. 
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\bar{K}}$ and $\bar{K} = K+2$.
 
-By combining operators $L$ from previous sections, in this case $L$ is defined as
+By combining operators $A $ from previous sections, in this case $A $ is defined as
 \begin{align}
-L = \begin{bmatrix}
+A = \begin{bmatrix}
 X&Y&Z&\dots&0&0&0\\
 0&X&Y&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -541,38 +493,38 @@ P = \begin{bmatrix}
 0&0&0&\cdots&-X&r\Delta^2-Y&-Z
 \end{bmatrix}\cdot \Delta^{-2}
 \end{align}
-The rest steps for solving interiors, $u$, and the extended state vector $\hat{u}$, are similar with what we did for previous examples.
+The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
 $$
-d x_t = \mu(x_t) dt + \sigma(x_t) d\W_t
+d x_t = \tilde{\mu}(x_t) dt + \tilde{\sigma}(x_t) d W_t
 $$
 With a generator
 $$
-\mathcal{L} \equiv \mu(x) \D[x] + \frac{\sigma(x)^2}{2}\D[xx]
+\mathcal{L} \equiv \tilde{\mu}(x) \D[x] + \frac{\tilde{\sigma}(x)^2}{2}\D[xx]
 $$
 With this process,
 \begin{itemize}
 	\item How to derive all of the matrices of \cref{sec:general}.  Be careful to use the appropriate upwind direction for the first order term.
-	\item The system of equations to solve for $u(x)$ in \cref{eq:general-stationary-HJBE}
-	\item Write julia code to solve for $u(x)$ with the grid.
+	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
+	\item Write julia code to solve for $\tilde{u}(x)$ with the grid.
 	\begin{itemize}
-		\item Choose a $\mu(x)$ and $\sigma(x)$ functions, consider using geometric brownian motion as a test.  That is,
+		\item Choose a $\tilde{u}(x)$ and $\tilde{\sigma}(x)$ functions, consider using geometric brownian motion as a test.  That is,
 		\begin{align}
 			\mathcal{L} &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
 		\end{align}
 	\end{itemize}
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(\underline{x},\bar{x})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $\underline{x}, \bar{x}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\hat{K}}$ and $\hat{K} = K+2$. 
+We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\bar{K}}$ and $\bar{K} = K+2$.
 
 Define $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
 
-This case is similar with the previous one but with variable drift and variance. Now the operator $L$ is defined as
+This case is similar with the previous one but with variable drift and variance. Now define the discritization of the operator, $A$ as \textbf{TODO: I think notation can be cleaned up here.}
 \begin{align}
-L = \begin{bmatrix}
+A = \begin{bmatrix}
 X_1&Y_1&Z_1&\dots&0&0&0\\
 0&X_2&Y_2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -600,217 +552,218 @@ P = \begin{bmatrix}
 0&0&0&\cdots&-X_K&r\Delta^2-Y_K&-Z_K
 \end{bmatrix}\cdot \Delta^{-2}
 \end{align}
-The rest steps for solving interiors, $u$, and the extended state vector $\hat{u}$, are similar with what we did for previous examples.
+The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
-\iffalse % Algebra has some issues. B, R and Q are wrong.
-\section{The multivariate case}
-\paragraph{Grids}Consider the multivariate function of $x = (x^1,...,x^n )$:
-\begin{itemize}
-	\item Consider we have $\hat{I}_j$ points, $\set{x^j_i}_{i=1}^{\hat{I}_j}$%I think here you mean \hat{I}_j instead of \hat{I}.
-	with $x^j_1 = \underline{x}^j$ and $x^j_I = \bar{x}^j$ when $x^j \in [\underline{x}^j, \bar{x}^j]$ for each $j \in \{1,...,n\}$.  After discretizing, we will often denote the grid with the variable name, i.e. $x^j \equiv \set{x^j_i}_{i=1}^{\hat{I}_j}$
-	In the simple case of a uniform grid, $\Delta^j \equiv x_{i+1}^j - x_i^j$ for all $i < \hat{I}^j$.
-	\item When we discretize a function, use the function name without arguments to denote the vector.  i.e. $\hat{u}(x)$ discretized on a grid $\set{x_i}_{i=1}^{\hat{I}}$  is $\hat{u} \equiv \set{\hat{u}(x_i)}_{i=1}^{\hat{I}} \in \R^{\hat{I}}$, where $\hat{I} = \sum_{j=1}^n \hat{I}_j$ and $I = \sum_{j = 1}^n I_j$.
-	Use $i=1,... I_j$ as the grid in the interior. Moreover, define $I_{j,L}$ and $I_{j,H}$ as the non interior grid points. Therefore, $\hat{I}_j = I_j + I_{j,L} + I_{j,H}$. % Again, I think you mean I_j's in above cases.
-	Notice that the solution to the discretized function is $u \in R^{\hat{I}}$ if stationary.
-	
-	We construct the discretized $\hat{u}$ by column stacking the discretized $\hat{u}_{x^j}$ on each grid $j \in \{1,...,n\}$:
-	\begin{equation}
-		\hat{u} = \begin{bmatrix}
-			\hat{u}_{x^1}\\
-			\hat{u}_{x^2}\\
-			\vdots\\
-			\hat{u}_{x^n}\\
-		\end{bmatrix}\label{u_def}
-	\end{equation}
-	
-	
-	
-	\item For any arbitrary variable $y(x)$ defined in the whole space of $x$, we define $\hat{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\hat{y}$ has length $\hat{I}$, $y$ has length $I$.
-\end{itemize}
-
-\subsection{General Overview of Discretization and Boundary Values}\label{sec:general}
-\textbf{TODO:} Explain the $R, Q, B, A$ etc. for the general notation from \url{https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/260}.  The idea here is to make sure we understand everything about the ghost nodes, boundary values, etc.
-\begin{itemize}
-	\item A is defined as the discretization of the partial differential operator in use.
-	
-	\item B is the boundary condition operator. For $N$ dimensions, we can define B as a block matrix in the form:
-	\begin{equation}
-		B\cdot \hat{u} \equiv 
-		%\begin{bmatrix}
-		%\text{B}_{x^{1},L} & ... & \text{B}_{x^{N},L}\\
-		%\text{B}_{x^{2},H} & ... & \text{B}_{x^{N},H}
-		%\end{bmatrix}
-		\begin{bmatrix}
-			\text{B}_{x^{1},L} & \mathbf{0}_{1,L}       & ...    & \mathbf{0}_{1,L}\\
-			\text{B}_{x^{1},H} & \mathbf{0}_{1,H}       & ...    & \mathbf{0}_{1,H}\\
-			\mathbf{0}_{2,L}   & \text{B}_{x^{2},L} &   ...    & \mathbf{0}_{2,L}\\
-			\mathbf{0}_{2,H}   & \text{B}_{x^{2},H} &   ...    & \mathbf{0}_{2,H}\\
-			\vdots  & \vdots  & \ddots & \vdots \\
-			\mathbf{0}_{N,L}       & ...    & \mathbf{0}_{N,L} & \text{B}_{x^{N},L} & \\
-			\mathbf{0}_{N,H}       & ...    & \mathbf{0}_{N,H} & \text{B}_{x^{N},H} & \\
-		\end{bmatrix}
-		\hat{u}
-		=
-		\begin{bmatrix}
-			\text{z}_{{1},L}\\
-			\text{z}_{{1},H}\\
-			\text{z}_{{2},L}\\
-			\text{z}_{{2},H}\\
-			\vdots\\
-			\text{z}_{{N},L}\\
-			\text{z}_{{N},H}\\
-		\end{bmatrix}
-		%\begin{bmatrix}
-		%\text{z}_{1, L}&\text{z}_{2, L}&\dots&\text{z}_{n, L}\\
-		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
-		%\end{bmatrix}
-		\label{B_operator_block}
-	\end{equation}
-	for any $\hat{u}$ in the space of functions that satisfy the boundary conditions and where B$_{x^j,k}$ is a block matrix satisfying B$_{x^j,k}\cdot \hat{u}_{x^j} = \text{z}_{j,k}$ for $k \in \{L,H\}$ and $j = 1, 2,\dots n$. The size of B$_{x^j,k}$ is $I_{j,k} \times \hat{I}_j$.
-	
-	Notice that B is not necessarily unique. The choice of B is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator B. The size of $B$ is $(I_L + I_H) \times \hat{I}$.
-	
-	\item R is the restriction operator which is defined by the domain. It removes columns which are not in the interior. 
-	For an univariate process, we have:
-	\begin{equation}
-		R\cdot \hat{u}  \equiv\set{u(x_j)}_{j \in \{1,...,I\}} \in \R^{I} \label{R_operator}
-	\end{equation}
-	Notice that R has size $I \times \hat{I}$ and R is defined as
-	\begin{equation}
-		R_j = %\underbrace{
-		\begin{bmatrix}
-			0&\dots&0&1&0&\dots&0&0&\dots&0\\
-			0&\dots&0&0&1&\dots&0&0&\dots&0\\
-			\vdots&\ddots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\ddots&\vdots\\
-			0&\dots&0&0&0&\dots&1&0&\dots&0
-		\end{bmatrix}%}_{I_{j, L}\qquad+\qquad I_j\qquad+\qquad I_{j, H}}
-	\end{equation}
-	\hspace{5.1cm} \begin{tikzpicture}[every text node part/.style={align=center}]
-	
-	\draw[black, thick, decoration = {brace,mirror,raise=0cm},decorate] (8,0) -- node[below=6pt] {$I_{j,L}$} (9.6,0);
-	
-	\draw[black, thick, decoration = {brace,mirror,raise=0cm}, decorate]
-	(10,0) -- node[below=6pt] {$I_{j}$} (12.1,0);
-	
-	\draw[black, thick, decoration = {brace,mirror,raise=0cm},decorate] (12.5,0) -- node[below=6pt] {$I_{j,H}$} (14.1,0);
-	
-	\end{tikzpicture}
-	
-	\item Q is the operator that is defined as
-	\begin{equation}
-		Q \cdot R\cdot\hat{u} = \hat{u}\label{Q_operator_1}
-	\end{equation}
-	for any $\hat{u}$ that satisfies the border conditions. (Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary). Formally, we define $Q$ as a matrix of size $\hat{I} \times I$ given by:
-	\begin{equation}
-		Q = \begin{bmatrix}
-			Q_1 & \mathbf{0}_1       & ...    & \mathbf{0}_1\\
-			\mathbf{0}_2       & Q_2 & ...    & \mathbf{0}_2\\
-			\vdots  & \vdots  & \ddots & \vdots \\
-			\mathbf{0}_n       & \mathbf{0}_n       & ...    & Q_n\\
-		\end{bmatrix}\label{Q_def}
-	\end{equation}
-	where, for any arbitrary $j$, $Q_j$ is a partitioned matrix of size $\hat{I_j} \times I_j$ given by:
-	\begin{equation}
-		Q_j = \begin{bmatrix}
-			&  & Q_{j,L} &   & \\
-			&  & \mathbb{I}_{(I_j \times I_j)} \\
-			&  & Q_{j,H} &   & \\
-		\end{bmatrix}\label{Qj_def}
-	\end{equation}
-	whose submatrices $Q_{j,L}$ and $Q_{j,H}$ (of size $I_{j,L} \times I_j$ and $I_{j,H} \times I_j$, respectively) elements depend on the border conditions and the submatrix $\mathbb{I}_{(I_j\times I_j)}$ is an identity matrix of dimension $I_j$. 
-	
-	Q also has a second relation: 
-	\begin{equation}
-		B\cdot Q\cdot u  = 
-		%\begin{bmatrix}
-		%\text{B}_{x^{1},L} & ... & \text{B}_{x^{N},L}\\
-		%\text{B}_{x^{2},H} & ... & \text{B}_{x^{N},H}
-		%\end{bmatrix}
-		\begin{bmatrix}
-			\text{B}_{x^{1},L} & \mathbf{0}_{1,L}       & ...    & \mathbf{0}_{1,L}\\
-			\text{B}_{x^{1},H} & \mathbf{0}_{1,H}       & ...    & \mathbf{0}_{1,H}\\
-			\mathbf{0}_{2,L}   & \text{B}_{x^{2},L} &   ...    & \mathbf{0}_{2,L}\\
-			\mathbf{0}_{2,H}   & \text{B}_{x^{2},H} &   ...    & \mathbf{0}_{2,H}\\
-			\vdots  & \vdots  & \ddots & \vdots \\
-			\mathbf{0}_{N,L}       & ...    & \mathbf{0}_{N,L} & \text{B}_{x^{N},L} & \\
-			\mathbf{0}_{N,H}       & ...    & \mathbf{0}_{N,H} & \text{B}_{x^{N},H} & \\
-		\end{bmatrix}
-		\hat{u}
-		=
-		\begin{bmatrix}
-			\text{z}_{{1},L}\\
-			\text{z}_{{1},H}\\
-			\text{z}_{{2},L}\\
-			\text{z}_{{2},H}\\
-			\vdots\\
-			\text{z}_{{N},L}\\
-			\text{z}_{{N},H}\\
-		\end{bmatrix}
-		%\begin{bmatrix}
-		%\text{z}_{1, L}&\text{z}_{2, L}&\dots&\text{z}_{n, L}\\
-		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
-		%\end{bmatrix}
-		%\end{bmatrix}
-		\label{Q_operator_2}
-	\end{equation}
-	
-	basically saying that it's a map from discretizations of functions in the interior to functions which satisfy the border conditions. In order to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.\\
-	Q is actually in general affine, meaning that $Q\cdot \hat{u} = Q_a\cdot \hat{u} + Q_b$. For example, the definition given of inner product make $Q\cdot x=b$ in an iterative solver converge to $Q_a\cdot x = b - Q_b$. From the relations, $Q_a$ is $\hat{I}\times I$ and $Q_b$ is of length $\hat{I}$. In order for $Q\cdot R\cdot u = u$ to hold for trivial $\hat{u}$, we need that $Q_b$ is zero except in the boundary rows.
-	
-	\item Now let's focus on solving an expression like $\hat{u}^d = A \hat{u}$, where the superscript $d$ means the discretized version of the variable. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
-	
-	\begin{align}
-		[A[:, 1:I_L] A[:,\hat{I}-I_H+1:\hat{I}]]\cdot\left([B[:,1:I_L] B[:,\hat{I}-I_H+1:\hat{I}]]^{-1}\begin{bmatrix}
-			\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
-			\text{z}_{x^{2},H} & ... & \text{z}_{x^{N},H}
-		\end{bmatrix}\right) = A\cdot Q_b\label{affine_relation_1}
-	\end{align}
-	\begin{align}
-		(A-[A[:,1:I_L] A[:,\hat{I}-I_H+1:\hat{I}]]\cdot([B[:,1:I_L] B[:,\hat{I}-I_H+1:\hat{I}]]^{-1} B))\cdot R^{'} = A\cdot Q_a\label{affine_relation_2}
-	\end{align}		
-	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\hat{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left([B[:,1:I_L] B[:,\hat{I}-I_H+1:\hat{I}]]^{-1}\begin{bmatrix}
-	\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
-	\text{z}_{x^{2},H} & ... & \text{z}_{x^{N},H}
-	\end{bmatrix}\right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \eqref{affine_relation_1} holds.
-	
-	Multiply both sides of \eqref{affine_relation_2} by $\hat{u}$, we can roughly rewrite the relation as
-	\begin{equation}
-		R(A\cdot \hat{u}-A\cdot Q_b) = A\cdot Q_a\cdot \hat{u}
-	\end{equation}
-	so $A\cdot \hat{u}-A\cdot Q_b$ will be a discretized $\hat{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A\cdot Q_b$. 
-	
-	However, we are not sure if $R$ should exist on the left of \eqref{affine_relation_2} since R by definition is a restriction operator and $R(A\cdot \hat{u}-A\cdot Q_b)$ only contains information from interiors. Also the size of the LHS of \eqref{affine_relation_2} is $I\times \hat{I}$, but the size of the RHS is $\hat{I}\times I$.
-	For now, while we work on better understanding those expressions, we will take them as given.
-	
-	
-	Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\hat{u} = Qu$. 
-	
-	Therefore, we actually want to solve $\hat{u}^d = AQu$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
-	\begin{equation}
-		\hat{u} = AQ_au + AQ_b
-	\end{equation}
-	Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
-	
-	This shows that what's important and non-trivial is $Q$. It contains all of the information about both the boundaries and the domain from the two relations. So what is Q? Here's all of the relevant cases for finite differencing:
-	\begin{enumerate}
-		\item \textbf{Dirichlet$_0$}: If you have any $v$ in the interior, its unique extension to satisfying the border conditions is sticking $0$'s on the ends, so both $Q_{j,L}$ and $Q_{j,H}$ are null matrices, i.e. block matrices in which all elements are zero. Therefore, Q is linear, meaning $Q = Q_a$ and $Q_b$ is a null matrix.
-		
-		\item \textbf{Dirichlet}: The boundary is not dependent on any points in the interior, and therefore $Q_a$ is identical to the previous case ($Q_{j,a} = [\textbf{0}_{(I_{j,L} \times I_j)}; \mathbb{I}_{(I_j \times I_j)} ; \textbf{0}_{(I_{j,H} \times I_j,)} ]$), but now Q is no longer linear and
-		$Q_{j,b}$ is given by 
-		$Q_{j,b} = [\text{B}_{j,L}[1,\dots,I_L,:]; \textbf{0}_{(I_j\times I_j)};
-		\text{B}_{j,H}[\hat{I}_j - I_H,\dots,\hat{I},:]]$.
-		
-		\item \textbf{Neumann}: You have to pick a discretization of B. 
-		This defines linear relation between the interior points and the boundary conditions. For example, for the univariate case, the first order discretization of the boundary derivative means that 
-		
-		\begin{equation}
-			\frac{db}{dx} = \frac{\hat{u_j}[2] - \hat{u}[1]}{dx} = \text{B}[1,\dots,I_{L},:]
-		\end{equation}
-		
-		and, therefore, $u[1] = u[2] - dx\text{B}[I_L,:]$. You can see that this implies that $Q_b = [dx\text{B}[I_L,:];\{0\}_1^I;dx \text{B}[I_H,:]]$ and that $Q_a$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first $I_L$ rows\footnote{So that $Q_a u = u[1] = \hat{u}[I_L+1]$.} and $[0,...,0,0,1]$ for the last $I_H$ rows.%\footnote{so that $Q_a v = v[1] = u[2]$ and $Q_a v = v[I] = u[I-1]$, respectively.}.
-		
-	\end{enumerate}
-\end{itemize}
-\fi
 
 \end{document}
+
+% \iffalse % Algebra has some issues. B, R and Q are wrong.
+% \section{The multivariate case}
+% \paragraph{Grids}Consider the multivariate function of $x = (x^1,...,x^n )$:
+% \begin{itemize}
+% 	\item Consider we have $\bar{I}_j$ points, $\set{x^j_i}_{i=1}^{\bar{I}_j}$%I think here you mean \bar{I}_j instead of \bar{I}.
+% 	with $x^j_1 = x^{\min}^j$ and $x^j_I = x^{\max}^j$ when $x^j \in [x^{\min}^j, x^{\max}^j]$ for each $j \in \{1,...,n\}$.  After discretizing, we will often denote the grid with the variable name, i.e. $x^j \equiv \set{x^j_i}_{i=1}^{\bar{I}_j}$
+% 	In the simple case of a uniform grid, $\Delta^j \equiv x_{i+1}^j - x_i^j$ for all $i < \bar{I}^j$.
+% 	\item When we discretize a function, use the function name without arguments to denote the vector.  i.e. $\bar{u}(x)$ discretized on a grid $\set{x_i}_{i=1}^{\bar{I}}$  is $\bar{u} \equiv \set{\bar{u}(x_i)}_{i=1}^{\bar{I}} \in \R^{\bar{I}}$, where $\bar{I} = \sum_{j=1}^n \bar{I}_j$ and $I = \sum_{j = 1}^n I_j$.
+% 	Use $i=1,... I_j$ as the grid in the interior. Moreover, define $I_{j,L}$ and $I_{j,H}$ as the non interior grid points. Therefore, $\bar{I}_j = I_j + I_{j,L} + I_{j,H}$. % Again, I think you mean I_j's in above cases.
+% 	Notice that the solution to the discretized function is $u \in R^{\bar{I}}$ if stationary.
+%
+% 	We construct the discretized $\bar{u}$ by column stacking the discretized $\bar{u}_{x^j}$ on each grid $j \in \{1,...,n\}$:
+% 	\begin{equation}
+% 		\bar{u} = \begin{bmatrix}
+% 			\bar{u}_{x^1}\\
+% 			\bar{u}_{x^2}\\
+% 			\vdots\\
+% 			\bar{u}_{x^n}\\
+% 		\end{bmatrix}\label{u_def}
+% 	\end{equation}
+%
+%
+%
+% 	\item For any arbitrary variable $y(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{I}$, $y$ has length $I$.
+% \end{itemize}
+%
+% \subsection{General Overview of Discretization and Boundary Values}\label{sec:general}
+% \textbf{TODO:} Explain the $R, Q, B, A$ etc. for the general notation from \url{https://github.com/JuliaDiffEq/DifferentialEquations.jl/issues/260}.  The idea here is to make sure we understand everything about the ghost nodes, boundary values, etc.
+% \begin{itemize}
+% 	\item A is defined as the discretization of the partial differential operator in use.
+%
+% 	\item B is the boundary condition operator. For $N$ dimensions, we can define B as a block matrix in the form:
+% 	\begin{equation}
+% 		B\cdot \bar{u} \equiv
+% 		%\begin{bmatrix}
+% 		%\text{B}_{x^{1},L} & ... & \text{B}_{x^{N},L}\\
+% 		%\text{B}_{x^{2},H} & ... & \text{B}_{x^{N},H}
+% 		%\end{bmatrix}
+% 		\begin{bmatrix}
+% 			\text{B}_{x^{1},L} & \mathbf{0}_{1,L}       & ...    & \mathbf{0}_{1,L}\\
+% 			\text{B}_{x^{1},H} & \mathbf{0}_{1,H}       & ...    & \mathbf{0}_{1,H}\\
+% 			\mathbf{0}_{2,L}   & \text{B}_{x^{2},L} &   ...    & \mathbf{0}_{2,L}\\
+% 			\mathbf{0}_{2,H}   & \text{B}_{x^{2},H} &   ...    & \mathbf{0}_{2,H}\\
+% 			\vdots  & \vdots  & \ddots & \vdots \\
+% 			\mathbf{0}_{N,L}       & ...    & \mathbf{0}_{N,L} & \text{B}_{x^{N},L} & \\
+% 			\mathbf{0}_{N,H}       & ...    & \mathbf{0}_{N,H} & \text{B}_{x^{N},H} & \\
+% 		\end{bmatrix}
+% 		\bar{u}
+% 		=
+% 		\begin{bmatrix}
+% 			\text{z}_{{1},L}\\
+% 			\text{z}_{{1},H}\\
+% 			\text{z}_{{2},L}\\
+% 			\text{z}_{{2},H}\\
+% 			\vdots\\
+% 			\text{z}_{{N},L}\\
+% 			\text{z}_{{N},H}\\
+% 		\end{bmatrix}
+% 		%\begin{bmatrix}
+% 		%\text{z}_{1, L}&\text{z}_{2, L}&\dots&\text{z}_{n, L}\\
+% 		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
+% 		%\end{bmatrix}
+% 		\label{B_operator_block}
+% 	\end{equation}
+% 	for any $\bar{u}$ in the space of functions that satisfy the boundary conditions and where B$_{x^j,k}$ is a block matrix satisfying B$_{x^j,k}\cdot \bar{u}_{x^j} = \text{z}_{j,k}$ for $k \in \{L,H\}$ and $j = 1, 2,\dots n$. The size of B$_{x^j,k}$ is $I_{j,k} \times \bar{I}_j$.
+%
+% 	Notice that B is not necessarily unique. The choice of B is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator B. The size of $B$ is $(I_A + I_H) \times \bar{I}$.
+%
+% 	\item R is the restriction operator which is defined by the domain. It removes columns which are not in the interior.
+% 	For an univariate process, we have:
+% 	\begin{equation}
+% 		R\cdot \bar{u}  \equiv\set{u(x_j)}_{j \in \{1,...,I\}} \in \R^{I} \label{R_operator}
+% 	\end{equation}
+% 	Notice that R has size $I \times \bar{I}$ and R is defined as
+% 	\begin{equation}
+% 		R_j = %\underbrace{
+% 		\begin{bmatrix}
+% 			0&\dots&0&1&0&\dots&0&0&\dots&0\\
+% 			0&\dots&0&0&1&\dots&0&0&\dots&0\\
+% 			\vdots&\ddots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\ddots&\vdots\\
+% 			0&\dots&0&0&0&\dots&1&0&\dots&0
+% 		\end{bmatrix}%}_{I_{j, L}\qquad+\qquad I_j\qquad+\qquad I_{j, H}}
+% 	\end{equation}
+% 	\hspace{5.1cm} \begin{tikzpicture}[every text node part/.style={align=center}]
+%
+% 	\draw[black, thick, decoration = {brace,mirror,raise=0cm},decorate] (8,0) -- node[below=6pt] {$I_{j,L}$} (9.6,0);
+%
+% 	\draw[black, thick, decoration = {brace,mirror,raise=0cm}, decorate]
+% 	(10,0) -- node[below=6pt] {$I_{j}$} (12.1,0);
+%
+% 	\draw[black, thick, decoration = {brace,mirror,raise=0cm},decorate] (12.5,0) -- node[below=6pt] {$I_{j,H}$} (14.1,0);
+%
+% 	\end{tikzpicture}
+%
+% 	\item Q is the operator that is defined as
+% 	\begin{equation}
+% 		Q \cdot R\cdot\bar{u} = \bar{u}\label{Q_operator_1}
+% 	\end{equation}
+% 	for any $\bar{u}$ that satisfies the border conditions. (Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary). Formally, we define $Q$ as a matrix of size $\bar{I} \times I$ given by:
+% 	\begin{equation}
+% 		Q = \begin{bmatrix}
+% 			Q_1 & \mathbf{0}_1       & ...    & \mathbf{0}_1\\
+% 			\mathbf{0}_2       & Q_2 & ...    & \mathbf{0}_2\\
+% 			\vdots  & \vdots  & \ddots & \vdots \\
+% 			\mathbf{0}_n       & \mathbf{0}_n       & ...    & Q_n\\
+% 		\end{bmatrix}\label{Q_def}
+% 	\end{equation}
+% 	where, for any arbitrary $j$, $Q_j$ is a partitioned matrix of size $\bar{I_j} \times I_j$ given by:
+% 	\begin{equation}
+% 		Q_j = \begin{bmatrix}
+% 			&  & Q_{j,L} &   & \\
+% 			&  & \mathbb{I}_{(I_j \times I_j)} \\
+% 			&  & Q_{j,H} &   & \\
+% 		\end{bmatrix}\label{Qj_def}
+% 	\end{equation}
+% 	whose submatrices $Q_{j,L}$ and $Q_{j,H}$ (of size $I_{j,L} \times I_j$ and $I_{j,H} \times I_j$, respectively) elements depend on the border conditions and the submatrix $\mathbb{I}_{(I_j\times I_j)}$ is an identity matrix of dimension $I_j$.
+%
+% 	Q also has a second relation:
+% 	\begin{equation}
+% 		B\cdot Q\cdot u  =
+% 		%\begin{bmatrix}
+% 		%\text{B}_{x^{1},L} & ... & \text{B}_{x^{N},L}\\
+% 		%\text{B}_{x^{2},H} & ... & \text{B}_{x^{N},H}
+% 		%\end{bmatrix}
+% 		\begin{bmatrix}
+% 			\text{B}_{x^{1},L} & \mathbf{0}_{1,L}       & ...    & \mathbf{0}_{1,L}\\
+% 			\text{B}_{x^{1},H} & \mathbf{0}_{1,H}       & ...    & \mathbf{0}_{1,H}\\
+% 			\mathbf{0}_{2,L}   & \text{B}_{x^{2},L} &   ...    & \mathbf{0}_{2,L}\\
+% 			\mathbf{0}_{2,H}   & \text{B}_{x^{2},H} &   ...    & \mathbf{0}_{2,H}\\
+% 			\vdots  & \vdots  & \ddots & \vdots \\
+% 			\mathbf{0}_{N,L}       & ...    & \mathbf{0}_{N,L} & \text{B}_{x^{N},L} & \\
+% 			\mathbf{0}_{N,H}       & ...    & \mathbf{0}_{N,H} & \text{B}_{x^{N},H} & \\
+% 		\end{bmatrix}
+% 		\bar{u}
+% 		=
+% 		\begin{bmatrix}
+% 			\text{z}_{{1},L}\\
+% 			\text{z}_{{1},H}\\
+% 			\text{z}_{{2},L}\\
+% 			\text{z}_{{2},H}\\
+% 			\vdots\\
+% 			\text{z}_{{N},L}\\
+% 			\text{z}_{{N},H}\\
+% 		\end{bmatrix}
+% 		%\begin{bmatrix}
+% 		%\text{z}_{1, L}&\text{z}_{2, L}&\dots&\text{z}_{n, L}\\
+% 		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
+% 		%\end{bmatrix}
+% 		%\end{bmatrix}
+% 		\label{Q_operator_2}
+% 	\end{equation}
+%
+% 	basically saying that it's a map from discretizations of functions in the interior to functions which satisfy the border conditions. In order to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.\\
+% 	Q is actually in general affine, meaning that $Q\cdot \bar{u} = Q_A\cdot \bar{u} + Q_b$. For example, the definition given of inner product make $Q\cdot x=b$ in an iterative solver converge to $Q_A\cdot x = b - Q_b$. From the relations, $Q_A$ is $\bar{I}\times I$ and $Q_b$ is of length $\bar{I}$. In order for $Q\cdot R\cdot u = u$ to hold for trivial $\bar{u}$, we need that $Q_b$ is zero except in the boundary rows.
+%
+% 	\item Now let's focus on solving an expression like $\bar{u}^d = A \bar{u}$, where the superscript $d$ means the discretized version of the variable. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
+%
+% 	\begin{align}
+% 		[A[:, 1:I_L] A[:,\bar{I}-I_H+1:\bar{I}]]\cdot\left([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1}\begin{bmatrix}
+% 			\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
+% 			\text{z}_{x^{2},H} & ... & \text{z}_{x^{N},H}
+% 		\end{bmatrix}\right) = A\cdot Q_b\label{affine_relation_1}
+% 	\end{align}
+% 	\begin{align}
+% 		(A-[A[:,1:I_L] A[:,\bar{I}-I_H+1:\bar{I}]]\cdot([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1} B))\cdot R^{'} = A\cdot Q_A\label{affine_relation_2}
+% 	\end{align}
+% 	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \eqref{B_operator_block}, so $\left([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1}\begin{bmatrix}
+% 	\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
+% 	\text{z}_{x^{2},H} & ... & \text{z}_{x^{N},H}
+% 	\end{bmatrix}\right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \eqref{affine_relation_1} holds.
+%
+% 	Multiply both sides of \eqref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
+% 	\begin{equation}
+% 		R(A\cdot \bar{u}-A\cdot Q_b) = A\cdot Q_A\cdot \bar{u}
+% 	\end{equation}
+% 	so $A\cdot \bar{u}-A\cdot Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A\cdot Q_b$.
+%
+% 	However, we are not sure if $R$ should exist on the left of \eqref{affine_relation_2} since R by definition is a restriction operator and $R(A\cdot \bar{u}-A\cdot Q_b)$ only contains information from interiors. Also the size of the LHS of \eqref{affine_relation_2} is $I\times \bar{I}$, but the size of the RHS is $\bar{I}\times I$.
+% 	For now, while we work on better understanding those expressions, we will take them as given.
+%
+%
+% 	Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\bar{u} = Qu$.
+%
+% 	Therefore, we actually want to solve $\bar{u}^d = AQu$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
+% 	\begin{equation}
+% 		\bar{u} = AQ_Au + AQ_b
+% 	\end{equation}
+% 	Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
+%
+% 	This shows that what's important and non-trivial is $Q$. It contains all of the information about both the boundaries and the domain from the two relations. So what is Q? Here's all of the relevant cases for finite differencing:
+% 	\begin{enumerate}
+% 		\item \textbf{Dirichlet$_0$}: If you have any $v$ in the interior, its unique extension to satisfying the border conditions is sticking $0$'s on the ends, so both $Q_{j,L}$ and $Q_{j,H}$ are null matrices, i.e. block matrices in which all elements are zero. Therefore, Q is linear, meaning $Q = Q_A$ and $Q_b$ is a null matrix.
+%
+% 		\item \textbf{Dirichlet}: The boundary is not dependent on any points in the interior, and therefore $Q_A$ is identical to the previous case ($Q_{j,a} = [\textbf{0}_{(I_{j,L} \times I_j)}; \mathbb{I}_{(I_j \times I_j)} ; \textbf{0}_{(I_{j,H} \times I_j,)} ]$), but now Q is no longer linear and
+% 		$Q_{j,b}$ is given by
+% 		$Q_{j,b} = [\text{B}_{j,L}[1,\dots,I_L,:]; \textbf{0}_{(I_j\times I_j)};
+% 		\text{B}_{j,H}[\bar{I}_j - I_H,\dots,\bar{I},:]]$.
+%
+% 		\item \textbf{Neumann}: You have to pick a discretization of B.
+% 		This defines linear relation between the interior points and the boundary conditions. For example, for the univariate case, the first order discretization of the boundary derivative means that
+%
+% 		\begin{equation}
+% 			\frac{db}{dx} = \frac{\bar{u_j}[2] - \bar{u}[1]}{dx} = \text{B}[1,\dots,I_{L},:]
+% 		\end{equation}
+%
+% 		and, therefore, $u[1] = u[2] - dx\text{B}[I_L,:]$. You can see that this implies that $Q_b = [dx\text{B}[I_L,:];\{0\}_1^I;dx \text{B}[I_H,:]]$ and that $Q_A$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first $I_L$ rows\footnote{So that $Q_A u = u[1] = \bar{u}[I_L+1]$.} and $[0,...,0,0,1]$ for the last $I_H$ rows.%\footnote{so that $Q_A v = v[1] = u[2]$ and $Q_A v = v[I] = u[I-1]$, respectively.}.
+%
+% 	\end{enumerate}
+% \end{itemize}
+% \fi
