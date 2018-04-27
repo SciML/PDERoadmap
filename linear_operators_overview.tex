@@ -70,7 +70,7 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to the boundary yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
 		\item $Q$ is actually in general affine, meaning that
 		\begin{align}
-			Q\cdot \bar{u} &= Q_A\cdot \bar{u} + Q_b\label{Q_Affine}
+			Q\cdot u &= Q_A\cdot u + Q_b\label{Q_Affine}
 			\end{align}
 			For example, the definition given of inner product make $Q\cdot x=b$ in an iterative solver converge to $Q_A\cdot x = b - Q_b$. From the relations, $Q_A$ is $\bar{K}\times K$ and $Q_b$ is of length $\bar{K}$. In order for $Q\cdot R\cdot u = u$ to hold for trivial $\bar{u}$
 			\item \textbf{Fernando/Steven TODO: Does this conform? This doesn't look right...  Should some of these be $u$ vs. $\bar{u}$, etc?  See \cref{solve_u_hat_cond_2}}
@@ -93,7 +93,7 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 
 			Multiply both sides of \eqref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
 			\begin{equation}
-			(A \cdot \bar{u}-A \cdot Q_b) \cdot R' = A \cdot Q_A\cdot \bar{u}
+			(A \cdot \bar{u}-A \cdot Q_b) \cdot R' = A \cdot Q_A\cdot u
 			\end{equation}
 			so $A \cdot \bar{u}-A \cdot Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A \cdot Q_b$.
 
@@ -217,7 +217,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-2&1&0\\
 0&0&0&\cdots&1&-2&1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
+\end{bmatrix}\frac{1}{2\Delta^{2}}
 \end{align}
 
 where the dimension of $A$ is $K\times\bar{K}$.\\
@@ -282,7 +282,7 @@ P &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&2(1+r\Delta^2)&-1&0\\
 0&0&0&\cdots&-1&2(1+r\Delta^2)&-1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
+\end{bmatrix}\frac{1}{2\Delta^{2}}
 \end{align}
 Substitute \eqref{solve_u_hat_cond_2} into \eqref{solve_u_hat_cond_1}, we get
 \begin{align}
@@ -294,7 +294,7 @@ u = (P\cdot Q_A)^{-1}x
 \end{align}
 Then, by \eqref{solve_u_hat_cond_2}, we can solve the extended state vector by
 \begin{align}
-\bar{u} = Q_A\cdot u+Q_b\label{solve_u_hat_in_terms_of_interiors}
+\bar{u} = Q_A\cdot R\cdot\bar{u}+Q_b\label{solve_u_hat_in_terms_of_interiors}
 \end{align}
 
 \subsection{Stationary HJBE with a Lower Absorbing Barrier}
@@ -325,7 +325,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-2&1&0\\
 0&0&0&\cdots&1&-2&1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
+\end{bmatrix}\frac{1}{2\Delta^{2}}
 \end{align}
 According to lower absorbing barrier, we can define $B$ as
 \begin{equation}
@@ -375,11 +375,11 @@ Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_rela
 
 In this case, $P$ is the same as the one we have in the previous example. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
 \begin{align}
-P(Q_A\cdot u+Q_b) = x
+P(Q_A\cdot R\cdot \bar{u}+Q_b) = x
 \end{align}
 With $Q_b\neq 0$, we can solve interiors as
 \begin{align}
-u = (P\cdot Q_A)^{-1}\cdot(x-P\cdot Q_b)
+R\cdot\bar{u} = (P\cdot Q_A)^{-1}\cdot(x-P\cdot Q_b)
 \end{align}
 Then, the extended state vector $\bar{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
 \subsection{Stationary HJBE with Only Drift}
@@ -414,7 +414,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&0&\dots&-1&1&0\\
 0&0&0&0&\cdots&0&-1&1
-\end{bmatrix}\cdot\mu\Delta^{-1}
+\end{bmatrix}\cdot\frac{\mu}{\Delta}
 \end{align}
 
 As $\mu<0$, we choose the backward difference and the matrix form of operator $\mathcal{L}$ can be defined as
@@ -425,7 +425,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&-1&1&0&0\\
 0&0&0&\cdots&0&-1&1&0
-\end{bmatrix}\cdot (-\mu)\Delta^{-1}
+\end{bmatrix}\cdot \frac{-\mu}{\Delta}
 \end{align}
 So for $\forall\mu$, we can generally define $A$ as
 
@@ -436,7 +436,7 @@ A &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&\mu^--\mu^+&\mu^+&0\\
 0&0&0&\cdots&-\mu^-&\mu^--\mu^+&\mu^+
-\end{bmatrix}\cdot \Delta^{-1}
+\end{bmatrix}\cdot \frac{1}{\Delta}
 \end{align}
 
 $R$ is defined as
@@ -483,12 +483,12 @@ Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_rela
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
 \begin{align}
 P = \begin{bmatrix}
-\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+&\dots&0&0&0\\
-0&\mu^-&r\Delta-(\mu^--\mu^+)&\dots&0&0&0\\
+\frac{\mu^-}{\Delta}&r-\frac{\mu^--\mu^+}{\Delta}&-\frac{\mu^+}{\Delta}&\dots&0&0&0\\
+0&\frac{\mu^-}{\Delta}&r-\frac{\mu^--\mu^+}{\Delta}&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
-0&0&0&\cdots&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
-\end{bmatrix}_{\bar{K}\times\bar{K}}\cdot \Delta^{-1}
+0&0&0&\dots&r-\frac{\mu^--\mu^+}{\Delta}&-\frac{\mu^+}{\Delta}&0\\
+0&0&0&\cdots&\frac{\mu^-}{\Delta}&r-\frac{\mu^--\mu^+}{\Delta}&-\frac{\mu^+}{\Delta}
+\end{bmatrix}_{\bar{K}\times\bar{K}}
 \end{align}
 Then similarly interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}
 \begin{align}
@@ -523,13 +523,13 @@ X&Y&Z&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y&Z&0\\
 0&0&0&\cdots&X&Y&Z
-\end{bmatrix}\cdot \Delta^{-2}
+\end{bmatrix}
 \end{align}
 where
 \begin{align*}
-X &= -\mu^-\Delta+\frac{\sigma^2}{2}\\
-Y &= (\mu^--\mu^+)\Delta-\sigma^2\\
-Z &=\mu^+\Delta+\frac{\sigma^2}{2}
+X &= -\frac{\mu^-}{\Delta}+\frac{\sigma^2}{2\Delta^2}\\
+Y &= \frac{(\mu^--\mu^+)}{\Delta}-\frac{\sigma^2}{\Delta^2}\\
+Z &=\frac{\mu^+}{\Delta}+\frac{\sigma^2}{2\Delta^2}
 \end{align*}
 
 Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
@@ -537,12 +537,12 @@ Since barriers are reflecting, we can have the same boundary conditions as what 
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
 \begin{align}
 P = \begin{bmatrix}
--X&r\Delta^2-Y&-Z&\dots&0&0&0\\
-0&-X&r\Delta^2-Y&\dots&0&0&0\\
+-X&r-Y&-Z&\dots&0&0&0\\
+0&-X&r-Y&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&r\Delta^2-Y&-Z&0\\
-0&0&0&\cdots&-X&r\Delta^2-Y&-Z
-\end{bmatrix}\cdot \Delta^{-2}
+0&0&0&\dots&r-Y&-Z&0\\
+0&0&0&\cdots&-X&r-Y&-Z
+\end{bmatrix}
 \end{align}
 The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
@@ -581,13 +581,13 @@ X_1&Y_1&Z_1&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y_{K-1}&Z_{K-1}&0\\
 0&0&0&\cdots&X_{K}&Y_{K}&Z_{K}
-\end{bmatrix}\cdot \Delta^{-2}
+\end{bmatrix}
 \end{align}
 where
 \begin{align*}
-X_k &= -\bar{\mu}^-x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
-Y_k &= (\bar{\mu}^--\bar{\mu}^+)x_k\Delta-(\bar{\sigma}x_k)^2\\
-Z_k &=\bar{\mu}^+x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
+X_k &= \frac{-\bar{\mu}^-x_k}{\Delta}+\frac{(\bar{\sigma}x_k)^2}{2\Delta^2}\\
+Y_k &= \frac{(\bar{\mu}^--\bar{\mu}^+)x_k}{\Delta}-\frac{(\bar{\sigma}x_k)^2}{\Delta^2}\\
+Z_k &=\frac{\bar{\mu}^+x_k}{\Delta}+\frac{(\bar{\sigma}x_k)^2}{2\Delta^2}\\
 k & = 1, 2,\dots, K
 \end{align*}
 
@@ -596,12 +596,12 @@ Again, since barriers are reflecting, we can have the same boundary conditions a
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
 \begin{align}
 P = \begin{bmatrix}
--X_1&r\Delta^2-Y_1&-Z_1&\dots&0&0&0\\
-0&-X_2&r\Delta^2-Y_2&\dots&0&0&0\\
+-X_1&r-Y_1&-Z_1&\dots&0&0&0\\
+0&-X_2&r-Y_2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&r\Delta^2-Y_{K-1}&-Z_{K-1}&0\\
-0&0&0&\cdots&-X_K&r\Delta^2-Y_K&-Z_K
-\end{bmatrix}\cdot \Delta^{-2}
+0&0&0&\dots&r-Y_{K-1}&-Z_{K-1}&0\\
+0&0&0&\cdots&-X_K&r-Y_K&-Z_K
+\end{bmatrix}
 \end{align}
 The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
