@@ -127,12 +127,12 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 			\begin{equation}
 				\frac{db}{dx} = \frac{\bar{u}[2] - \bar{u}[1]}{dx} = b[1]
 			\end{equation}
-			and, therefore, $u[1] = u[2] - dx b[1]$. You can see that this implies that $Q_b = [dx\cdot b[1];\{0\}_1^K;dx\cdot b[\bar{K}]]$ and that $Q_A$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_A u = u[1] = \bar{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_A v = v[1] = u[2]$ and $Q_A v = v[I] = u[I-1]$, respectively.}.
+			and, therefore, $u[1] = u[2] - dx b[1]$. You can see that this implies that $Q_b = [dx\cdot b[1];\mathbf{0}_{K \times 1};dx\cdot b[\bar{K}]]$ and that $Q_A$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_A u = u[1] = \bar{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_A v = v[1] = u[2]$ and $Q_A v = v[I] = u[I-1]$, respectively.}.
 
 		\end{enumerate}
 	\end{itemize}
 
-\section{Time-Invariant Stochastic Process Examples}
+\section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
 
 For a given $\mathcal{L}$ Then, if the payoff in state $x$ is $\tilde{b}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
@@ -193,74 +193,44 @@ Take the stochastic process
 $$
 d x_t = d W_t
 $$
-with reflecting barriers at $x^{\min}$ and $x^{\max})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
+with reflecting barriers at $x^{\min}$ and $x^{\max}$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
 	\mathcal{L} \equiv \frac{1}{2}\D[xx]
 $$
 
-With this process,
+For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
-	\item How to derive all of the matrices of \cref{sec:general}
-	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 Consider
 \begin{align}
 (r - \mathcal{L} )\tilde{u}(x) &= x\label{HJBE_reflecting_barriers_PDE}\\
-\text{where }\mathcal{L}&\equiv \frac{1}{2}\partial_{xx}
+\text{where }\mathcal{L}&\equiv \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
 \end{align}
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $S_B = \{1,\bar{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\bar{K}}$, and $\bar{K} = K+2$. The matrix form of operator $\mathcal{L}$ can be defined as
-\begin{align}
-A &= \begin{bmatrix}
-1&-2&1&\dots&0&0&0\\
-0&1&-2&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&-2&1&0\\
-0&0&0&\cdots&1&-2&1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
-\end{align}
+We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $K_B = 2$, $S_B = \{1,\bar{K}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{K}}$, and $\bar{K} = K+2$. From \eqref{HJBE_operator_first_example} and given \eqref{eq:A-2} from the previous section, the matrix form of operator $\mathcal{L}$ can be defined, given as $A = A_2$.
 
-where the dimension of $A$ is $K\times\bar{K}$.\\
-By reflecting barriers, we can define $B$ as
+By reflecting barriers, we can define $B$ just like as $B_{RR}$ in \eqref{eq:B-RR} and then we have
 \begin{equation}
-B\cdot\bar{u} =\begin{bmatrix}
--1&1&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{K_B\times \bar{K}}\cdot\bar{u} = \begin{bmatrix}
+B\cdot\bar{u} = \begin{bmatrix}
 0\\
 0
 \end{bmatrix}
 \end{equation}
-where $\bar{u} \in \R_{\bar{K}}$.\\
-This implies $\bar{u}_0 = \bar{u}_1$ and $\bar{u}_{K+1} = \bar{u}_K$.\\
-$R$ is defined as
-\begin{equation}
-R\cdot \bar{u} =\begin{bmatrix}
-0&1&0&\cdots&0&0\\
-0&0&1&\cdots&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&0&\cdots&1&0
-\end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
-= u\in \R^{K}
-\end{equation}
-$Q$ is defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
+Therefore, $\bar{u}(x_0) = \bar{u}(x_1)$ and $\bar{u}(x_{K+1}) = \bar{u}(x_K)$.
+
+Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
 Q_A = \begin{bmatrix}
 1& 0&\dots&0&0\\
-1&0&\dots&0&0\\
-0&1&\dots&0&0\\
-\vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&\dots&1&0\\
-0&0&\dots&0&1\\
+ & & \mathbf{I}_K & & \\
 0&0&\dots&0&1
-\end{bmatrix}_{\bar{K}\times K}\quad , Q_b = \begin{bmatrix}
-0\\
-\vdots\\
-0
-\end{bmatrix}_{\bar{K}\times 1}
+\end{bmatrix}%_{\bar{K}\times K}
+\quad , \text{ } Q_b = \begin{matrix}
+\mathbf{0}_{\bar{K}}
+\end{matrix}%_{\bar{K}\times 1}
 \end{equation}
 
-Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Then, it is easy to verify that $Q \cdot R = \mathbf{I}_{\bar{K}}$ and that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 To solve $\bar{u}(x)$, we first solve interiors according to \eqref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
 \begin{align}
@@ -268,6 +238,11 @@ P\cdot\bar{u} &= x\label{solve_u_hat_cond_1}\\
 Q\cdot R\cdot\bar{u} &= Q\cdot u = Q_A\cdot u+Q_b = \bar{u}\label{solve_u_hat_cond_2}
 \end{align}
 where
+\begin{equation}
+P = ([\mathbf{0}_{K} \text{ } \mathbf{I}_{K} \text{ } \mathbf{0}_{K}]\cdot r - A)
+\label{P_definition}
+\end{equation} 
+\iffalse
 \begin{align}
 P &= \begin{bmatrix}
 0&r&0&\cdots&0&0&0\\
@@ -284,11 +259,12 @@ P &= \begin{bmatrix}
 0&0&0&\cdots&-1&2(1+r\Delta^2)&-1
 \end{bmatrix}\frac{\Delta^{-2}}{2}
 \end{align}
+\fi
 Substitute \eqref{solve_u_hat_cond_2} into \eqref{solve_u_hat_cond_1}, we get
 \begin{align}
 P\cdot(Q_A\cdot u+Q_b) = x
 \end{align}
-Since $Q_b = 0$ in this case, interiors are solve as
+Since $Q_b = 0$ in this case, interiors are solved as
 \begin{align}
 u = (P\cdot Q_A)^{-1}x
 \end{align}
@@ -302,76 +278,45 @@ Take the stochastic process
 $$
 d x_t = d W_t
 $$
-with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max})$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
+with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max}$. Again, the partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
 \mathcal{L} \equiv \frac{1}{2}\D[xx]
 $$
 
-For the absorbing barrier, when solving for the HJBE assume that $u(\underbar{x}) = \underbar{x}$ and $u'(x^{\max}) = 0$
+For the absorbing barrier, when solving for the HJBE assume that $u(x^{\min}) = x^{\min}$ and $u'(x^{\max}) = 0$. 
 
-
-With this process,
+For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
-	\item How to derive all of the matrices of \cref{sec:general}
-	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 
-Again, we first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $x^{\min} < x^{\max} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$, $S_B = \{1,\bar{K}\}$, thereby $\Delta  = \frac{\bar{\textit{\~{x}}}-\underline{\textit{\~{x}}}}{\bar{K}}$, and $\bar{K} = K+2$. The matrix form of operator $\mathcal{L}$ is still defined as
-\begin{align}
-A &= \begin{bmatrix}
-1&-2&1&\dots&0&0&0\\
-0&1&-2&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&-2&1&0\\
-0&0&0&\cdots&1&-2&1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
-\end{align}
-According to lower absorbing barrier, we can define $B$ as
+Again, we first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $K_B = 2$, $S_B = \{1,\bar{K}\}$, thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{K}}$, and $\bar{K} = K+2$. From \eqref{HJBE_operator_first_example} and given \eqref{eq:A-2} from the \cref{sec:examples}, the matrix form of operator $\mathcal{L}$ is again defined as $A = A_2$.
+
+According to lower absorbing barrier, we can define $B$ just like as $B_{AR}$ in \eqref{eq:B-AR} and then we have
 \begin{equation}
-B\cdot\bar{u} =\begin{bmatrix}
-1&0&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{K_B\times \bar{K}}\cdot\bar{u} = \begin{bmatrix}
-\underline{\textit{\~{x}}}\\
+B\cdot\bar{u} = \begin{bmatrix}
+x^{\min}\\
 0
 \end{bmatrix}
 \end{equation}.\\
-This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = u(x_K)$.\\
-$R$ is defined as
-\begin{equation}
-R\cdot \bar{u} =\begin{bmatrix}
-0&1&0&\cdots&0&0\\
-0&0&1&\cdots&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&0&\cdots&1&0
-\end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
-=\begin{bmatrix}
-u(x_1)\\
-u(x_2)\\
-\vdots\\
-u(x_I)
-\end{bmatrix} \equiv u\in \R^{K}
-\end{equation}
-$Q$ is defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
+Therefore, $\bar{u}(x^{\min}) = x^{\min}$ and $\bar{u}(x_{K+1}) = \bar{u}(x_K)$.
+
+Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
 Q_A = \begin{bmatrix}
-0& 0&\dots&0&0\\
-1&0&\dots&0&0\\
-0&1&\dots&0&0\\
-\vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&\dots&1&0\\
-0&0&\dots&0&1\\
+& & \mathbf{0}_K & & \\
+& & \mathbf{I}_K & & \\
 0&0&\dots&0&1
-\end{bmatrix}_{\bar{K}\times K}\quad , Q_b = \begin{bmatrix}
-\underline{\tilde{x}}\\
+\end{bmatrix}%_{\bar{K}\times K}
+\quad, \text{ } Q_b = \begin{bmatrix}
+x^{\min}\\
 0\\
 \vdots\\
 0
-\end{bmatrix}_{\bar{K}\times 1}
+\end{bmatrix}%_{\bar{K}\times 1}
 \end{equation}
 
-Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Then, it is easy to verify that $Q \cdot R = \mathbf{I}_{\bar{K}}$ and that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 In this case, $P$ is the same as the one we have in the previous example. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
 \begin{align}
@@ -391,106 +336,63 @@ With a generator
 $$
 	\mathcal{L} \equiv \mu \D[x]
 $$
-With this process,
+
+For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
-	\item How to derive all of the matrices of \cref{sec:general}.  Be careful to use the appropriate upwind direction for the first order term.
-	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
+
 Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
 Consider
 \begin{align}
 (r - \mathcal{L} )\tilde{u}(x) &= x\label{HJBE_PDE_with_drifts}\\
 \text{where }\mathcal{L}&\equiv \mu\partial_{x}
 \end{align}
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\bar{K}}$ and $\bar{K} = K+2$.
+We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $K_B = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{K}}$ and $\bar{K} = K+2$.
 
-As $\mu>0$, we choose the forward first difference and the matrix form of operator $\mathcal{L}$ can be defined as
-\begin{align}
-A &= \begin{bmatrix}
-0&-1&1&0&\dots&0&0&0\\
-0&0&-1&1&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&0&\dots&-1&1&0\\
-0&0&0&0&\cdots&0&-1&1
-\end{bmatrix}\cdot\mu\Delta^{-1}
-\end{align}
+Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\mathcal{L}$ can be defined as $A = A_1^+$ as in \eqref{eq:A-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\mathcal{L}$ can be defined as $A = A_1^-$ as in \eqref{eq:A-1m}. 
 
-As $\mu<0$, we choose the backward difference and the matrix form of operator $\mathcal{L}$ can be defined as
-\begin{align}
-A &= \begin{bmatrix}
--1&1&0&\dots&0&0&0&0\\
-0&-1&1&\dots&0&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&-1&1&0&0\\
-0&0&0&\cdots&0&-1&1&0
-\end{bmatrix}\cdot (-\mu)\Delta^{-1}
-\end{align}
-So for $\forall\mu$, we can generally define $A$ as
-
-\begin{align}
-A &= \begin{bmatrix}
--\mu^-&\mu^--\mu^+&\mu^+&\dots&0&0&0\\
-0&-\mu^-&\mu^--\mu^+&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&\mu^--\mu^+&\mu^+&0\\
-0&0&0&\cdots&-\mu^-&\mu^--\mu^+&\mu^+
-\end{bmatrix}\cdot \Delta^{-1}
-\end{align}
-
-$R$ is defined as
+Considering the absorbing barriers, we can define $B$ just like as $B_{AA}$ in \eqref{eq:B-AA} and then we have
 \begin{equation}
-R\cdot \bar{u} =\begin{bmatrix}
-0&1&0&\cdots&0&0\\
-0&0&1&\cdots&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&0&\cdots&1&0
-\end{bmatrix}_{K\times\bar{K}}\cdot \bar{u}
-=\equiv u\in \R^{K}
-\end{equation}
-
-With the absorbing barriers $u(x^{\min}) = x^{\min}$ and $u(x^{\max}) = x^{\max}$,
-\begin{equation}
-B\cdot\bar{u} =\begin{bmatrix}
-1&0&0&\dots&0&0&0\\
-0&0&0&\cdots&0&0&1
-\end{bmatrix}_{K_B\times \bar{K}}\cdot\bar{u} = \begin{bmatrix}
-\underline{\textit{\~{x}}}\\
-\bar{\textit{\~{x}}}
+B\cdot\bar{u} = \begin{bmatrix}
+x^{\min}\\
+x^{\max}
 \end{bmatrix}
-\end{equation}\\
-This implies $u(x_0) = \underline{\textit{\~{x}}}$ and $u(x_{K+1}) = \bar{\textit{\~{x}}}$. So we can define
+\end{equation}.\\
+Therefore, $\bar{u}(x_0) = x^{\min}$ and $\bar{u}(x_{K+1}) = x^{\max}$.
+
+Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by defined by $Q\cdot R\cdot\bar{u}\equiv Q_A\cdot R\cdot\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
 Q_A = \begin{bmatrix}
-0& 0&\dots&0&0\\
-1&0&\dots&0&0\\
-0&1&\dots&0&0\\
-\vdots&\vdots&\ddots&\vdots&\vdots\\
-0&0&\dots&1&0\\
-0&0&\dots&0&1\\
-0&0&\dots&0&0
-\end{bmatrix}_{\bar{K}\times K}\quad , Q_b = \begin{bmatrix}
-\underline{\textit{\~{x}}}\\
+\mathbf{0}_K \\
+\mathbf{I}_K  \\
+\mathbf{0}_K 
+\end{bmatrix}%_{\bar{K}\times K}
+\quad, \text{ } Q_b = \begin{bmatrix}
+x^{\min}\\
 0\\
 \vdots\\
-\bar{\textit{\~{x}}}
-\end{bmatrix}_{\bar{K}\times 1}
+x^{\max}
+\end{bmatrix}%_{\bar{K}\times 1}
 \end{equation}
 
-Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Then, it is easy to verify that $Q \cdot R = \mathbf{I}_{\bar{K}}$ and that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+\iffalse
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
 \begin{align}
-P = \begin{bmatrix}
+P = \frac{1}{\Delta}
+\begin{bmatrix}
 \mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+&\dots&0&0&0\\
 0&\mu^-&r\Delta-(\mu^--\mu^+)&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
 0&0&0&\cdots&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
-\end{bmatrix}_{\bar{K}\times\bar{K}}\cdot \Delta^{-1}
+\end{bmatrix}%_{\bar{K}\times\bar{K}}
 \end{align}
-Then similarly interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}
+\fi
+Similarly, given \eqref{P_definition}, interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}:
 \begin{align}
 u = (P\cdot Q_A)^{-1}(x-P\cdot Q_b)
 \end{align}
@@ -505,25 +407,25 @@ With a generator
 $$
 	\mathcal{L} \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
 $$
-With this process,
+
+For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
-	\item How to derive all of the matrices of \cref{sec:general}.  Be careful to use the appropriate upwind direction for the first order term.
-	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\bar{K}}$ and $\bar{K} = K+2$.
+We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $K_B = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{K}}$ and $\bar{K} = K+2$.
 
 By combining operators $A $ from previous sections, in this case $A $ is defined as
 \begin{align}
-A = \begin{bmatrix}
+A = \frac{1}{\Delta^{2}}
+\begin{bmatrix}
 X&Y&Z&\dots&0&0&0\\
 0&X&Y&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y&Z&0\\
 0&0&0&\cdots&X&Y&Z
-\end{bmatrix}\cdot \Delta^{-2}
+\end{bmatrix}
 \end{align}
 where
 \begin{align*}
@@ -534,16 +436,19 @@ Z &=\mu^+\Delta+\frac{\sigma^2}{2}
 
 Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+\iffalse
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
 \begin{align}
-P = \begin{bmatrix}
+P = \frac{1}{\Delta^{2}}
+\begin{bmatrix}
 -X&r\Delta^2-Y&-Z&\dots&0&0&0\\
 0&-X&r\Delta^2-Y&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&r\Delta^2-Y&-Z&0\\
 0&0&0&\cdots&-X&r\Delta^2-Y&-Z
-\end{bmatrix}\cdot \Delta^{-2}
+\end{bmatrix}
 \end{align}
+\fi
 The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
 
@@ -556,32 +461,32 @@ With a generator
 $$
 \mathcal{L} \equiv \tilde{\mu}(x) \D[x] + \frac{\tilde{\sigma}(x)^2}{2}\D[xx]
 $$
-With this process,
+
+For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
-	\item How to derive all of the matrices of \cref{sec:general}.  Be careful to use the appropriate upwind direction for the first order term.
-	\item The system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid.
 	\begin{itemize}
-		\item Choose a $\tilde{u}(x)$ and $\tilde{\sigma}(x)$ functions, consider using geometric brownian motion as a test.  That is,
+		\item Choose a $\tilde{u}(x)$ and $\tilde{\sigma}(x)$ functions, consider using geometric brownian motion as a test.  That is:
 		\begin{align}
-			\mathcal{L} &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
+		\mathcal{L} &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
 		\end{align}
 	\end{itemize}
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}]$ and $\underline{\textit{\~{x}}} < \bar{\textit{\~{x}}} \in R$\footnote{Since the boundary conditions must hold for the closure of $(x^{\min},x^{\max})$, we assume that $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$ are, respectively, sufficiently close to $x^{\min}, x^{\max}$ so the boundary conditions hold for $\underline{\textit{\~{x}}}, \bar{\textit{\~{x}}}$.}. Let $K_B = 2$ and thereby $\Delta  = \frac{\bar{\textit{\~{x}}} - \underline{\textit{\~{x}}}}{\bar{K}}$ and $\bar{K} = K+2$.
+We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $K_B = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{K}}$ and $\bar{K} = K+2$.
 
-Define $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
+Again, consider $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
 
 This case is similar with the previous one but with variable drift and variance. Now define the discritization of the operator, $A$ as \textbf{TODO: I think notation can be cleaned up here.}
 \begin{align}
-A = \begin{bmatrix}
+A = \frac{1}{\Delta^{2}}
+\begin{bmatrix}
 X_1&Y_1&Z_1&\dots&0&0&0\\
 0&X_2&Y_2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&Y_{K-1}&Z_{K-1}&0\\
 0&0&0&\cdots&X_{K}&Y_{K}&Z_{K}
-\end{bmatrix}\cdot \Delta^{-2}
+\end{bmatrix}
 \end{align}
 where
 \begin{align*}
@@ -593,17 +498,19 @@ k & = 1, 2,\dots, K
 
 Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
+\iffalse
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
 \begin{align}
-P = \begin{bmatrix}
+P = \frac{1}{\Delta^{2}} \begin{bmatrix}
 -X_1&r\Delta^2-Y_1&-Z_1&\dots&0&0&0\\
 0&-X_2&r\Delta^2-Y_2&\dots&0&0&0\\
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&r\Delta^2-Y_{K-1}&-Z_{K-1}&0\\
 0&0&0&\cdots&-X_K&r\Delta^2-Y_K&-Z_K
-\end{bmatrix}\cdot \Delta^{-2}
+\end{bmatrix}
 \end{align}
-The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
+\fi
+Again, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
 
 
 \end{document}
