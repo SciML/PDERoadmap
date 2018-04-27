@@ -70,7 +70,7 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to the boundary yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
 		\item $Q$ is actually in general affine, meaning that
 		\begin{align}
-			Q\cdot \bar{u} &= Q_A\cdot \bar{u} + Q_b\label{Q_Affine}
+			Q\cdot u &= Q_A\cdot u + Q_b\label{Q_Affine}
 			\end{align}
 			For example, the definition given of inner product make $Q\cdot x=b$ in an iterative solver converge to $Q_A\cdot x = b - Q_b$. From the relations, $Q_A$ is $\bar{K}\times K$ and $Q_b$ is of length $\bar{K}$. In order for $Q\cdot R\cdot u = u$ to hold for trivial $\bar{u}$
 			\item \textbf{Fernando/Steven TODO: Does this conform? This doesn't look right...  Should some of these be $u$ vs. $\bar{u}$, etc?  See \cref{solve_u_hat_cond_2}}
@@ -93,7 +93,7 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 
 			Multiply both sides of \eqref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
 			\begin{equation}
-			(A \cdot \bar{u}-A \cdot Q_b) \cdot R' = A \cdot Q_A\cdot \bar{u}
+			(A \cdot \bar{u}-A \cdot Q_b) \cdot R' = A \cdot Q_A\cdot u
 			\end{equation}
 			so $A \cdot \bar{u}-A \cdot Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A \cdot Q_b$.
 
@@ -257,7 +257,7 @@ P &= \begin{bmatrix}
 \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 0&0&0&\dots&2(1+r\Delta^2)&-1&0\\
 0&0&0&\cdots&-1&2(1+r\Delta^2)&-1
-\end{bmatrix}\frac{\Delta^{-2}}{2}
+\end{bmatrix}\frac{1}{2\Delta^{2}}
 \end{align}
 \fi
 Substitute \eqref{solve_u_hat_cond_2} into \eqref{solve_u_hat_cond_1}, we get
@@ -270,7 +270,7 @@ u = (P\cdot Q_A)^{-1}x
 \end{align}
 Then, by \eqref{solve_u_hat_cond_2}, we can solve the extended state vector by
 \begin{align}
-\bar{u} = Q_A\cdot u+Q_b\label{solve_u_hat_in_terms_of_interiors}
+\bar{u} = Q_A\cdot R\cdot\bar{u}+Q_b\label{solve_u_hat_in_terms_of_interiors}
 \end{align}
 
 \subsection{Stationary HJBE with a Lower Absorbing Barrier}
@@ -320,11 +320,11 @@ Then, it is easy to verify that $Q \cdot R = \mathbf{I}_{\bar{K}}$ and that \eqr
 
 In this case, $P$ is the same as the one we have in the previous example. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
 \begin{align}
-P(Q_A\cdot u+Q_b) = x
+P(Q_A\cdot R\cdot \bar{u}+Q_b) = x
 \end{align}
 With $Q_b\neq 0$, we can solve interiors as
 \begin{align}
-u = (P\cdot Q_A)^{-1}\cdot(x-P\cdot Q_b)
+R\cdot\bar{u} = (P\cdot Q_A)^{-1}\cdot(x-P\cdot Q_b)
 \end{align}
 Then, the extended state vector $\bar{u}$ again can be similarly solved by \eqref{solve_u_hat_in_terms_of_interiors}.
 \subsection{Stationary HJBE with Only Drift}
@@ -390,7 +390,6 @@ P = \frac{1}{\Delta}
 0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
 0&0&0&\cdots&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
 \end{bmatrix}%_{\bar{K}\times\bar{K}}
-\end{align}
 \fi
 Similarly, given \eqref{P_definition}, interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}:
 \begin{align}
@@ -429,9 +428,9 @@ X&Y&Z&\dots&0&0&0\\
 \end{align}
 where
 \begin{align*}
-X &= -\mu^-\Delta+\frac{\sigma^2}{2}\\
-Y &= (\mu^--\mu^+)\Delta-\sigma^2\\
-Z &=\mu^+\Delta+\frac{\sigma^2}{2}
+X &= -\frac{\mu^-}{\Delta}+\frac{\sigma^2}{2\Delta^2}\\
+Y &= \frac{(\mu^--\mu^+)}{\Delta}-\frac{\sigma^2}{\Delta^2}\\
+Z &=\frac{\mu^+}{\Delta}+\frac{\sigma^2}{2\Delta^2}
 \end{align*}
 
 Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
@@ -490,9 +489,9 @@ X_1&Y_1&Z_1&\dots&0&0&0\\
 \end{align}
 where
 \begin{align*}
-X_k &= -\bar{\mu}^-x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
-Y_k &= (\bar{\mu}^--\bar{\mu}^+)x_k\Delta-(\bar{\sigma}x_k)^2\\
-Z_k &=\bar{\mu}^+x_k\Delta+\frac{(\bar{\sigma}x_k)^2}{2}\\
+X_k &= \frac{-\bar{\mu}^-x_k}{\Delta}+\frac{(\bar{\sigma}x_k)^2}{2\Delta^2}\\
+Y_k &= \frac{(\bar{\mu}^--\bar{\mu}^+)x_k}{\Delta}-\frac{(\bar{\sigma}x_k)^2}{\Delta^2}\\
+Z_k &=\frac{\bar{\mu}^+x_k}{\Delta}+\frac{(\bar{\sigma}x_k)^2}{2\Delta^2}\\
 k & = 1, 2,\dots, K
 \end{align*}
 
