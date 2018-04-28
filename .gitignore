@@ -9,3 +9,4 @@ _minted*
 *.fdb_latexmk
 *.bbl
 *.blg
+.ipynb_checkpoints/
