@@ -34,54 +34,61 @@
 			\item $\mathbf{0}_N$ is the column vector of $N$ $0$s, and $\mathbf{0}_N'$ a row vector
 			\item $\mathbf{0}_{N\times M}$ is the $N\times M$ matrix of $0$s
 		\end{itemize}
-  	\item Frequently, we will work with affine maps on both continuous and discrte spaces.  For example, a $C$ affine map on the disrete space $\R^{}\bar{K}$ can be decomposed  into a $C_L \in \R^{\bar{K}\times K}$ and $C_b \in \R^{\bar{K}}$ such that for some $x \in \R^{\bar{K}}$ with $C : \R^{\bar{K}} \to \R^{\bar{K}}$ and $C x = C_L x + C_b$
-
+  	\item An \textit{affine} operator $A$ can be decomposed into a \textit{linear operator}, denoted $A_L$, and a \textit{bias} denoted $A_b$, such that for all $x$ in the domain,
+		$$
+		A x = A_L x + X_b
+		$$
+		\item In the case of an affine operator on a discrete space, $A : \R^M \to \R^N$,
+		\begin{itemize}
+			\item We can decompose this into the linear operator $A_L \in \R^{N\times M}$ and bias vector $A_b \in \R^{N}$ such that for all $x\in\R^M$, $A x = A_L x + X_b$
+		\end{itemize}
 	\end{itemize}
 
 	The purpose of these notes is to discretize affine or linear operators with finite differences.\footnote{These are often the infinitesimal generator of a stochastic process.  See \url{https://en.wikipedia.org/wiki/Infinitesimal_generator_(stochastic_processes)} for some formulas and interpretation for diffusions, and \url{https://en.wikipedia.org/wiki/Transition_rate_matrix}} To set some notation and definitions on operators,
 	\begin{itemize}
 		\item Denote a typical affine operator on the space of continuous functions as $\tilde{A}$, and $\tilde{L}$ for a linear operator.  When these are discretized on a particular grid, denote them as $A$ and $L$ accordingly.
-		\item The baseline domain of the operator is $x \in [x^{\min}, x^{\max}]$
+		\item The baseline domain of the operator is on $[x^{\min}, x^{\max}]$.
 		\item Form a grid on the domain with $K$ points, $\set{x_k}_{k=1}^{K}$ with $x_1 = x^{\min}$ and $x_{K} = x^{\max}$ when. After discretizing, we can sometimes denote the grid with the variable name, i.e. $x \equiv \set{x_k}_{k=1}^K$. In the simple case of a uniform grid, $\Delta \equiv x_{k+1} - x_k$ for all $k < K$.
 		\item A core part of the discretization process will be to extend the variable onto the closure (i.e. including boundary points for the boundary conditions).  If there are $K$ points in the grid, and $K_B$ points in the boundary, then define $\bar{K} = K + K_B$ as the total set of points on the closure.
-		\item Hence, denote grid on the closure as $\bar{x} \in \R^{\bar{K}}$.  The interior points on the grid match the grid on the closure, so that $\bar{x}_{k+K^{\min}_B} = x_{k}$ for $k = 1, \ldots K$ for the $K^{\min}_B$ is the number of points in the boundary to the left of the interior, $K^{\max}_B$ is the number of points to the right, and $K_B = K^{\min}_B + K^{\max}_B$
+		\item Hence, denote the grid on the closure as $\bar{x} \in \R^{\bar{K}}$.  The interior points on the grid match the grid on the closure, so that $\bar{x}_{k+K^{\min}_B} = x_{k}$ for $k = 1, \ldots K$ for the $K^{\min}_B$ is the number of points in the boundary to the left of the interior, $K^{\max}_B$ is the number of points to the right, and $K_B = K^{\min}_B + K^{\max}_B$
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{K}$, $y$ has length $K$.
-		\item Moreover, define $S_B$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non non interior point, let's say, the first one and the last two grid points, then $K_B = 3$ and $S_B = \{1,\bar{K}-1,\bar{K}\}$\footnote{Notice that, by construction, the number of elements in $S_B$ is always $K_B$}.
 	\end{itemize}
 
 	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
-	Take an affine differential operator $\tilde{L}$, associated boundary conditions, and function $\tilde{u}(x)$.  We are interested in the discretized $\bar{u}\in \R^{\bar{K}}$.  The discretization process generates a $A \in \R^{K\times\bar{K}}, R \in \R^{K\times \bar{K}}, Q \in \R^{\bar{K}\times K}, B \in \R^{K_B \times \bar{K}},$ and $b \in \R^{K_B}$.  The $Q$ affine map can be decomposed into $Q_L \in \R^{\bar{K}\times K}$ and $Q_b \in \R^{\bar{K}}$ such that $Q x = Q_L x + Q_b$
+	Take an linear differential operator $\tilde{L}$, (possibly) affine boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.\footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?}
+	\begin{align}
+		\tilde{L} \tilde{u}(x) &= 0\\
+		\tilde{B} \tilde{u}(x) &= \tilde{b}(x)
+	\end{align}
+
+	The discretization process generates the following objects:
 	\begin{itemize}
-		\item $A$ is the \textit{discretization of the differential operator}, and is independent of the boundary conditions.  Think of it as the stencil for the interior of the operator expanded to the closure.
-		\item $B$ is the \textit{boundary condition operator} and $b$ the \textit{oundary condition value} with
+	%	\item $A$ is the \textit{discretization of the differential operator}, and is independent of the boundary conditions.  Think of it as the stencil for the interior of the operator expanded to the closure.
+		\item $B\in \R^{K_B \times \bar{K}}$ is the linear \textit{boundary condition operator} and $b \in \R^{K_B}$ the vector \textit{boundary condition value} with
 		\begin{equation}
 		B \bar{u} = b
 		\label{B_operator_block}
 		\end{equation}
-		for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$. The size of $B$ is $K_{B} \times \bar{K}$ and the size of $b$ is $K_{B} \times 1$.\footnote{
+		for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$.\footnote{
 Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.}
-		\item $R$ is the \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. Notice that $R$ has size $K \times \bar{K}$ and it fulfills
+		\item $R\in \R^{K\times \bar{K}}$ is the linear \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. It fulfills
 		\begin{equation}
 		R \bar{u} = u \label{R_operator}
 		\end{equation}
-
-		\item $Q$ is the \textit{boundary extrapolation operator} and is defined as fulfilling the following relationships
+$Q : \R^K \to \R^{\bar{K}}$.  The $Q$ affine map can be decomposed into a linear $Q_L \in \R^{\bar{K}\times K}$ and a \textit{bias} vector $Q_b \in \R^{\bar{K}}$
+		\item $Q : \R^K \to \R^{\bar{K}}$ is the (potentially) affine \textit{boundary extrapolation operator}.  This can be decomposed into a linear $Q_L \in \R^{\bar{K}\times K}$ and a \textit{bias} vector $Q_b \in \R^{\bar{K}}$.  The operator $Q$ is defined as fulfilling the following relationships (keeping in mind that $Q$ is affine and $R$ is linear)
 		\begin{align}
 		Q  R\bar{u} = \bar{u}\label{Q_operator_1}\\
 		B Q u  = b	\label{Q_operator_2}
 	\end{align}
 	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to the boundary yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
-		\item $Q$ is actually in general affine, meaning that
-		\begin{align}
-			Q u &= Q_L u + Q_b\label{Q_Affine}
-			\end{align}
-			For example, the definition given of inner product make $Q x=b$ in an iterative solver converge to $Q_L x = b - Q_b$. From the relations, $Q_L$ is $\bar{K}\times K$ and $Q_b$ is of length $\bar{K}$. In order for $Q R u = u$ to hold for trivial $\bar{u}$
-			\item \textbf{Fernando/Steven TODO: Does this conform? This doesn't look right...  Should some of these be $u$ vs. $\bar{u}$, etc?  See \cref{solve_u_hat_cond_2}}
+			\item \textbf{Fernando/Steven TODO: Check that all of this conforms...  Should some of these be $u$ vs. $\bar{u}$, etc?  See \cref{solve_u_hat_cond_2}}
 		\end{itemize}
 
 		\subsection{Affine relations:}
 		\textbf{TODO: Fernando/Steven, I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text.  I got rid of the $d$ for discretization...}
 		\begin{itemize}
+		\item Define $S_B$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non non interior point, let's say, the first one and the last two grid points, then $K_B = 3$ and $S_B = \{1,\bar{K}-1,\bar{K}\}$\footnote{Notice that, by construction, the number of elements in $S_B$ is always $K_B$}.
 			\item Now let's focus on solving an expression like $\bar{u} = A \bar{u}$. Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $K_B$ columns, that $J[:,S_B]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in S_B$.
 			Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
 
