@@ -10,3 +10,4 @@ _minted*
 *.bbl
 *.blg
 .ipynb_checkpoints/
+*.synctex(busy)
