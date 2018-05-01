@@ -156,7 +156,7 @@ For a simple example of a payoff, choose $\tilde{p}(x) = x$.
 
 Since many of the examples will use the same boundary values and discretizations of the operators: define the discretization of the second-order derivative with central differences as
 \begin{align}
-	L_2 &\equiv \frac{1}{2 \Delta^2}\begin{bmatrix}
+	L_2 &\equiv \frac{1}{\Delta^2}\begin{bmatrix}
 	1&-2&1&\dots&0&0&0\\
 	0&1&-2&\dots&0&0&0\\
 	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
@@ -218,7 +218,7 @@ Consider
 (r - \tilde{L} )\tilde{u}(x) &= x\label{HJBE_reflecting_barriers_PDE}\\
 \text{where }\tilde{L}&\equiv \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
 \end{align}
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_B = 2$, $S_B = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{M}}$, and $\bar{M} = M+2$. From \eqref{HJBE_operator_first_example} and given \eqref{eq:L-2} from the previous section, the matrix form of operator $\tilde{L}$ can be defined, given as $A = L_2$.
+We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_B = 2$, $S_B = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{M}}$, and $\bar{M} = M+2$. From \eqref{HJBE_operator_first_example} and given \eqref{eq:L-2} from the previous section, the matrix form of operator $\tilde{L}$ can be defined, given as $A = \frac{L_2}{2}$.
 
 By reflecting barriers, we can define $B$ just like as $B_{RR}$ in \eqref{eq:B-RR} and then we have
 \begin{equation}
@@ -294,7 +294,7 @@ $$
 \tilde{L} \equiv \frac{1}{2}\D[xx]
 $$
 
-For the absorbing barrier, when solving for the HJBE assume that $u(x^{\min}) = x^{\min}$ and $u'(x^{\max}) = 0$.\footnote{\textbf{TODO Steven/Fernando} I think we should have the payoff be something other than $x^{\min}$ in order to make sure the math is clearer (since the payff is currently $x$).  Maybe set it to $b^{\min}$?}
+For the absorbing barrier, when solving for the HJBE assume that $u(x^{\min}) = b^{\min}$ and $u'(x^{\max}) = 0$.
 
 For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}.
 % We still have \textbf{to do}:
@@ -307,7 +307,7 @@ Again, we first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. 
 According to lower absorbing barrier, we can define $B$ just like as $B_{AR}$ in \eqref{eq:B-AR} and then we have
 \begin{equation}
 B\bar{u} = \begin{bmatrix}
-x^{\min}\\
+b^{\min}\\
 0
 \end{bmatrix} \equiv b
 \end{equation}.\\
@@ -321,7 +321,7 @@ Q_L = \begin{bmatrix}
 0&0&\dots&0&1
 \end{bmatrix}%_{\bar{M}\times M}
 \quad, \text{ } Q_b = \begin{bmatrix}
-x^{\min}\\
+b^{\min}\\
 0\\
 \vdots\\
 0
@@ -363,13 +363,13 @@ Consider
 \end{align}
 We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_B = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
 
-Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $A = A_1^+$ as in \eqref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $A = A_1^-$ as in \eqref{eq:L-1m}.
+Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $A = \mu L_1^+$ as in \eqref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $A = \mu L_1^-$ as in \eqref{eq:L-1m}.
 
 Considering the absorbing barriers, we can define $B$ just like as $B_{AA}$ in \eqref{eq:B-AA} and then we have
 \begin{equation}
 B\bar{u} = \begin{bmatrix}
-x^{\min}\\
-x^{\max}
+b^{\min}\\
+b^{\max}
 \end{bmatrix}
 \end{equation}.\\
 Therefore, $\bar{u}(x_0) = x^{\min}$ and $\bar{u}(x_{M+1}) = x^{\max}$.
@@ -382,10 +382,10 @@ Q_L = \begin{bmatrix}
 \mathbf{0}_M
 \end{bmatrix}%_{\bar{M}\times M}
 \quad, \text{ } Q_b = \begin{bmatrix}
-x^{\min}\\
+b^{\min}\\
 0\\
 \vdots\\
-x^{\max}
+b^{\max}
 \end{bmatrix}%_{\bar{M}\times 1}
 \end{equation}
 
@@ -429,21 +429,9 @@ We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_
 
 By combining operators $L$ from previous sections, in this case $A $ is defined as
 \begin{align}
-L = \frac{1}{\Delta^{2}}
-\begin{bmatrix}
-X&Y&Z&\dots&0&0&0\\
-0&X&Y&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&Y&Z&0\\
-0&0&0&\cdots&X&Y&Z
-\end{bmatrix}
+A &= \mu L_1^-+\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
+A &=\mu L_1^++\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0
 \end{align}
-where
-\begin{align*}
-X &= -\frac{\mu^-}{\Delta}+\frac{\sigma^2}{2\Delta^2}\\
-Y &= \frac{(\mu^--\mu^+)}{\Delta}-\frac{\sigma^2}{\Delta^2}\\
-Z &=\frac{\mu^+}{\Delta}+\frac{\sigma^2}{2\Delta^2}
-\end{align*}
 
 Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
@@ -488,23 +476,30 @@ We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_
 
 Again, consider $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
 
-This case is similar with the previous one but with variable drift and variance. Now define the discritization of the operator, $L$ as \textbf{TODO: I think notation can be cleaned up here as a composition.}
+This case is similar with the previous one but with variable drift and variance. By combining operators $L$ from previous sections, in this case $A $ is defined as
 \begin{align}
-L = \frac{1}{\Delta^{2}}
-\begin{bmatrix}
-X_1&Y_1&Z_1&\dots&0&0&0\\
-0&X_2&Y_2&\dots&0&0&0\\
-\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-0&0&0&\dots&Y_{M-1}&Z_{M-1}&0\\
-0&0&0&\cdots&X_{M}&Y_{M}&Z_{M}
-\end{bmatrix}
+A = \mu(x)^- L_1^-+\mu(x)^+L_1^+ +\Sigma(x) L_2
 \end{align}
 where
 \begin{align*}
-X_m &= \frac{-\bar{\mu}^-x_m}{\Delta}+\frac{(\bar{\sigma}x_m)^2}{2\Delta^2}\\
-Y_m &= \frac{(\bar{\mu}^--\bar{\mu}^+)x_m}{\Delta}-\frac{(\bar{\sigma}x_m)^2}{\Delta^2}\\
-Z_m &=\frac{\bar{\mu}^+x_m}{\Delta}+\frac{(\bar{\sigma}x_m)^2}{2\Delta^2}\\
-m & = 1, 2,\dots, M
+\mu(x)^- &=\begin{bmatrix}
+\bar{\mu}^-x_1&0&\cdots&0\\
+0&\bar{\mu}^-x_2&\cdots&0\\
+\vdots&\vdots&\ddots&\vdots\\
+0&0&\cdots&\bar{\mu}^-x_M
+\end{bmatrix}\\
+\mu(x)^+ &=\begin{bmatrix}
+\bar{\mu}^+x_1&0&\cdots&0\\
+0&\bar{\mu}^+x_2&\cdots&0\\
+\vdots&\vdots&\ddots&\vdots\\
+0&0&\cdots&\bar{\mu}^+x_M
+\end{bmatrix}\\
+\Sigma(x)&=\begin{bmatrix}
+\frac{(\bar{\sigma}x_1)^2}{2}&0&\cdots&0\\
+0&\frac{(\bar{\sigma}x_2)^2}{2}&\cdots&0\\
+\vdots&\vdots&\ddots&\vdots\\
+0&0&\cdots&\frac{(\bar{\sigma}x_M)^2}{2}
+\end{bmatrix}
 \end{align*}
 
 Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
