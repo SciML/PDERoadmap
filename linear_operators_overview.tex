@@ -25,7 +25,7 @@
 	Some general notation, independent of operators and discretization
 	\begin{itemize}
 		\item For a given variable $q$, define the notation $q^{-} \equiv \min\set{q,0}$ and $q^{+} \equiv \max\set{q,0}$, which will be useful for defining finite-differences with an upwind scheme.  This can apply to vectors as well. For example, $q_m^{-} = q_m$ if $q_m < 0$ and $0$ if $q_m > 0$, and $q^{-} \equiv \set{q^{-}_m}_{m=1}^{M}$.
-		\item Let $W_t$ be the Weiner process with the integral defined by the Ito interpretation
+		\item Let $W_t$ be the Wiener process with the integral defined by the Ito interpretation
 		\item Derivatives are denoted by the operator $\D$ and univariate derivatives such as $\D[x]\tilde{u}(x) \equiv u'(x)$.
 		\item We will denote continuous functions, prior to discretization, like $\tilde{u}(x)$.  The discretization of $\tilde{u}(x)$ on $x\in \R^M$ is denoted $u \in \R^M$ and the discretization of $\tilde{u}(x)$ on $\bar{x}$ is $\bar{u} \in \R^{\bar{M}}$.
 		\item Some special matrices to help in the composition notation:
