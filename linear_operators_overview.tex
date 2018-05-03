@@ -75,7 +75,7 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 		\begin{equation}
 		R \bar{u} = u \label{R_operator}
 		\end{equation}
-$Q : \R^M \to \R^{\bar{M}}$.  The $Q$ affine map can be decomposed into a linear $Q_L \in \R^{\bar{M}\times M}$ and a \textit{bias} vector $Q_b \in \R^{\bar{M}}$
+		
 		\item $Q : \R^M \to \R^{\bar{M}}$ is the (potentially) affine \textit{boundary extrapolation operator}.  This can be decomposed into a linear $Q_L \in \R^{\bar{M}\times M}$ and a \textit{bias} vector $Q_b \in \R^{\bar{M}}$.  The operator $Q$ is defined as fulfilling the following relationships (keeping in mind that $Q$ is affine and $R$ is linear)
 		\begin{align}
 		Q  R\bar{u} = \bar{u}\label{Q_operator_1}\\
@@ -123,25 +123,6 @@ $Q : \R^M \to \R^{\bar{M}}$.  The $Q$ affine map can be decomposed into a linear
 			Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
 		\end{itemize}
 
-	\subsection{Specific examples:}
-	\textbf{TODO Steven/Fernando:} I suspect if we are better off just dropping this section and showing it through the examples?
-	\begin{itemize}
-		\item This shows that what's important and non-trivial is $Q$. It contains all of the information about both the boundaries and the domain from the two relations. So what is Q? Here's all of the relevant cases for finite differencing:
-		\begin{enumerate}
-			\item \textbf{Dirichlet$_0$}: If you have any $u$ in the interior, its unique extension to satisfying the border conditions is sticking $0$'s on the ends, so both $Q$ is zero for all non interior grid points. Therefore, Q is linear, meaning $Q = Q_L$ and $Q_b$ is a null matrix.
-
-			\item \textbf{Dirichlet}: The boundary is not dependent on any points in the interior, and therefore $Q_L$ is identical to the previous case, but now Q is no longer linear and
-	 		$Q_b$ is such that it is equal to zero for all interior points and equal to $b$ for all non interior points.
-
-			\item \textbf{Neumann}: You have to pick a discretization of B. This defines linear relation between the interior points and the boundary conditions. For example, for the univariate case with non interior points being the first and the last ones on the grid ($M_B = 2$ and $S_B = \{1,\bar{M}\}$), the first order discretization of the boundary derivative means that:
-
-			\begin{equation}
-				\frac{db}{dx} = \frac{\bar{u}[2] - \bar{u}[1]}{dx} = b[1]
-			\end{equation}
-			and, therefore, $u[1] = u[2] - dx b[1]$. You can see that this implies that $Q_b = [dx b[1];\mathbf{0}_{M \times 1};dx b[\bar{M}]]$ and that $Q_L$ is the identity matrix for the interior points and $[1,0, 0,...,0]$ for the first row\footnote{So that $Q_L u = u[1] = \bar{u}[2]$.} and $[0,...,0,0,1]$ for the last row.%\footnote{so that $Q_L v = v[1] = u[2]$ and $Q_L v = v[I] = u[I-1]$, respectively.}.
-
-		\end{enumerate}
-	\end{itemize}
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
@@ -225,9 +206,9 @@ By reflecting barriers, we can define $B$ just like as $B_{RR}$ in \eqref{eq:B-R
 B\bar{u} = \begin{bmatrix}
 0\\
 0
-\end{bmatrix}
+\end{bmatrix} \label{B_reflecting}
 \end{equation}
-Therefore, $\bar{u}(x_0) = \bar{u}(x_1)$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$.
+Therefore, $\bar{u}(x_0) = \bar{u}(x_1)$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$. It is important to notice that our choice for $B$ defines the linear relationship between the interior points and the boundary conditions.
 
 Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
@@ -238,10 +219,10 @@ Q_L = \begin{bmatrix}
 \end{bmatrix}%_{\bar{M}\times M}
 \quad , \text{ } Q_b = \begin{matrix}
 \mathbf{0}_{\bar{M}}
-\end{matrix}%_{\bar{M}\times 1}
+\end{matrix}\label{Q_reflecting}
 \end{equation}
 
-Then, it is easy to verify that $Q  R = \mathbf{I}_{\bar{M}}$ and that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case. Additionally, it is worth to note that, since $Q_b = \mathbf{0}_{\bar{M}}$, $Q$ is a linear operator.
 
 To solve $\bar{u}(x)$, we first solve interiors according to \eqref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
 \begin{align}
@@ -310,13 +291,13 @@ B\bar{u} = \begin{bmatrix}
 b^{\min}\\
 0
 \end{bmatrix} \equiv b
-\end{equation}.\\
+\end{equation}\\
 Therefore, $\bar{u}(x^{\min}) = x^{\min}$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$.
 
 Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
 Q_L = \begin{bmatrix}
-& & \mathbf{0}_M & & \\
+& & \mathbf{0}_{1\times M} & & \\
 & & \mathbf{I}_M & & \\
 0&0&\dots&0&1
 \end{bmatrix}%_{\bar{M}\times M}
@@ -328,9 +309,9 @@ b^{\min}\\
 \end{bmatrix}%_{\bar{M}\times 1}
 \end{equation}
 
-Then, it is easy to verify that $Q  R = \mathbf{I}_{\bar{M}}$ and that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case. Additionally, it is worth to note that, if the absorbing boundary was of Dirichlet$_0$ type, then $b^{\min} = 0$ and $Q_b = \mathbf{0}_{\bar{M}}$ and $Q$ would be a linear operator.
 
-In this case, $P$ is the same as the one we have in the previous example. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
+In this case, $P$ is given by \eqref{P_definition}. According to conditions \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}, again we get
 \begin{align}
 P(Q_L R \bar{u}+Q_b) = x
 \end{align}
@@ -374,12 +355,12 @@ b^{\max}
 \end{equation}.\\
 Therefore, $\bar{u}(x_0) = x^{\min}$ and $\bar{u}(x_{M+1}) = x^{\max}$.
 
-Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
+Moreover, $R$ is again defined as in \eqref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
 \begin{equation}
 Q_L = \begin{bmatrix}
-\mathbf{0}_M \\
+\mathbf{0}_{1\times M} \\
 \mathbf{I}_M  \\
-\mathbf{0}_M
+\mathbf{0}_{1\times M}
 \end{bmatrix}%_{\bar{M}\times M}
 \quad, \text{ } Q_b = \begin{bmatrix}
 b^{\min}\\
@@ -389,7 +370,7 @@ b^{\max}
 \end{bmatrix}%_{\bar{M}\times 1}
 \end{equation}
 
-Then, it is easy to verify that $Q  R = \mathbf{I}_{\bar{M}}$ and that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Then, it is easy to verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 \iffalse
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
@@ -403,7 +384,7 @@ P = \frac{1}{\Delta}
 0&0&0&s&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
 \end{bmatrix}%_{\bar{M}\times\bar{M}}
 \fi
-Similarly, given \eqref{P_definition}, interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}:
+Similarly, as $P$ is defined by \eqref{P_definition} and the interiors are solved by \eqref{solve_u_hat_cond_1} and \eqref{solve_u_hat_cond_2}:
 \begin{align}
 u = (P Q_L)^{-1}(x-P Q_b)
 \end{align}
@@ -433,7 +414,7 @@ A &= \mu L_1^-+\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
 A &=\mu L_1^++\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0
 \end{align}
 
-Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $R$, $B$ and $Q$ are defined by \eqref{eq:R-2}, \eqref{B_reflecting} and \eqref{Q_reflecting}, respectively. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 \iffalse
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
@@ -448,7 +429,7 @@ P = \frac{1}{\Delta^{2}}
 \end{bmatrix}
 \end{align}
 \fi
-The rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
+Given $P$ defined by \eqref{P_definition}, the rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
@@ -502,7 +483,7 @@ where
 \end{bmatrix}
 \end{align*}
 
-Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $B$, $R$ and $Q$ are not different from that case. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
+Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $R$, $B$ and $Q$ are defined by \eqref{eq:R-2}, \eqref{B_reflecting} and \eqref{Q_reflecting}, respectively. Also, with some simple algebras, we can easily verify that \eqref{affine_relation_1} and \eqref{affine_relation_2} hold in this case.
 
 \iffalse
 In this example, the matrix $P$ in \eqref{solve_u_hat_cond_1} becomes
@@ -516,7 +497,7 @@ P = \frac{1}{\Delta^{2}} \begin{bmatrix}
 \end{bmatrix}
 \end{align}
 \fi
-Again, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
+Again, given $P$ defined by \eqref{P_definition}, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
 
 
 \end{document}
