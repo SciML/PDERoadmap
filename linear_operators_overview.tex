@@ -459,7 +459,6 @@ Again, given $P$ defined by \cref{P_definition}, the remaining steps for solving
 
 \appendix
 \section{More on Gaussian Elimination and $Q$}
-\textbf{TODO:} Note that the $Q$ map in \cref{sec:general} might be wrong or inconsistent with the examples.  In particular, \cref{Q_operator_1,Q_operator_2} might be wrong, or for something different...
 \subsection{Linear Case with Reflecting Boundaries}
 Use the simple example from \cref{sec:simple-reflecting-example}
 \subsubsection{System of Operators/Equations}
@@ -468,16 +467,16 @@ First, define the stochastic process/etc.
 	\item The stochastic process is $X_t$ is $d X_t = \sigma d W_t$
 	\item Let $\sigma \equiv \sqrt{2}$,  Consequently, the infinitesimal generator is
 \begin{align}
-		\tilde{L}_1 &\equiv \D[xx]\\
+		\tilde{L}_2 &\equiv \D[xx]\\
 		\intertext{Furthermore, define the simple operator of the identity,}
-		\tilde{L}_2 u &\equiv u
+		\tilde{L}_0 u &\equiv u
 	\end{align}
 	\item Let $\rho > 0$ be a discount rate and the payoff be $\tilde{c}(x) = x^2$, then the simple stationary HJBE in the interior is
 	\begin{align}
-		\rho u(x) &= c(x) + \tilde{L}_1 u(x)\\		
+		\rho u(x) &= c(x) + \tilde{L}_2 u(x)\\		
 		\intertext{Rearrange}
-		\tilde{L} &\equiv \rho - \tilde{L}_1\\
-		&= \rho \tilde{L}_2 - \tilde{L}_1\\
+		\tilde{L} &\equiv \rho - \tilde{L}_2\\
+		&= \rho \tilde{L}_0 - \tilde{L}_2\\
 		\tilde{L} u(x) &= \tilde{c}(x)
 	\end{align}
 	\item For the boundaries, we will have reflecting barriers at $x^{\min} = 0$ and $x^{\max} = 2$.  Denote the application of a derivative at a point as $\partial_x\mid_{x=0}$, etc. This means,
@@ -507,23 +506,23 @@ u &\equiv \tilde{u}(x) = \begin{bmatrix} \tilde{u}(0) & \tilde{u}(1) & \tilde{u}
 \end{align}
 To determine the discretization of $\tilde{L}$, first do the $\tilde{L}_1$ operator, which has the stencil.  Note that this stencil had to add the extra points $-1$ and $3$ on the grid in $\bar{x}$
 \begin{align}
-L_1 &= \begin{bmatrix}
+L_2 &= \begin{bmatrix}
 	1 & -2 & 1 & 0 & 0\\
 	0 & 1 & -2 & 1 & 0\\	
 	0 & 0 & 1 & -2 & 1\\	
 	\end{bmatrix}\in \R^{M \times \bar{M}}
 	\intertext{Since this is the ``largest'' operator we have (in terms of extra points) the extension of it is easy enough}
-	L_1^E &= L_1
+	L_2^E &= L_2
 \end{align}	
-Next, look at the stencil for the the identity operator, above in $L_2$.  It does not need to add extra points.
+Next, look at the stencil for the the identity operator, above in $L_0$.  Unlike the previous example, it needs to extend to the largest grid in order to sum up the linear operator tersms.
 \begin{align}
-L_2 &\equiv I_M
+L_0 &\equiv I_M
 \intertext{However, in order to compose operators we will extend it to the extra points required on the grid with an extension.  While we could add in arbitrary points in the extension, the algebra will be easier if we add $0$s.  Define the extension operator adding one point to the left and one to the right of the grid as,}
 E_{11} &\equiv \begin{bmatrix}\textbf{0}_M^{\top}\\  I_M \\ \textbf{0}_M^{\top}\end{bmatrix}\in\R^{\bar{M} \times M}
 \intertext{Then, the extension of the $L_2$ operator is,}
-L_2^E &\equiv E_{11} L_2 = \begin{bmatrix} \textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}
+L_0^E &\equiv E_{11} L_0 = \begin{bmatrix} \textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}
 \intertext{Finally, we can compose the operators to form the discretization of $\tilde{L}$ as,}
-L &= \rho L_2^E - L_1^E\in\R^{M\times\bar{M}}
+L &= \rho L_0^E - L_2^E\in\R^{M\times\bar{M}}
 \intertext{Discretizing $\tilde{B}$ is done on the grid,}
 B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{(\bar{M}-M) \times \bar{M}}
 \end{align}
@@ -556,7 +555,35 @@ Writing out the matrices in more detail for this example,
 \end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}\label{eq:stacked-example-1}
 \end{align}
 This is a well defined linear system.  As an example, when $\rho = 0.25$, the solution is $u \approx \begin{bmatrix} 5.2 & 6.5 & 8.4\end{bmatrix}$.  Note that the boundaries can be used for Gaussian elimination on the irrelevant corners of $\bar{u}$.
-\subsection{Operators}
+
+To see the role of Gaussian-elimination, add the 4th row to the first row to get
+\begin{align}
+\begin{bmatrix}
+	1-1 & -1+2+\rho & -1 & 0 & 0\\
+	0 & -1 & 2+\rho & -1 & 0\\
+	0 & 0 & -1 & 2+\rho & -1\\
+	1 & -1 & 0 & 0 & 0\\
+	0 & 0 & 0 & -1 & 1
+\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+\intertext{Next, add the 5th row to the 3rd row and simplify,}
+\begin{bmatrix}
+0 & 1+\rho & -1 & 0 & 0\\
+0 & -1 & 2+\rho & -1 & 0\\
+0 & 0 & -1 & 1+\rho & 0\\
+1 & -1 & 0 & 0 & 0\\
+0 & 0 & 0 & -1 & 1
+\end{bmatrix} \begin{bmatrix}\bar{u}(-1)\\ \bar{u}(0) \\ \bar{u}(1)\\ \bar{u}(2) \\ \bar{u}(3) \end{bmatrix}
+ &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+\intertext{Notice that we have eliminated the extension nodes from all of the equations involving the $L$.  Consequently, can just take out the sub-matrix between columns 2-4 and rows 1-3 to get}
+\begin{bmatrix}
+	1+\rho & -1 & 0\\
+	-1 & 2+\rho & -1\\
+	0 & -1 & 1+\rho
+\end{bmatrix}u
+&= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:reduced-example-1}
+\end{align}
+Also, notice that this allowed us to solve for $u$ directly, instead of taking a restriction.
+\subsubsection{Operators}
 First lets write down what we know works.  Define
 \begin{align}
 Q &\equiv \begin{bmatrix}
@@ -566,7 +593,7 @@ Q &\equiv \begin{bmatrix}
 0 & 0& 1\\
 0 & 0& 1
 \end{bmatrix}
-\end{align}
+\end{align}\label{eq:Q-example}
 With this, we can write,
 \begin{align}
 L Q u &= c\\
@@ -587,8 +614,9 @@ L Q u &= c\\
 0 & -1 & 1+\rho
 \end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:stacked-example-2}
 \end{align}
-You can show that solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives the same solution.  But I am not sure that this decomposition into the $Q$ would work lazily for an arbitrary setup.  Basically, you can see that $Q$ shows how to construct the constrained version of the $L$ matrix, but for an arbitrarily $B$ matrix it wouldn't be so clean?  Not even sure how well it would work with drift?
+Solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives the same solution, which shoudl be clear comparing the reduced version in \cref{eq:reduced-example-1} with \cref{eq:stacked-example-2}.\footnote{But will the $Q$ approach work work lazily for an arbitrary setup.  Basically, you can see that $Q$ shows how to construct the constrained version using only the $L$ matrix.  The question is whether you can do that in general, as I am not sure if you can really get by with taking combinations of $L$ itself as opposed to the $B$?}
 
+The $Q$ is useful there only in that it lazily allows a modification of the underlying $L$ matrix.  Otherwise, it is only the $L Q$ product that is useful.  
 
 %
 % For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
@@ -637,7 +665,85 @@ You can show that solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives
 % \end{equation}
 %
 
-\subsection{Affine Case}
+\subsection{Case with Drift}\label{sec:simple-reflecting-drift-example}
+Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another component with a drift at rate $\mu \leq 0$.  Because the drift is negative, we know the correct upwind direction.
+\begin{itemize}
+	\item The stochastic process is $X_t$ is $d X_t = \mu d t + \sqrt{2} d W_t$
+\item Let $\sigma \equiv \sqrt{2}$,  Consequently, define
+\begin{align}
+\tilde{L}_1 &\equiv \D[xx]\\
+\intertext{Furthermore, define the simple operator of the identity,}
+\tilde{L}_2 u &\equiv u
+\intertext{And the new one,}
+\tilde{L}_3 &\equiv \D[x]\\
+\end{align}
+\item Let $\rho > 0$ be a discount rate and the payoff be $\tilde{c}(x) = x^2$, then the simple stationary HJBE in the interior is
+\begin{align}
+\tilde{L} &\equiv \rho\tilde{L}_2 - \tilde{L}_1 - \mu \tilde{L}_3\\
+\tilde{L} u(x) &= \tilde{c}(x)
+\end{align}
+\end{itemize}
+Otherwise, the problem remains the same.
+\subsubsection{Discretizing}
+Use the previous definitions, and now define the discretization of the $\tilde{L}_3$ operator with first differences (already extended for simplicity
+\begin{align}
+	L^{-E}_1 &= \begin{bmatrix}
+	-1 & 1 & 0 & 0 & 0\\
+	0 & -1 & 1 & 0 & 0\\
+	0 & 0 & -1 & 1 & 0
+	\end{bmatrix}
+	\intertext{Then the composed operator is,}
+	L &= \rho L_0^E - L_2^E - \mu L_1^{-E}
+\end{align}	
+Stack and write the equation,
+\begin{align}
+\begin{bmatrix}
+	-1 + \mu & 2 -\mu + \rho & -1 & 0 & 0\\
+	0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
+	0 & 0 & -1 + \mu & 2 - \mu +\rho & -1\\
+	1 & -1 & 0 & 0 & 0\\
+	0 & 0 & 0 & -1 & 1
+\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+\end{align}
+Now, the Gaussian elimination is slightly trickier.  Add $(1-\mu)$ times row 4 to row 1, and add row 5 to row 3.  This gives,
+\begin{align}
+\begin{bmatrix}
+0 & 1 + \rho & -1 & 0 & 0\\
+0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
+0 & 0 & -1 + \mu & 1 - \mu +\rho & 0\\
+1 & -1 & 0 & 0 & 0\\
+0 & 0 & 0 & -1 & 1
+\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}\\
+\intertext{Extract the interior of the matrix to get,}
+\begin{bmatrix}
+1 + \rho & -1 & 0\\
+-1 + \mu & 2 - \mu +\rho & -1\\
+0 & -1 + \mu & 1 - \mu +\rho\\
+\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}
+\end{align}
+At this point, there is no reason to think that you could just use the $L$ rows to perform Gaussian elimination.  But lets try it with the same $Q$ as in \cref{eq:Q-example}
+\begin{align}
+L Q u &= c\\
+\begin{bmatrix}
+	-1 + \mu & 2 -\mu + \rho & -1 & 0 & 0\\
+0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
+0 & 0 & -1 + \mu & 2 - \mu +\rho & -1
+\end{bmatrix}\begin{bmatrix}
+1 & 0 & 0\\
+1 & 0 & 0\\
+0 & 1& 0\\
+0 & 0& 1\\
+0 & 0& 1
+\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\\
+\begin{bmatrix}
+1 + \rho & -1 & 0\\
+-1 + \mu & 2 - \mu +\rho & -1\\
+0 & -1 + \mu & 1 - \mu +\rho\\
+\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}
+\end{align}
+So,the $L Q$ still generated the same matrix as before.
+
+
 
 		\subsection{Affine Relations and Intuition:}
 		The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
@@ -651,7 +757,16 @@ You can show that solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives
 			(A -A [:,S_E] (B[:,S_E]^{-1} B)) R^{\top} = A  Q_L\label{affine_relation_2}
 			\end{align}
 
-			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{M}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \cref{B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
+			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{M}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).\footnote{\textbf{Typo From Chris}
+				\cref{affine_relation_1} is actually defined from \cref{affine_relation_2} which is defined from the next one.  Looking at it like that, it's clear to see the error
+				since 89 is just saying
+				$(A - AQb)*R^T = AQL$
+				substitute in 88 for AQb)
+				you see the substitution was done incorrectly
+				has a big B instead of a little b.
+			}
+			
+			  Recall \cref{B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
 
 			Multiply both sides of \cref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
 			\begin{equation}
