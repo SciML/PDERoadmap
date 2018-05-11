@@ -2,29 +2,62 @@
 ## Setup
 Take the stochastic process
 $$
-d x_t = \mu(x_t)dt + \sigma(x_t)d W_t
+d x_t = \mu(t, x) dt + \sigma(t, x) d W_t
 $$
-where $W_t$ is Brownian motion and reflecting barriers at $x \in (\underline{x}, \bar{x})$ where $-\infty < \underline{x} < \bar{x} < \infty$.
+where $W_t$ is Brownian motion and reflecting barriers at $x \in (x^{\min},x^{\max})$
 
 The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
-	\mathcal{A} \equiv \mu(x)\partial_x + \frac{\sigma(x)^2}{2}\partial_{xx}
+	\tilde{L}_1 \equiv \tilde{\mu}(t, x)  \partial_x + \frac{ \tilde{\sigma}(t, x)^2}{2}\partial_{xx}
 $$
 
-Then, if the payoff in state $x$ is $u(x)$, and payoffs are discounted at rate $\rho$, then the Bellman equation is,
+Then, if the payoff in state $x$ is $c(x) = x^2$, and payoffs are discounted at rate $\rho$, then the Bellman equation is,
 $$
-\rho v(x) = u(x) + \mathcal{A}v(x)
+\rho \tilde{u}(t, x) = \tilde{c}(t, x) + \tilde{L}_1 \tilde{u}(t, x) + \partial_t \tilde{u}(t,x)
 $$
-With boundary values $v'(\underline{x}) = 0$ and $v'(\bar{x}) = 0$
+With boundary values $\partial_x \tilde{u}(t, x^{\min}) = 0$ and $\partial_x \tilde{u}(t, x^{\max}) = 0$ for all $t$
 
-## Solving the discretized problem
-Create a grid on $x$ where $i = 1, \ldots I$ and  and $x_1 = \underline{x} = x_1, x2, \ldots, x_I$, define $v \in \mathbb{R}^I$ such that $v_i = v(x_i)$, and finally $u \in \mathbb{R}^I$ such that $u_i = u(x_i)$.
-
-Let the upwind discretized $\mathcal{A}$, subject to the boundary conditions, be $A$, then the solution to the bellman equation is the solution to the following linear system of equations,
+We can combine these to form the operator,
 $$
-\rho v = u + A v
+\tilde{L} = \rho - \tilde{L}_1
+$$
+and the boundary condition operator (using the $|$ for "evaluated at"),
+$$
+\tilde{B} = \begin{bmatrix}
+	\partial_x |_{x=x^{\min},t}\\
+	\partial_x |_{x=x^{\max},t}
+\end{bmatrix}
 $$
 
-```julia
-f(x) = x
-```
+which leads to the PDE,
+$$
+\partial_t \tilde{u}(t,x) = \tilde{L}_t \tilde{u}(t,x) - \tilde{c}(t,x)
+$$
+and boundary conditions at every $t$,
+$$
+ \tilde{B} \tilde{u}(t,x) = \begin{bmatrix} 0 \\ 0 \end{bmatrix}
+$$
+
+
+## Example Functions
+As a numerical example, start with something like
+- $x^{\min} = 0.01$
+- $x^{\max} = 1.0$
+- $\tilde{\mu}(t,x) = -0.1 + t + .1 x$
+   - Note, that this keeps $\tilde{\mu}(t,x) \geq 0$ for all $t,x$.  Hence, we know the correct upwind direction.
+- $\tilde{\sigma}(t,x) = \bar{\sigma} x$ for $\bar{\sigma} = 0.1$
+- $\tilde{c}(t,x) = e^x$
+- $\rho = 0.05$
+
+## Discretization
+Do a discretization of the $\tilde{L}$ operator subject to the $\tilde{B}$, using the standard technique (and knowing that the positive drift ensures we can use a single upwind direction).  the value function is then $u(t) \in R^M$, an operator is $L(t) \in R^M$, and a vector of payoffs $c(t) \in R^M$.  This leads to the following system of ODEs,
+$$
+\partial_t u(t) = L(t) u(t) - c(t)
+$$
+
+The stationary solution, at a $t=T$ is the solution to the linear system,
+$$
+u(T) = L(T) \backslash c(T)
+$$
+
+Given this solution, we can solve for the transition dynamics by going back in time from the $u(T)$ initial condition.
