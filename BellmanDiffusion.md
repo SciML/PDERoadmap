@@ -25,8 +25,8 @@ We can combine these to form the operator,
 and the boundary condition operator (using the $|$ for "evaluated at"),
 \begin{align}
 \tilde{B} = \begin{bmatrix}
-	\partial_x |_{x=x^{\min},t}\\
-	\partial_x |_{x=x^{\max},t}
+	\partial_x \Big|_{x=x^{\min},t}\\
+	\partial_x \Big|_{x=x^{\max},t}
 \end{bmatrix}
 \end{align}
 
