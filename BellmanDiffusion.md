@@ -8,7 +8,7 @@ where $W_t$ is Brownian motion and reflecting barriers at $x \in (x^{\min},x^{\m
 
 The partial differential operator (infinitesimal generator) associated with the stochastic process is
 $$
-\tilde{L}_1 \equiv \tilde{\mu}(t, x)  \partial_x + \frac{ \tilde{\sigma}(t, x)^2}{2}\partial_{xx}
+\tilde{L}_{1} \equiv \tilde{\mu}(t, x)  \partial_x + \frac{\tilde{\sigma}(t, x)^2}{2}\partial_{xx}
 $$
 
 Then, if the payoff in state $x$ is $c(x) = x^2$, and payoffs are discounted at rate $\rho$, then the Bellman equation is,
@@ -19,7 +19,7 @@ With boundary values $\partial_x \tilde{u}(t, x^{\min}) = 0$ and $\partial_x \ti
 
 We can combine these to form the operator,
 $$
-\tilde{L} = \rho - \tilde{L}_1
+\tilde{L} = \rho - \tilde{L}_{1}
 $$
 and the boundary condition operator (using the $|$ for "evaluated at"),
 $$
