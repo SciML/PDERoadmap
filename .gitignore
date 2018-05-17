@@ -11,4 +11,4 @@ _minted*
 *.blg
 .ipynb_checkpoints/
 *.synctex(busy)
-.DS_Store
+*.DS_Store
