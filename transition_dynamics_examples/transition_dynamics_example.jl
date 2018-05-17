@@ -24,7 +24,8 @@ function time_stepping_example(x_min, x_max, M, T, N, rho, sigma_bar, algorithm)
     u_T = L_tilde\c_tilde
 
     function f(du,u,p,t)
-        mu_tilde = -0.1+0.01*t+0.1*x#mu_tilde_T#-0.1+t+0.1*x
+        #mu_tilde = -0.1+0.01*t+0.1*x#mu_tilde_T#-0.1+t+0.1*x
+        mu_tilde = mu_tilde_T#-0.1+t+0.1*x
         L = Diagonal(rho*ones(M)) - (Diagonal(mu_tilde)*L_1_plus + Diagonal(sigma_tilde_T.^2/2)*L_2)
         A_mul_B!(du,L,u)
         du .-= c_tilde
@@ -38,13 +39,15 @@ end
 x_min = 0.01
 x_max = 1
 M = 40
-T = 0.3
+T = 1.5
 N = 10 #This is not being used right now.
 rho = 0.05
 sigma_bar = 0.1
-algorithm = Tsit5()
+#algorithm = Tsit5()
+#algorithm = AutoTsit5(Rosenbrock23())
+algorithm = ImplicitEuler()
 
 sol = time_stepping_example(x_min, x_max, M, T, N, rho, sigma_bar, algorithm)
 
 using Plots
-plot(sol)
+plot(sol, vars=1:5:M)
