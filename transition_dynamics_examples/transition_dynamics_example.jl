@@ -78,7 +78,7 @@ sigma_bar = 0.1
 c_tilde(t, x) = x + 50.0*t
 sigma_tilde(t, x) =  sigma_bar
 mu_tilde(t, x) = 0.1#*x *(1.0 + t/100.0)
-basealgorithm = ImplicitEuler()#CVODE_BDF(linear_solver=:GMRES) #ImplicitEuler() #A reasonable alternative. Algorithms which don't work well: Rosenbrock23(), Rodas4(), KenCarp4()
+basealgorithm = CVODE_BDF(linear_solver=:GMRES) #ImplicitEuler() #A reasonable alternative. Algorithms which don't work well: Rosenbrock23(), Rodas4(), KenCarp4()
 plotevery = 5
 
 prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho, false)
@@ -89,53 +89,54 @@ plot(sol, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
 
 prob_reversed = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho, true)
 sol_reversed = solve(prob_reversed, basealgorithm)
-plot(sol_reversed, vars=1:plotevery:M)
+plot!(sol_reversed, vars=1:plotevery:M, xflip=true)
 
-#ImplicitEuler is more sometimes more order preserving...
-prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
-sol = solve(prob, ImplicitEuler())
-plot(sol, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
-@show(issorted(sol[end]))
+
+# #ImplicitEuler is more sometimes more order preserving...
+# prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
+# sol = solve(prob, ImplicitEuler())
+# plot(sol, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
+# @show(issorted(sol[end]))
 
 #Create DiffEq Problem for solving
-function createDAEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
-    x, L_1_plus, L_2  = diffusionoperators(x_min, x_max, M) #Discretize the operator
-
-    p = @NT(L_1_plus = L_1_plus, L_2 = L_2, x = x, rho = rho, mu_tilde = mu_tilde, sigma_tilde = sigma_tilde, c_tilde = c_tilde) #Named tuple for parameters.
-
-    #Check upwind direction
-    @assert minimum(mu_tilde.(T, x)) >= 0.0
-    @assert minimum(mu_tilde.(0.0, x)) >= 0.0
-
-    #Calculating the stationary solution,
-    L_T = rho*I - Diagonal(mu_tilde.(T, x)) * L_1_plus - Diagonal(sigma_tilde.(T, x).^2/2.0) * L_2
-    u_T = L_T \ c_tilde.(T, x)
-
-    @assert(issorted(u_T)) #We are only solving versions that are increasing for now
-
-    function f(resid,du,u,p,t)
-        L = - (p.rho*I  - Diagonal(p.mu_tilde.(t, x)) * p.L_1_plus - Diagonal(p.sigma_tilde.(t, p.x).^2/2.0) * p.L_2)
-        A_mul_B!(resid,L,u)
-        resid .+= p.c_tilde.(t, p.x)
-        resid .+= du
-    end
-
-    #Should Verifying that the initial condition is solid
-    resid_T = zeros(u_T) #preallocation
-    du_T = zeros(u_T)
-    f(resid_T, du_T, u_T, p, T)
-    @assert norm(resid_T) < 1.0E-10
-
-    tspan = (T, 0.0)
-    return DAEProblem(f, zeros(u_T), u_T, tspan, differential_vars = trues(u_T), p)
-end
-
-probDAE = createDAEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
-solDAE = solve(probDAE, IDA())
-plot(solDAE, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
-@show(issorted(solDAE[end]))
-# @benchmark solve($probDAE, IDA())
-
-#Check they are "reasonably" close
-@show norm(sol[1] - solDAE[1])
-@show norm(sol[end] - solDAE[end])
+# function createDAEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
+#     x, L_1_plus, L_2  = diffusionoperators(x_min, x_max, M) #Discretize the operator
+#
+#     p = @NT(L_1_plus = L_1_plus, L_2 = L_2, x = x, rho = rho, mu_tilde = mu_tilde, sigma_tilde = sigma_tilde, c_tilde = c_tilde) #Named tuple for parameters.
+#
+#     #Check upwind direction
+#     @assert minimum(mu_tilde.(T, x)) >= 0.0
+#     @assert minimum(mu_tilde.(0.0, x)) >= 0.0
+#
+#     #Calculating the stationary solution,
+#     L_T = rho*I - Diagonal(mu_tilde.(T, x)) * L_1_plus - Diagonal(sigma_tilde.(T, x).^2/2.0) * L_2
+#     u_T = L_T \ c_tilde.(T, x)
+#
+#     @assert(issorted(u_T)) #We are only solving versions that are increasing for now
+#
+#     function f(resid,du,u,p,t)
+#         L = - (p.rho*I  - Diagonal(p.mu_tilde.(t, x)) * p.L_1_plus - Diagonal(p.sigma_tilde.(t, p.x).^2/2.0) * p.L_2)
+#         A_mul_B!(resid,L,u)
+#         resid .+= p.c_tilde.(t, p.x)
+#         resid .+= du
+#     end
+#
+#     #Should Verifying that the initial condition is solid
+#     resid_T = zeros(u_T) #preallocation
+#     du_T = zeros(u_T)
+#     f(resid_T, du_T, u_T, p, T)
+#     @assert norm(resid_T) < 1.0E-10
+#
+#     tspan = (T, 0.0)
+#     return DAEProblem(f, zeros(u_T), u_T, tspan, differential_vars = trues(u_T), p)
+# end
+#
+# probDAE = createDAEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
+# solDAE = solve(probDAE, IDA())
+# plot(solDAE, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
+# @show(issorted(solDAE[end]))
+# # @benchmark solve($probDAE, IDA())
+#
+# #Check they are "reasonably" close
+# @show norm(sol[1] - solDAE[1])
+# @show norm(sol[end] - solDAE[end])
