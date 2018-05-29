@@ -24,10 +24,10 @@ function diffusionoperators(x_min, x_max, M)
 end
 
 #Create DiffEq Problem for solving
-function createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
+function createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min::Float64, x_max::Float64, M::Int64, T::Float64, rho::Float64, reversed = false)
     x, L_1_plus, L_2  = diffusionoperators(x_min, x_max, M) #Discretize the operator
 
-    p = @NT(L_1_plus = L_1_plus, L_2 = L_2, x = x, rho = rho, mu_tilde = mu_tilde, sigma_tilde = sigma_tilde, c_tilde = c_tilde) #Named tuple for parameters.
+    p = @NT(L_1_plus = L_1_plus, L_2 = L_2, x = x, rho = rho, mu_tilde = mu_tilde, sigma_tilde = sigma_tilde, c_tilde = c_tilde, T = T) #Named tuple for parameters.
 
     #Check upwind direction
     @assert minimum(mu_tilde.(T, x)) >= 0.0
@@ -45,33 +45,51 @@ function createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rh
         du .-= p.c_tilde.(t, p.x)
     end
 
+    function f_reversed(du,u,p,t_tilde)
+        L = -(p.rho*I  - Diagonal(p.mu_tilde.(p.T - t_tilde, x)) * p.L_1_plus - Diagonal(p.sigma_tilde.(p.T - t_tilde, p.x).^2/2.0) * p.L_2)
+        A_mul_B!(du,L,u)
+        du .+= p.c_tilde.(p.T - t_tilde, p.x)
+    end
+
+    #Checks on the residual
     du_T = zeros(u_T)
     f(du_T, u_T, p, T)
     #@show norm(du_T)
     @assert norm(du_T) < 1.0E-10
 
-    tspan = (T, 0.0)
-    return ODEProblem(f, u_T, tspan, p)
+    f_reversed(du_T, u_T, p, 0)
+    @assert norm(du_T) < 1.0E-10
+
+    if reversed==false
+        return ODEProblem(f, u_T, (T, 0.0), p)
+    else
+        return ODEProblem(f, u_T, (0.0,T), p) #Backwards in time, starting at T = 0
+    end
 end
+
 
 # mu_tilde is time varying but sigma_tilde is not.
 x_min = 0.01
 x_max = 1.0
-M = 100
+M = 20
 T = 0.2
-rho = 0.05
+rho = 0.15
 sigma_bar = 0.1
-c_tilde(t, x) = exp(x) + 30.0*t
-sigma_tilde(t, x) =  sigma_bar * x
-mu_tilde(t, x) = 0.1*x *(1.0 + t/100.0)
-basealgorithm = CVODE_BDF(linear_solver=:GMRES) #ImplicitEuler() #A reasonable alternative. Algorithms which don't work well: Rosenbrock23(), Rodas4(), KenCarp4()
+c_tilde(t, x) = x + 50.0*t
+sigma_tilde(t, x) =  sigma_bar
+mu_tilde(t, x) = 0.1#*x *(1.0 + t/100.0)
+basealgorithm = ImplicitEuler()#CVODE_BDF(linear_solver=:GMRES) #ImplicitEuler() #A reasonable alternative. Algorithms which don't work well: Rosenbrock23(), Rodas4(), KenCarp4()
 plotevery = 5
 
-prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
+prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho, false)
 sol = solve(prob, basealgorithm)
 plot(sol, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
 @assert(issorted(sol[end]))
 #@benchmark solve($prob, $basealgorithm) #Benchmark
+
+prob_reversed = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho, true)
+sol_reversed = solve(prob_reversed, basealgorithm)
+plot(sol_reversed, vars=1:plotevery:M)
 
 #ImplicitEuler is more sometimes more order preserving...
 prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
