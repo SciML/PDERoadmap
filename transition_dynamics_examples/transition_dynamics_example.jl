@@ -63,7 +63,7 @@ function createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min::Float64, x_max:
     if reversed==false
         return ODEProblem(f, u_T, (T, 0.0), p)
     else
-        return ODEProblem(f, u_T, (0.0,T), p) #Backwards in time, starting at T = 0
+        return ODEProblem(f_reversed, u_T, (0.0,T), p) #Backwards in time, starting at T = 0
     end
 end
 
@@ -83,20 +83,19 @@ plotevery = 5
 
 prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho, false)
 sol = solve(prob, basealgorithm)
-plot(sol, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
+plot(sol, vars=1:plotevery:M)
 @assert(issorted(sol[end]))
 #@benchmark solve($prob, $basealgorithm) #Benchmark
 
 prob_reversed = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho, true)
 sol_reversed = solve(prob_reversed, basealgorithm)
-plot!(sol_reversed, vars=1:plotevery:M, xflip=true)
+plot(sol_reversed, vars=1:plotevery:M, xlabel="t_tilde")
 
-
-# #ImplicitEuler is more sometimes more order preserving...
-# prob = createODEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
-# sol = solve(prob, ImplicitEuler())
-# plot(sol, vars=1:plotevery:M, xlims=[0.0 T], xflip=false)
-# @show(issorted(sol[end]))
+#Compare the timesteps and the terminal/starting values
+@show sol.t'
+@show T - sol_reversed.t' #i.e. t = T - t_tilde
+@show norm(sol(0) - sol_reversed(T)) #i.e. t=0
+@show norm(sol(T) - sol_reversed(0)) #i.e. t=T
 
 #Create DiffEq Problem for solving
 # function createDAEproblem(c_tilde, sigma_tilde, mu_tilde, x_min, x_max, M, T, rho)
