@@ -36,11 +36,11 @@
 		\end{itemize}
   	\item An \textit{affine} operator $A$ can be decomposed into a \textit{linear operator}, denoted $A_L$, and a \textit{bias} denoted $A_b$, such that for all $x$ in the domain,
 		$$
-		A x = A_L x + X_b
+		A x = A_L x + A_b
 		$$
 		\item In the case of an affine operator on a discrete space, $A : \R^M \to \R^N$,
 		\begin{itemize}
-			\item We can decompose this into the linear operator $A_L \in \R^{N\times M}$ and bias vector $A_b \in \R^{N}$ such that for all $x\in\R^M$, $A x = A_L x + X_b$
+			\item We can decompose this into the linear operator $A_L \in \R^{N\times M}$ and bias vector $A_b \in \R^{N}$ such that for all $x\in\R^M$, $A x = A_L x + A_b$
 		\end{itemize}
 	\end{itemize}
 
@@ -86,11 +86,16 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
+\subsection{Definitions and Notation for Examples}
 Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
 
-For a given $\tilde{L}$ Then, if the payoff in state $x$ is $\tilde{p}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
+For a given $\tilde{L}^s$ as the infinitesimal generate for a stochastic process. Then, if the payoff in state $x$ is $\tilde{p}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
 \begin{align}
-r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L} \tilde{u}(x)\label{eq:general-stationary-HJBE}
+r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L}^s \tilde{u}(x)\label{eq:general-stationary-HJBE}\\
+\intertext{Rearranging and defining an intermediate,}
+\tilde{L} \tilde{u}(x) &= \tilde{p}(x)
+\intertext{where the differential operator is}
+\tilde{L} &\equiv r - \tilde{L}^s
 \end{align}
 subject to $\D[x]\tilde{u}(x^{\min}) = 0$ and $\D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.
 
@@ -147,9 +152,9 @@ $$
 d x_t = d W_t
 $$
 with reflecting barriers at $x^{\min}$ and $x^{\max}$.  The partial differential operator (infinitesimal generator) associated with the stochastic process is
-$$
-	\tilde{L} \equiv \frac{1}{2}\D[xx]
-$$
+\begin{equation}
+	\tilde{L}^s \equiv \frac{1}{2}\D[xx]\label{eq:L-s-nodrift}
+\end{equation}
 
 For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
@@ -157,8 +162,10 @@ For this process, we derive below all of the matrices of \cref{sec:general} and 
 \end{itemize}
 Consider
 \begin{align}
-(r - \tilde{L} )\tilde{u}(x) &= x\label{HJBE_reflecting_barriers_PDE}\\
-\text{where }\tilde{L}&\equiv \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
+r \tilde{u}(x) &= \tilde{L}^s \tilde{u}(x) - x\label{HJBE_reflecting_barriers_PDE}\\
+\intertext{Define the operator $\tilde{L}$ and rearrange,}
+\tilde{L} \tilde{u}(x) &= x\\
+\tilde{L}&\equiv r - \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
 \end{align}
 We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the previous section, the matrix form of operator $\tilde{L}$ can be defined, given as $A = \frac{L_2}{2}$.
 
@@ -187,14 +194,15 @@ Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relati
 
 To solve $\bar{u}(x)$, we first solve interiors according to \cref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
 \begin{align}
-P\bar{u} &= x\label{solve_u_hat_cond_1}\\
+L \bar{u} &= x\label{solve_u_hat_cond_1}\\
 Q R\bar{u} &= Q u = Q_L u+Q_b = \bar{u}\label{solve_u_hat_cond_2}
 \end{align}
-where
+where the discretization of the linear operator $\tilde{L}$, defined on the extension, is
 \begin{equation}
-P = ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - A)
-\label{P_definition}
+L \equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - L_2)
+\label{L_definition}
 \end{equation}
+Note that in doing the composition of the operator in \cref{L_definition}, we need to combine the $L_2$ (defined on $M+2$ for the extension) with $r I$, defined on $M$ points.  In order to compose these, we need to extend the $r I$ operator with $0$s.
 % \begin{align}
 % P &= \begin{bmatrix}
 % 0&r&0&\cdots&0&0&0\\
@@ -213,11 +221,11 @@ P = ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - A)
 % \end{align}
 Substitute \cref{solve_u_hat_cond_2} into \cref{solve_u_hat_cond_1}, we get
 \begin{align}
-P(Q_L u+Q_b) = x
+L Q u = L (Q_L u+Q_b) = x
 \end{align}
 Since $Q_b = 0$ in this case, interiors are solved as
 \begin{align}
-u = (P Q_L)^{-1}x
+u = (L Q_L)^{-1}x
 \end{align}
 %Then, by \cref{solve_u_hat_cond_2}, we can solve the extended state vector by
 % \begin{align}
@@ -229,10 +237,7 @@ Take the stochastic process
 $$
 d x_t = d W_t
 $$
-with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max}$. Again, the partial differential operator (infinitesimal generator) associated with the stochastic process is
-$$
-\tilde{L} \equiv \frac{1}{2}\D[xx]
-$$
+with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max}$. Again, the partial differential operator (infinitesimal generator) associated with the stochastic process is \cref{eq:L-s-nodrift}
 
 For the absorbing barrier, when solving for the HJBE assume that $u(x^{\min}) = b^{\min}$ and $u'(x^{\max}) = 0$.
 
@@ -242,7 +247,7 @@ For this process, we derive below all of the matrices of \cref{sec:general} and 
 % 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 % \end{itemize}
 
-Again, we first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the \cref{sec:examples}, the matrix form of operator $\tilde{L}$ is again defined as $A = L_2$.
+Again, we first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the \cref{sec:examples}, the matrix form of operator $\tilde{L}$ is again defined \cref{L_definition}
 
 According to lower absorbing barrier, we can define $B$ just like as $B_{AR}$ in \cref{eq:B-AR} and then we have
 \begin{equation}
@@ -270,13 +275,13 @@ b^{\min}\\
 
 Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case. Additionally, it is worth to note that, if the absorbing boundary was of Dirichlet$_0$ type, then $b^{\min} = 0$ and $Q_b = \mathbf{0}_{\bar{M}}$ and $Q$ would be a linear operator.
 
-In this case, $P$ is given by \cref{P_definition}. According to conditions \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}, again we get
+In this case, $L$ is given by \cref{L_definition}. According to conditions \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}, again we get
 \begin{align}
-P(Q_L R \bar{u}+Q_b) = x
+L(Q_L R \bar{u}+Q_b) = x
 \end{align}
 With $Q_b\neq 0$, we can solve interiors as
 \begin{align}
-R\bar{u} = (P Q_L)^{-1}(x-P Q_b)
+R\bar{u} = (L Q_L)^{-1}(x-L Q_b)
 \end{align}
 Then, the extended state vector $\bar{u}$ again can be similarly solved by \cref{solve_u_hat_in_terms_of_interiors}.
 \subsection{Stationary HJBE with Only Drift}
@@ -285,9 +290,9 @@ $$
 d x_t = \mu dt
 $$
 With a generator
-$$
-	\tilde{L} \equiv \mu \D[x]
-$$
+\begin{equation}
+	\tilde{L}^s \equiv \mu \D[x]\label{eq:L-s-drift}
+\end{equation}
 
 For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
 \begin{itemize}
@@ -298,12 +303,12 @@ For this process, we derive below all of the matrices of \cref{sec:general}, pay
 Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
 Consider
 \begin{align}
-(r - \tilde{L} )\tilde{u}(x) &= x\label{HJBE_PDE_with_drifts}\\
-\text{where }\tilde{L}&\equiv \mu\partial_{x}
+\tilde{L} \tilde{u}(x) &= x\label{HJBE_PDE_with_drifts}\\
+\text{where }\tilde{L}&\equiv r - \mu\partial_{x}
 \end{align}
 We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
 
-Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $A = \mu L_1^+$ as in \cref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $A = \mu L_1^-$ as in \cref{eq:L-1m}.
+Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^+$ as in \cref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^-$ as in \cref{eq:L-1m}.
 
 Considering the absorbing barriers, we can define $B$ just like as $B_{AA}$ in \cref{eq:B-AA} and then we have
 \begin{equation}
@@ -343,9 +348,9 @@ Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relati
 % 0&0&0&s&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
 % \end{bmatrix}%_{\bar{M}\times\bar{M}}
 
-Similarly, as $P$ is defined by \cref{P_definition} and the interiors are solved by \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}:
+Similarly, as $L$ is defined by \cref{L_definition} and the interiors are solved by \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}:
 \begin{align}
-u = (P Q_L)^{-1}(x-P Q_b)
+u = (L Q_L)^{-1}(x-L Q_b)
 \end{align}
 Thus, the extended state vector $\bar{u}$ again can be similarly solved by \cref{solve_u_hat_in_terms_of_interiors}.
 
@@ -356,7 +361,7 @@ d x_t = \mu dt + \sigma d W_t
 $$
 With a generator
 $$
-	\tilde{L} \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
+	\tilde{L}^s \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
 $$
 
 For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
@@ -367,10 +372,12 @@ For this process, we derive below all of the matrices of \cref{sec:general}, pay
 
 We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
 
-By combining operators $L$ from previous sections, in this case $A $ is defined as
+By combining operators from previous sections, in this case $L^s$ is defined as
 \begin{align}
-A &= \mu L_1^-+\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
-A &=\mu L_1^++\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0
+L^s &= \mu L_1^{-} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
+L^s &=\mu L_1^{+} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0\\
+\intertext{And the composed operator,}
+	L &\equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r -  L^s
 \end{align}
 
 Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $R$, $B$ and $Q$ are defined by \cref{eq:R-2}, \cref{B_reflecting} and \cref{Q_reflecting}, respectively. Also, with some simple algebras, we can easily verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
@@ -388,7 +395,7 @@ Since barriers are reflecting, we can have the same boundary conditions as what 
 % \end{bmatrix}
 % \end{align}
 
-Given $P$ defined by \cref{P_definition}, the rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
+Given $L$ defined by \cref{L_definition}, the rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
 
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
@@ -398,7 +405,7 @@ d x_t = \tilde{\mu}(x_t) dt + \tilde{\sigma}(x_t) d W_t
 $$
 With a generator
 $$
-\tilde{L} \equiv \tilde{\mu}(x) \D[x] + \frac{\tilde{\sigma}(x)^2}{2}\D[xx]
+\tilde{L}^s \equiv \tilde{\mu}(x) \D[x] + \frac{\tilde{\sigma}(x)^2}{2}\D[xx]
 $$
 
 For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
@@ -407,7 +414,7 @@ For this process, we derive below all of the matrices of \cref{sec:general}, pay
 	\begin{itemize}
 		\item Choose a $\tilde{u}(x)$ and $\tilde{\sigma}(x)$ functions, consider using geometric brownian motion as a test.  That is:
 		\begin{align}
-		\tilde{L} &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
+		\tilde{L}^s &\equiv \bar{\mu} x \D[x] + \frac{\bar{\sigma}^2}{2}x^2\D[xx]
 		\end{align}
 	\end{itemize}
 \end{itemize}
@@ -416,9 +423,9 @@ We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_
 
 Again, consider $\bar{\mu}^- = \min\{\bar{\mu}, 0\}$ and $\bar{\mu}^+  = \max\{\bar{\mu}, 0\}$.
 
-This case is similar with the previous one but with variable drift and variance. By combining operators $L$ from previous sections, in this case $A $ is defined as
+This case is similar with the previous one but with variable drift and variance. By combining operators $L$ from previous sections, in this case $L^s, L$ is defined as
 \begin{align}
-A = \mu(x)^- L_1^-+\mu(x)^+L_1^+ +\Sigma(x) L_2
+L^s = \mu(x)^- L_1^-+\mu(x)^+L_1^+ +\sigma(x) L_2
 \end{align}
 where
 \begin{align*}
@@ -434,12 +441,14 @@ where
 \vdots&\vdots&\ddots&\vdots\\
 0&0&\cdots&\bar{\mu}^+x_M
 \end{bmatrix}\\
-\Sigma(x)&=\begin{bmatrix}
+\sigma(x)&=\begin{bmatrix}
 \frac{(\bar{\sigma}x_1)^2}{2}&0&\cdots&0\\
 0&\frac{(\bar{\sigma}x_2)^2}{2}&\cdots&0\\
 \vdots&\vdots&\ddots&\vdots\\
 0&0&\cdots&\frac{(\bar{\sigma}x_M)^2}{2}
 \end{bmatrix}
+\intertext{And the composed operator,}
+	L &\equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r -  L^s
 \end{align*}
 
 Again, since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflceting barriers but no drifts. Hence, operators $R$, $B$ and $Q$ are defined by \cref{eq:R-2}, \cref{B_reflecting} and \cref{Q_reflecting}, respectively. Also, with some simple algebras, we can easily verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
@@ -455,7 +464,7 @@ Again, since barriers are reflecting, we can have the same boundary conditions a
 % \end{bmatrix}
 % \end{align}
 
-Again, given $P$ defined by \cref{P_definition}, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
+Again, given $L$ defined by \cref{L_definition}, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
 
 \appendix
 \section{More on Gaussian Elimination and $Q$}
@@ -661,7 +670,7 @@ The $Q$ is useful there only in that it lazily allows a modification of the unde
 % where
 % \begin{equation}
 % P = ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - A)
-% \label{P_definition}
+% \label{L_definition}
 % \end{equation}
 %
 
