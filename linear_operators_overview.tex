@@ -202,9 +202,9 @@ The stationary equation \cref{eq:general-stationary-HJBE} becomes
 
 We discretize $[x^{\min},x^{\max}]$ uniformly and use the second-order finite difference approximation for $\D[xx]$. The discretized equation associated with \cref{HJBE_reflecting_barriers_PDE} is then
 \begin{align}
-	Au = p,\quad A = rI_M - \frac{1}{2}L_2Q_{RR}\label{HJBE_reflecting_barriers_discretized}
+	Au = p,\quad A = rI_M - \frac{1}{2}L_2Q_{RR}\label{eq:HJBE_reflecting_barriers_discretized}
 \end{align}
-where $L_2$ is defined in \cref{eq:L-2} and $Q_{RR}$ is defined in \cref{eq:Q-RR}. Note that since both $L_2$ and $Q_{RR}$ are linear, \cref{HJBE_reflecting_barriers_discretized} is also a linear equation. It can be solved either by constructing the matrix $A$ explicitly and use a regular linear system solver, or by constructing the operator $A$ lazily and use a Krylov solver such as GMRES.
+where $L_2$ is defined in \cref{eq:L-2} and $Q_{RR}$ is defined in \cref{eq:Q-RR}. Note that since both $L_2$ and $Q_{RR}$ are linear, \cref{eq:HJBE_reflecting_barriers_discretized} is also a linear equation. It can be solved either by constructing the matrix $A$ explicitly and use a regular linear system solver, or by constructing the operator $A$ lazily and use a Krylov solver such as GMRES.
 
 To complete things, the restriction operator is $R_2$ \cref{eq:R-2} and the boundary operator is $B_{RR}$ \cref{eq:B-RR} with $b^{\min} = b^{\max} = 0$. It is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
 
@@ -213,58 +213,21 @@ For this example, we still have \textbf{to do}:
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 
-\subsection{Stationary HJBE with a Lower Absorbing Barrier}
-Take the stochastic process
-$$
-d x_t = d W_t
-$$
-with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max}$. Again, the partial differential operator (infinitesimal generator) associated with the stochastic process is \cref{eq:L-s-nodrift}
+\subsection{Stationary HJBE with a Lower Dirichlet boundary}
+The setup is the same as \ref{sec:simple-reflecting-example}, with the only difference being the boundary condition. The top boundary at $x^{\max}$ is still reflecting whereas the lower boundary is Dirichlet: $\tilde{u}(x^{\max}) = b^{\min}$.
 
-For the absorbing barrier, when solving for the HJBE assume that $u(x^{\min}) = b^{\min}$ and $u'(x^{\max}) = 0$.
-
-For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}.
-% We still have \textbf{to do}:
-% \begin{itemize}
-% 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
-% \end{itemize}
-
-Again, we first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the \cref{sec:examples}, the matrix form of operator $\tilde{L}$ is again defined \cref{L_definition}
-
-According to lower absorbing barrier, we can define $B$ just like as $B_{AR}$ in \cref{eq:B-AR} and then we have
-\begin{equation}
-B\bar{u} = \begin{bmatrix}
-b^{\min}\\
-0
-\end{bmatrix} \equiv b
-\end{equation}\\
-Therefore, $\bar{u}(x^{\min}) = x^{\min}$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$.
-
-Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-\begin{equation}
-Q_L = \begin{bmatrix}
-& & \mathbf{0}_{1\times M} & & \\
-& & \mathbf{I}_M & & \\
-0&0&\dots&0&1
-\end{bmatrix}%_{\bar{M}\times M}
-\quad, \text{ } Q_b = \begin{bmatrix}
-b^{\min}\\
-0\\
-\vdots\\
-0
-\end{bmatrix}%_{\bar{M}\times 1}
-\end{equation}
-
-Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case. Additionally, it is worth to note that, if the absorbing boundary was of Dirichlet$_0$ type, then $b^{\min} = 0$ and $Q_b = \mathbf{0}_{\bar{M}}$ and $Q$ would be a linear operator.
-
-In this case, $L$ is given by \cref{L_definition}. According to conditions \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}, again we get
+The discretized equation for \cref{HJBE_reflecting_barriers_PDE} is now
 \begin{align}
-L(Q_L R \bar{u}+Q_b) = x
+	Au = p,\quad A = rI_M - \frac{1}{2}L_2Q_{AR}\label{eq:HJBE_lower_Dirichlet_discretized}
 \end{align}
-With $Q_b\neq 0$, we can solve interiors as
+where $Q_{AR}$ is defined in \cref{eq:Q-AR} with $b^{\max} = 0$. Compared to \cref{eq:HJBE_reflecting_barriers_discretized}, the $Q$ operator is different and now affine unless $b^{\min} = 0$. Again the restriction operator for this example is $R_2$ \cref{eq:R-2} whereas the boundary operator is $B_{AR}$ \cref{eq:B-AR}.
+
+To solve for $u$ in \cref{HJBE_reflecting_barriers_PDE}, plug in $Q_{AR}u = Q_{AR_L}u + Q_{AR_b}$ and we get the linear equation
 \begin{align}
-R\bar{u} = (L Q_L)^{-1}(x-L Q_b)
+A_Lu = p - A_b,\quad A_L = rI_M - \frac{1}{2}L_2Q_{AR_L},\quad A_b = -\frac{1}{2}L_2Q_{AR_b}
 \end{align}
-Then, the extended state vector $\bar{u}$ again can be similarly solved by \cref{solve_u_hat_in_terms_of_interiors}.
+Again this can be solved using an ordinary linear solver or a Krylov solver.
+
 \subsection{Stationary HJBE with Only Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
 $$
