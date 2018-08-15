@@ -90,21 +90,26 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 \subsection{Definitions and Notation for Examples}
-Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
+Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant. The infinitesimal generator associated with $x_t$ is denoted as $\tilde{L}^s$.
 
-For a given $\tilde{L}^s$ as the infinitesimal generate for a stochastic process. Then, if the payoff in state $x$ is $\tilde{p}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
+Let the payoff in state $x$ be $\tilde{p}(x)$ (for a simple example, choose $\tilde{p}(x) = x$). If payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is
 \begin{align}
 r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L}^s \tilde{u}(x)\label{eq:general-stationary-HJBE}\\
-\intertext{Rearranging and defining an intermediate,}
+\intertext{The stationary equation can be rearranged as}
 \tilde{L} \tilde{u}(x) &= \tilde{p}(x)
 \intertext{where the differential operator is}
 \tilde{L} &\equiv r - \tilde{L}^s
 \end{align}
-subject to $\D[x]\tilde{u}(x^{\min}) = 0$ and $\D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.
 
-For a simple example of a payoff, choose $\tilde{p}(x) = x$.
+The boundary conditions for $L$ are:
+\begin{itemize}
+\item $\tilde{u}(x^{\min}) = \tilde{u}(x^{\max}) = 0$ for absorbing barriers.
+\item $\D[x]\tilde{u}(x^{\min}) = \D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers. (If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.)
+\end{itemize}
 
-Since many of the examples will use the same boundary values and discretizations of the operators: define the discretization of the second-order derivative with central differences as
+The stencil operators used by the examples are:
+\begin{itemize}
+\item Second-order approximation to second-order derivative (central differencing):
 \begin{align}
 	L_2 &\equiv \frac{1}{\Delta^2}\begin{bmatrix}
 	1&-2&1&\dots&0&0&0\\
@@ -112,41 +117,68 @@ Since many of the examples will use the same boundary values and discretizations
 	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 	0&0&0&\dots&-2&1&0\\
 	0&0&0&\cdots&1&-2&1
-\end{bmatrix}\label{eq:L-2}
-	\intertext{Next, define the discretization of the first-derivative (forward and backward) as}
-	L^{+}_1 &= \frac{1}{\Delta}\begin{bmatrix}
+	\end{bmatrix}_{M\times(M+2)}\label{eq:L-2}
+\end{align}
+\item First-order approximation to first-order derivative (forward):
+\begin{align}
+	L^{+}_1 &\equiv \frac{1}{\Delta}\begin{bmatrix}
 	0&-1&1&0&\dots&0&0&0\\
 	0&0&-1&1&\dots&0&0&0\\
 	\vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 	0&0&0&0&\dots&-1&1&0\\
 	0&0&0&0&\cdots&0&-1&1
-	\end{bmatrix}\label{eq:L-1p}\\
-	L^{-}_1 &= \frac{1}{\Delta}\begin{bmatrix}
+	\end{bmatrix}_{M\times(M+2)}\label{eq:L-1p}
+\end{align}
+\item First-order approximation to first-order derivative (backward):
+\begin{align}
+	L^{-}_1 &\equiv \frac{1}{\Delta}\begin{bmatrix}
 	-1&1&0&\dots&0&0&0&0\\
 	0&-1&1&\dots&0&0&0&0\\
 	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
 	0&0&0&\dots&-1&1&0&0\\
 	0&0&0&\cdots&0&-1&1&0
-\end{bmatrix}\label{eq:L-1m}
-	\intertext{Next, notice that many of the $R$ matrix follow a simple pattern.  When $M_E = 2$ with a boundary point at both sides, }
-	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}\\
-	\intertext{A common $Q$ setup for this is,}
-	Q_{A,2} &\equiv \begin{bmatrix} \mathbf{0}_{1\times M} \\ \mathbf{I}_M \\ \mathbf{0}_{1\times M}\end{bmatrix}\label{eq:Q-A2}
-	\intertext{Next, define the $B$ associated with a reflection at both sides}
+	\end{bmatrix}_{M\times(M+2)}\label{eq:L-1m}
+\end{align}
+\end{itemize}
+
+All three stencil operators $L_2$, $L^{+}_1$ and $L^{-}_1$ require one ghost node at each end of the discretized domain. Therefore the associated boundary has $M_E = 2$ and restriction operator is
+\begin{align}
+	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}
+\end{align}
+
+Define the boundary operators for the examples:
+\begin{itemize}
+\item Reflecting boundary at both sides:
+\begin{align}
 	B_{RR} &\equiv \begin{bmatrix}
 	-1&1&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-RR}
-	\intertext{Another for the $B$ associated with an absorbing barrier at both sides}
+	\end{bmatrix}_{2\times (M+2)}\quad
+	b_{RR} = \begin{bmatrix}0\\0\end{bmatrix}\label{eq:B-RR}
+\end{align}
+\item Absorbing boundary at both sides:
+\begin{align}
 	B_{AA} &\equiv \begin{bmatrix}
 	1&0&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&0&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-AA}
-\intertext{And another for an absorbing at the bottom and reflecting at the top,}
-B_{AR} &\equiv \begin{bmatrix}
-1&0&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-AR}
+	\end{bmatrix}_{2\times (M+2)}\quad
+	b_{AA} = \begin{bmatrix}0\\0\end{bmatrix}\label{eq:B-AA}
+\end{align}
+\item Absorbing boundary at the bottom and reflecting boundary at the top:
+\begin{align}
+	B_{AR} &\equiv \begin{bmatrix}
+	1&0&0&\dots&0&0&0\\
+	0&0&0&\cdots&0&-1&1
+	\end{bmatrix}_{2\times (M+2)}\quad
+	b_{AR} = \begin{bmatrix}0\\0\end{bmatrix}\label{eq:B-AR}
+\end{align}
+\end{itemize}
+
+The corresponding boundary extrapolation operators for $R_2$ and the boundary operators are:
+\begin{align}
+	Q_{RR} &\equiv \begin{bmatrix}1&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\label{eq:Q-RR}\\
+	Q_{AA} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&0\end{bmatrix}\label{eq:Q-AA}\\
+	Q_{AR} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\label{eq:Q-AR}
 \end{align}
 
 \subsection{Stationary HJBE with Reflecting Barriers}\label{sec:simple-reflecting-example}
