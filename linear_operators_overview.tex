@@ -21,6 +21,9 @@
 	\author{}
 	\date{}
 	\maketitle
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
 	\section{Overview of Notation}
 	Some general notation, independent of operators and discretization
 	\begin{itemize}
@@ -53,9 +56,11 @@
 		\item Hence, denote the grid on the extended domain as $\bar{x} \in \R^{\bar{M}}$.  The interior points on the grid match the grid on the extended domain, so that $\bar{x}_{m + M^{-}_E} = x_{m}$ for $m = 1, \ldots M$ for the $M^{-}_E$ is the number of points required for the boundary conditions to the left of the interior, $M^{+}_E$ is the number of points to the right, and $M_E = M^{-}_E + M^{+}_E$
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{M}$, $y$ has length $M$.
 	\end{itemize}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
-	Take an linear differential operator $\tilde{L}$, (possibly) affine boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.\footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
+	Take a simple linear differential operator $\tilde{L}$, (possibly) affine boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.\footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
 	\begin{align}
 		\tilde{L} \tilde{u}(x) &= 0\label{eq:L-u-DE}\\
 		\tilde{B} \tilde{u}(x) &= \tilde{b}(x)\label{eq:B-u-DE}
@@ -63,7 +68,6 @@
 
 	The discretization process generates the following objects:
 	\begin{itemize}
-	%	\item $A$ is the \textit{discretization of the differential operator}, and is independent of the boundary conditions.  Think of it as the stencil for the interior of the operator expanded to the extended domain.
 		\item $B\in \R^{M_E \times \bar{M}}$ is the linear \textit{boundary condition operator} and $b \in \R^{M_E}$ the vector \textit{boundary condition value} with
 		\begin{equation}
 		B \bar{u} = b
@@ -80,28 +84,39 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 		\begin{align}
 		Q  R\bar{u} = \bar{u}\label{Q_operator_1}\\
 		B Q u  = b	\label{Q_operator_2}
-	\end{align}
-	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
-		\end{itemize}
+		\end{align}
+		To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
+		\item $L : \R^{\bar{M}} \to \R^M$ is the \textit{stencil operator}. It maps the extended domain to the interior by applying a stencil, which is determined by the derivative operator and the numerical differentiation scheme used.
+		\item The \textit{discretized derivative operator} $A : \R^M \to \R^M$ is composed as $A = LQ$. The intuition is that first $Q$ is applied to the interior points to add the ``ghost nodes'' corresponding to the boundary condition, and then the stencil operator $L$ is applied to the whole domain, including the ghost nodes. If $Q$ is affine, then $A$ is also affine, otherwise it is a regular linear operator.
+	\end{itemize}
+	
+	Complex differential operators can be expressed as the composition of simple differential operators (the simplest being linear combination). Note that the component operators need not have the same $Q$ even though the same boundary condition $\tilde{B}$ apply to each of them (for example, $A = A_1 + A_2$ but $A_1$ and $A_2$ use different orders of numerical differentiation, resulting in different numbers of ghost nodes needed for $Q_1$ and $Q_2$). 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 \subsection{Definitions and Notation for Examples}
-Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
+Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant. The infinitesimal generator associated with $x_t$ is denoted as $\tilde{L}^s$.
 
-For a given $\tilde{L}^s$ as the infinitesimal generate for a stochastic process. Then, if the payoff in state $x$ is $\tilde{p}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
+Let the payoff in state $x$ be $\tilde{p}(x)$ (for a simple example, choose $\tilde{p}(x) = x$). If payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is
 \begin{align}
 r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L}^s \tilde{u}(x)\label{eq:general-stationary-HJBE}\\
-\intertext{Rearranging and defining an intermediate,}
+\intertext{The stationary equation can be rearranged as}
 \tilde{L} \tilde{u}(x) &= \tilde{p}(x)
 \intertext{where the differential operator is}
 \tilde{L} &\equiv r - \tilde{L}^s
 \end{align}
-subject to $\D[x]\tilde{u}(x^{\min}) = 0$ and $\D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.
 
-For a simple example of a payoff, choose $\tilde{p}(x) = x$.
+Common boundary conditions for $L$ are:
+\begin{itemize}
+\item $\D[x]\tilde{u}(x^{\min}) = b^{\min}$, $\D[x]\tilde{u}(x^{\max}) = b^{\max}$ for Neumann boundaries ($b^{\min} = b^{\max} = 0$: reflecting boundaries).
+\item $\tilde{u}(x^{\min}) = b^{\min}$, $\tilde{u}(x^{\max}) = b^{\max}$ for Dirichlet boundaries ($b^{\min} = b^{\max} = 0$: absorbing boundaries).
+\item $\tilde{u}(x^{\min}) = b^{\min}$, $\D[x]\tilde{u}(x^{\max}) = b^{\max}$ for Dirichlet boundary at the bottom and Neumann boundary at the top.
+\end{itemize}
 
-Since many of the examples will use the same boundary values and discretizations of the operators: define the discretization of the second-order derivative with central differences as
+The stencil operators used by the examples are:
+\begin{itemize}
+\item Second-order approximation to second-order derivative (central differencing):
 \begin{align}
 	L_2 &\equiv \frac{1}{\Delta^2}\begin{bmatrix}
 	1&-2&1&\dots&0&0&0\\
@@ -109,42 +124,75 @@ Since many of the examples will use the same boundary values and discretizations
 	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 	0&0&0&\dots&-2&1&0\\
 	0&0&0&\cdots&1&-2&1
-\end{bmatrix}\label{eq:L-2}
-	\intertext{Next, define the discretization of the first-derivative (forward and backward) as}
-	L^{+}_1 &= \frac{1}{\Delta}\begin{bmatrix}
+	\end{bmatrix}_{M\times(M+2)}\label{eq:L-2}
+\end{align}
+\item First-order approximation to first-order derivative (forward):
+\begin{align}
+	L^{+}_1 &\equiv \frac{1}{\Delta}\begin{bmatrix}
 	0&-1&1&0&\dots&0&0&0\\
 	0&0&-1&1&\dots&0&0&0\\
 	\vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
 	0&0&0&0&\dots&-1&1&0\\
 	0&0&0&0&\cdots&0&-1&1
-	\end{bmatrix}\label{eq:L-1p}\\
-	L^{-}_1 &= \frac{1}{\Delta}\begin{bmatrix}
+	\end{bmatrix}_{M\times(M+2)}\label{eq:L-1p}
+\end{align}
+\item First-order approximation to first-order derivative (backward):
+\begin{align}
+	L^{-}_1 &\equiv \frac{1}{\Delta}\begin{bmatrix}
 	-1&1&0&\dots&0&0&0&0\\
 	0&-1&1&\dots&0&0&0&0\\
 	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
 	0&0&0&\dots&-1&1&0&0\\
 	0&0&0&\cdots&0&-1&1&0
-\end{bmatrix}\label{eq:L-1m}
-	\intertext{Next, notice that many of the $R$ matrix follow a simple pattern.  When $M_E = 2$ with a boundary point at both sides, }
-	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}\\
-	\intertext{A common $Q$ setup for this is,}
-	Q_{A,2} &\equiv \begin{bmatrix} \mathbf{0}_{1\times M} \\ \mathbf{I}_M \\ \mathbf{0}_{1\times M}\end{bmatrix}\label{eq:Q-A2}
-	\intertext{Next, define the $B$ associated with a reflection at both sides}
+	\end{bmatrix}_{M\times(M+2)}\label{eq:L-1m}
+\end{align}
+\end{itemize}
+
+All three stencil operators $L_2$, $L^{+}_1$ and $L^{-}_1$ require one ghost node at each end of the discretized domain. Therefore the associated boundary has $M_E = 2$, $\bar{M} = M + 2$ and $S_E = \{1,\bar{M}\}$. The restriction operator is
+\begin{align}
+	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}
+\end{align}
+
+Discretizing the continuous boundary conditions gives rise to the following boundary operators:
+\begin{itemize}
+\item Neumann boundary at both sides:
+\begin{align}
 	B_{RR} &\equiv \begin{bmatrix}
 	-1&1&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-RR}
-	\intertext{Another for the $B$ associated with an absorbing barrier at both sides}
+	\end{bmatrix}_{2\times (M+2)}\quad
+	b_{RR} = \begin{bmatrix}b^{\min}\Delta\\b^{\max}\Delta\end{bmatrix}\label{eq:B-RR}
+\end{align}
+\item Dirichlet boundary at both sides:
+\begin{align}
 	B_{AA} &\equiv \begin{bmatrix}
 	1&0&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&0&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-AA}
-\intertext{And another for an absorbing at the bottom and reflecting at the top,}
-B_{AR} &\equiv \begin{bmatrix}
-1&0&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-AR}
+	\end{bmatrix}_{2\times (M+2)}\quad
+	b_{AA} = \begin{bmatrix}b^{\min}\\b^{\max}\end{bmatrix}\label{eq:B-AA}
 \end{align}
+\item Dirichlet boundary at the bottom and Neumann boundary at the top:
+\begin{align}
+	B_{AR} &\equiv \begin{bmatrix}
+	1&0&0&\dots&0&0&0\\
+	0&0&0&\cdots&0&-1&1
+	\end{bmatrix}_{2\times (M+2)}\quad
+	b_{AR} = \begin{bmatrix}b^{\min}\\b^{\max}\Delta\end{bmatrix}\label{eq:B-AR}
+\end{align}
+\end{itemize}
+
+The corresponding boundary extrapolation operators for $R_2$ and the boundary operators are:
+\begin{align}
+	Q_{RR_L} &\equiv \begin{bmatrix}1&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\quad
+	Q_{RR_b} = \begin{bmatrix}-b^{\min}\Delta\\\mathbf{0}_M\\b^{\max}\Delta\end{bmatrix}\label{eq:Q-RR}\\
+	Q_{AA_L} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&0\end{bmatrix}\quad
+	Q_{AA_b} = \begin{bmatrix}b^{\min}\\\mathbf{0}_M\\b^{\max}\end{bmatrix}\label{eq:Q-AA}\\
+	Q_{AR_L} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\quad
+	Q_{AR_b} = \begin{bmatrix}b^{\min}\\\mathbf{0}_M\\b^{\max}\Delta\end{bmatrix}\label{eq:Q-AR}
+\end{align}
+If $b^{\min} = b^{\max} = 0$ (i.e. the boundary conditions are all reflecting/absorbing), then the extrapolation operator in all three cases are linear, in which case we drop the $L$ subscript and directly refer to the operators as $Q_{RR}$, $Q_{AA}$ and $Q_{AR}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Stationary HJBE with Reflecting Barriers}\label{sec:simple-reflecting-example}
 Take the stochastic process
@@ -155,248 +203,112 @@ with reflecting barriers at $x^{\min}$ and $x^{\max}$.  The partial differential
 \begin{equation}
 	\tilde{L}^s \equiv \frac{1}{2}\D[xx]\label{eq:L-s-nodrift}
 \end{equation}
+The stationary equation \cref{eq:general-stationary-HJBE} becomes
+\begin{align}
+\tilde{L} \tilde{u}(x) = \tilde{p}(x),\quad\tilde{L}\equiv r - \frac{1}{2}\partial_{xx}\label{HJBE_reflecting_barriers_PDE}
+\end{align}
 
-For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
+We discretize $[x^{\min},x^{\max}]$ uniformly and use the second-order finite difference approximation for $\D[xx]$. The discretized equation associated with \cref{HJBE_reflecting_barriers_PDE} is then
+\begin{align}
+	Au = p,\quad A = rI_M - \frac{1}{2}L_2Q_{RR}\label{eq:HJBE_reflecting_barriers_discretized}
+\end{align}
+where $L_2$ is defined in \cref{eq:L-2} and $Q_{RR}$ is defined in \cref{eq:Q-RR}. Note that since both $L_2$ and $Q_{RR}$ are linear, \cref{eq:HJBE_reflecting_barriers_discretized} is also a linear equation. It can be solved either by constructing the matrix $A$ explicitly and use a regular linear system solver, or by constructing the operator $A$ lazily and use a Krylov solver such as GMRES.
+
+To complete things, the restriction operator is $R_2$ \cref{eq:R-2} and the boundary operator is $B_{RR}$ \cref{eq:B-RR} with $b^{\min} = b^{\max} = 0$. It is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+
+For this example, we still have \textbf{to do}:
 \begin{itemize}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
-Consider
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Stationary HJBE with a Lower Dirichlet boundary}
+The setup is the same as \ref{sec:simple-reflecting-example}, with the only difference being the boundary condition. The top boundary at $x^{\max}$ is still reflecting whereas the lower boundary is Dirichlet: $\tilde{u}(x^{\max}) = b^{\min}$.
+
+The discretized equation for \cref{HJBE_reflecting_barriers_PDE} is now
 \begin{align}
-r \tilde{u}(x) &= \tilde{L}^s \tilde{u}(x) - x\label{HJBE_reflecting_barriers_PDE}\\
-\intertext{Define the operator $\tilde{L}$ and rearrange,}
-\tilde{L} \tilde{u}(x) &= x\\
-\tilde{L}&\equiv r - \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
+	Au = p,\quad A = rI_M - \frac{1}{2}L_2Q_{AR}\label{eq:HJBE_lower_Dirichlet_discretized}
 \end{align}
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the previous section, the matrix form of operator $\tilde{L}$ can be defined, given as $A = \frac{L_2}{2}$.
+where $Q_{AR}$ is defined in \cref{eq:Q-AR} with $b^{\max} = 0$. Compared to \cref{eq:HJBE_reflecting_barriers_discretized}, the $Q$ operator is different and now affine unless $b^{\min} = 0$. Again the restriction operator for this example is $R_2$ \cref{eq:R-2} whereas the boundary operator is $B_{AR}$ \cref{eq:B-AR}.
 
-By reflecting barriers, we can define $B$ just like as $B_{RR}$ in \cref{eq:B-RR} and then we have
-\begin{equation}
-B\bar{u} = \begin{bmatrix}
-0\\
-0
-\end{bmatrix} \label{B_reflecting}
-\end{equation}
-Therefore, $\bar{u}(x_0) = \bar{u}(x_1)$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$. It is important to notice that our choice for $B$ defines the linear relationship between the interior points and the boundary conditions.
-
-Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-\begin{equation}
-Q_L = \begin{bmatrix}
-1& 0&\dots&0&0\\
- & & \mathbf{I}_M & & \\
-0&0&\dots&0&1
-\end{bmatrix}%_{\bar{M}\times M}
-\quad , \text{ } Q_b = \begin{matrix}
-\mathbf{0}_{\bar{M}}
-\end{matrix}\label{Q_reflecting}
-\end{equation}
-
-Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case. Additionally, it is worth to note that, since $Q_b = \mathbf{0}_{\bar{M}}$, $Q$ is a linear operator.
-
-To solve $\bar{u}(x)$, we first solve interiors according to \cref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
+To solve for $u$ in \cref{HJBE_reflecting_barriers_PDE}, plug in $Q_{AR}u = Q_{AR_L}u + Q_{AR_b}$ and we get the linear equation
 \begin{align}
-L \bar{u} &= x\label{solve_u_hat_cond_1}\\
-Q R\bar{u} &= Q u = Q_L u+Q_b = \bar{u}\label{solve_u_hat_cond_2}
+A_Lu = p - A_b,\quad A_L = rI_M - \frac{1}{2}L_2Q_{AR_L},\quad A_b = -\frac{1}{2}L_2Q_{AR_b}
 \end{align}
-where the discretization of the linear operator $\tilde{L}$, defined on the extension, is
-\begin{equation}
-L \equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - L_2)
-\label{L_definition}
-\end{equation}
-Note that in doing the composition of the operator in \cref{L_definition}, we need to combine the $L_2$ (defined on $M+2$ for the extension) with $r I$, defined on $M$ points.  In order to compose these, we need to extend the $r I$ operator with $0$s.
-% \begin{align}
-% P &= \begin{bmatrix}
-% 0&r&0&\cdots&0&0&0\\
-% 0&0&r&\cdots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\cdots&r&0&0\\
-% 0&0&0&\cdots&0&r&0\\
-% \end{bmatrix}_{M\times\bar{M}}-A  \\
-% &= \begin{bmatrix}
-% -1&2(1+r\Delta^2)&-1&\dots&0&0&0\\
-% 0&-1&2(1+r\Delta^2)&\dots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\dots&2(1+r\Delta^2)&-1&0\\
-% 0&0&0&\cdots&-1&2(1+r\Delta^2)&-1
-% \end{bmatrix}\frac{1}{2\Delta^{2}}
-% \end{align}
-Substitute \cref{solve_u_hat_cond_2} into \cref{solve_u_hat_cond_1}, we get
+Again this can be solved using an ordinary linear solver or a Krylov solver.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Stationary HJBE with Only Drift}\label{sec:drift-only-example}
+Consider the stochastic process with a constant drift term but no diffusion:
 \begin{align}
-L Q u = L (Q_L u+Q_b) = x
-\end{align}
-Since $Q_b = 0$ in this case, interiors are solved as
-\begin{align}
-u = (L Q_L)^{-1}x
-\end{align}
-%Then, by \cref{solve_u_hat_cond_2}, we can solve the extended state vector by
-% \begin{align}
-% \bar{u} = Q_L R\bar{u}+Q_b\label{solve_u_hat_in_terms_of_interiors}
-% \end{align}
-
-\subsection{Stationary HJBE with a Lower Absorbing Barrier}
-Take the stochastic process
-$$
-d x_t = d W_t
-$$
-with an absorbing barrier at $x^{\min}$, and a reflecting barrier at $x^{\max}$. Again, the partial differential operator (infinitesimal generator) associated with the stochastic process is \cref{eq:L-s-nodrift}
-
-For the absorbing barrier, when solving for the HJBE assume that $u(x^{\min}) = b^{\min}$ and $u'(x^{\max}) = 0$.
-
-For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}.
-% We still have \textbf{to do}:
-% \begin{itemize}
-% 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
-% \end{itemize}
-
-Again, we first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the \cref{sec:examples}, the matrix form of operator $\tilde{L}$ is again defined \cref{L_definition}
-
-According to lower absorbing barrier, we can define $B$ just like as $B_{AR}$ in \cref{eq:B-AR} and then we have
-\begin{equation}
-B\bar{u} = \begin{bmatrix}
-b^{\min}\\
-0
-\end{bmatrix} \equiv b
-\end{equation}\\
-Therefore, $\bar{u}(x^{\min}) = x^{\min}$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$.
-
-Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-\begin{equation}
-Q_L = \begin{bmatrix}
-& & \mathbf{0}_{1\times M} & & \\
-& & \mathbf{I}_M & & \\
-0&0&\dots&0&1
-\end{bmatrix}%_{\bar{M}\times M}
-\quad, \text{ } Q_b = \begin{bmatrix}
-b^{\min}\\
-0\\
-\vdots\\
-0
-\end{bmatrix}%_{\bar{M}\times 1}
-\end{equation}
-
-Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case. Additionally, it is worth to note that, if the absorbing boundary was of Dirichlet$_0$ type, then $b^{\min} = 0$ and $Q_b = \mathbf{0}_{\bar{M}}$ and $Q$ would be a linear operator.
-
-In this case, $L$ is given by \cref{L_definition}. According to conditions \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}, again we get
-\begin{align}
-L(Q_L R \bar{u}+Q_b) = x
-\end{align}
-With $Q_b\neq 0$, we can solve interiors as
-\begin{align}
-R\bar{u} = (L Q_L)^{-1}(x-L Q_b)
-\end{align}
-Then, the extended state vector $\bar{u}$ again can be similarly solved by \cref{solve_u_hat_in_terms_of_interiors}.
-\subsection{Stationary HJBE with Only Drift}
-Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
-$$
 d x_t = \mu dt
-$$
-With a generator
-\begin{equation}
+\end{align}
+Here $\mu \ne 0$ is a constant and the generator for the process is
+\begin{align}
 	\tilde{L}^s \equiv \mu \D[x]\label{eq:L-s-drift}
-\end{equation}
+\end{align}
+which gives rise to the stationary equation for payoff $\tilde{p}(x)$
+\begin{align}
+	\tilde{L} \tilde{u}(x) = \tilde{p}(x),\quad \tilde{L}&\equiv r - \mu\partial_{x}\label{HJBE_PDE_with_drifts}
+\end{align}
+The boundary conditions are $\tilde{u}(x^{\min}) = b^{\min}$ and $\tilde{u}(x^{\max}) = b^{\max}$.
 
-For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
+Since we are dealing with first-order derivative, we need to pay special attention to the upwind direction when discretizing the equation. The form of the discretized equation $Au = p$ depends on the sign of drift $\mu$:
+\begin{itemize}
+	\item $\mu > 0$: forward difference should be used and $A = rI_M - \mu L^+_1Q_{AA}$.
+	\item $\mu < 0$: backward difference should be used and $A = rI_M - \mu L^-_1Q_{AA}$.
+\end{itemize}
+Here $L^+_1$ and $L^-_1$ are defined in \cref{eq:L-1p} and \cref{eq:L-1m}. The affine boundary extrapolation operator $Q_{AA}$ is defined in \cref{eq:Q-AA}, and the boundary operator in conjunction is $B_{AA}$ defined in \cref{eq:B-AA} with $R_2$ the restriction operator.
+
+As with \ref{sec:simple-reflecting-example}, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+
+Solving the affine equation $Au = p$ can be done in a similar fashion as \ref{sec:simple-reflecting-example}. More specifically, we write out $A$'s linear and bias part and get the rearranged linear equation
+\begin{align}
+A_Lu = p - A_b,\quad A_L = rI_M - \mu L^d_1Q_{AA_L},\quad A_b = -\mu L^d_1Q_{AA_b}
+\end{align}
+where $d = +$ for $\mu > 0$ and $d = -$ for $\mu < 0$.
+
+We still have \textbf{to do}:
 \begin{itemize}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
-Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
-Consider
-\begin{align}
-\tilde{L} \tilde{u}(x) &= x\label{HJBE_PDE_with_drifts}\\
-\text{where }\tilde{L}&\equiv r - \mu\partial_{x}
-\end{align}
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
-
-Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^+$ as in \cref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^-$ as in \cref{eq:L-1m}.
-
-Considering the absorbing barriers, we can define $B$ just like as $B_{AA}$ in \cref{eq:B-AA} and then we have
-\begin{equation}
-B\bar{u} = \begin{bmatrix}
-b^{\min}\\
-b^{\max}
-\end{bmatrix}
-\end{equation}.\\
-Therefore, $\bar{u}(x_0) = x^{\min}$ and $\bar{u}(x_{M+1}) = x^{\max}$.
-
-Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-\begin{equation}
-Q_L = \begin{bmatrix}
-\mathbf{0}_{1\times M} \\
-\mathbf{I}_M  \\
-\mathbf{0}_{1\times M}
-\end{bmatrix}%_{\bar{M}\times M}
-\quad, \text{ } Q_b = \begin{bmatrix}
-b^{\min}\\
-0\\
-\vdots\\
-b^{\max}
-\end{bmatrix}%_{\bar{M}\times 1}
-\end{equation}
-
-Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
-
-
-% In this example, the matrix $P$ in \cref{solve_u_hat_cond_1} becomes
-% \begin{align}
-% P = \frac{1}{\Delta}
-% \begin{bmatrix}
-% \mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+&\dots&0&0&0\\
-% 0&\mu^-&r\Delta-(\mu^--\mu^+)&\dots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
-% 0&0&0&s&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
-% \end{bmatrix}%_{\bar{M}\times\bar{M}}
-
-Similarly, as $L$ is defined by \cref{L_definition} and the interiors are solved by \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}:
-\begin{align}
-u = (L Q_L)^{-1}(x-L Q_b)
-\end{align}
-Thus, the extended state vector $\bar{u}$ again can be similarly solved by \cref{solve_u_hat_in_terms_of_interiors}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
-Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
-$$
+Now, consider the stochastic process with both drift and diffusion:
+\begin{align}
 d x_t = \mu dt + \sigma d W_t
-$$
-With a generator
-$$
+\end{align}
+Here both $\mu$ and $\sigma$ are non-zero constants. The corresponding generator is
+\begin{align}
 	\tilde{L}^s \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
-$$
+\end{align}
+Reflecting barriers are present at both ends $x^{\min}$ and $x^{\max}$.
 
-For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
+As with \ref{sec:drift-only-example}, the system of equations to solve for is \cref{eq:general-stationary-HJBE} and we need to pay special attention to the upwind direction when discretizing it. It so happens that the first-order approximation to $\D[x]$ and the second-order approximation to $\D[xx]$ use the same extended grid, with $M_E = 2$, $\bar{M} = M + 2$ and $S_E = \{1,\bar{M}\}$. They share the same boundary operator ($B_{RR}$ in \cref{eq:B-RR}) and boundary extrapolation operator ($Q_{RR}$ in \cref{eq:Q-RR}). As a result, we can fuse the stencil operators of the drift and diffusion together as a single operator:
+\begin{align}
+	L^s &= \mu L_1^{-} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
+	L^s &=\mu L_1^{+} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0
+\end{align}
+which results in the discretized equation
+\begin{align}
+	Au = p,\quad A = rI_M - L^sQ_{RR}
+\end{align}
+Since the equation is linear just as in \ref{sec:simple-reflecting-example}, it can be solved easily using any linear solver.
+
+Again, with some simple algebras, we can easily verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+
+We still have \textbf{to do}:
 \begin{itemize}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
-
-By combining operators from previous sections, in this case $L^s$ is defined as
-\begin{align}
-L^s &= \mu L_1^{-} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
-L^s &=\mu L_1^{+} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0\\
-\intertext{And the composed operator,}
-	L &\equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r -  L^s
-\end{align}
-
-Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $R$, $B$ and $Q$ are defined by \cref{eq:R-2}, \cref{B_reflecting} and \cref{Q_reflecting}, respectively. Also, with some simple algebras, we can easily verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
-
-
-% In this example, the matrix $P$ in \cref{solve_u_hat_cond_1} becomes
-% \begin{align}
-% P = \frac{1}{\Delta^{2}}
-% \begin{bmatrix}
-% -X&r\Delta^2-Y&-Z&\dots&0&0&0\\
-% 0&-X&r\Delta^2-Y&\dots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\dots&r\Delta^2-Y&-Z&0\\
-% 0&0&0&\cdots&-X&r\Delta^2-Y&-Z
-% \end{bmatrix}
-% \end{align}
-
-Given $L$ defined by \cref{L_definition}, the rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
@@ -466,6 +378,8 @@ Again, since barriers are reflecting, we can have the same boundary conditions a
 
 Again, given $L$ defined by \cref{L_definition}, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \appendix
 \section{More on Gaussian Elimination and $Q$}
 \subsection{Linear Case with Reflecting Boundaries}
@@ -504,6 +418,9 @@ First, define the stochastic process/etc.
 		\tilde{B}\end{bmatrix} u(x) &\equiv \begin{bmatrix}\tilde{c}(x) \\ b\end{bmatrix}
 	\end{align}
 \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Discretizing}
 To discretize, let  Let $\Delta x = 1$ with a uniform grid.  Therefore, $M = 3, \bar{M} = 5$,
 \begin{align}
@@ -537,6 +454,7 @@ B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{(
 \end{align}
 Notice that we need a row in $B$ for every extra point added from the composed operators in forming $L$
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Stacking the System}
 Stacking up the definitions for $L, B, b,c,u$, we see that the system of equations for this is,
@@ -592,6 +510,9 @@ To see the role of Gaussian-elimination, add the 4th row to the first row to get
 &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:reduced-example-1}
 \end{align}
 Also, notice that this allowed us to solve for $u$ directly, instead of taking a restriction.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Operators}
 First lets write down what we know works.  Define
 \begin{align}
@@ -674,6 +595,8 @@ The $Q$ is useful there only in that it lazily allows a modification of the unde
 % \end{equation}
 %
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Case with Drift}\label{sec:simple-reflecting-drift-example}
 Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another component with a drift at rate $\mu \leq 0$.  Because the drift is negative, we know the correct upwind direction.
 \begin{itemize}
@@ -693,6 +616,9 @@ Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another
 \end{align}
 \end{itemize}
 Otherwise, the problem remains the same.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Discretizing}
 Use the previous definitions, and now define the discretization of the $\tilde{L}_3$ operator with first differences (already extended for simplicity
 \begin{align}
@@ -752,7 +678,7 @@ L Q u &= c\\
 \end{align}
 So,the $L Q$ still generated the same matrix as before.
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		\subsection{Affine Relations and Intuition:}
 		The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
