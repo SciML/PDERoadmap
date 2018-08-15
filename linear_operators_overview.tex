@@ -141,7 +141,7 @@ The stencil operators used by the examples are:
 \end{align}
 \end{itemize}
 
-All three stencil operators $L_2$, $L^{+}_1$ and $L^{-}_1$ require one ghost node at each end of the discretized domain. Therefore the associated boundary has $M_E = 2$ and restriction operator is
+All three stencil operators $L_2$, $L^{+}_1$ and $L^{-}_1$ require one ghost node at each end of the discretized domain. Therefore the associated boundary has $M_E = 2$, $\bar{M} = M + 2$ and $S_E = \{1,\bar{M}\}$. The restriction operator is
 \begin{align}
 	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}
 \end{align}
@@ -174,7 +174,7 @@ Define the boundary operators for the examples:
 \end{align}
 \end{itemize}
 
-The corresponding boundary extrapolation operators for $R_2$ and the boundary operators are:
+The corresponding boundary extrapolation operators for $R_2$ and the boundary operators are (they are all linear):
 \begin{align}
 	Q_{RR} &\equiv \begin{bmatrix}1&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\label{eq:Q-RR}\\
 	Q_{AA} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&0\end{bmatrix}\label{eq:Q-AA}\\
@@ -190,82 +190,23 @@ with reflecting barriers at $x^{\min}$ and $x^{\max}$.  The partial differential
 \begin{equation}
 	\tilde{L}^s \equiv \frac{1}{2}\D[xx]\label{eq:L-s-nodrift}
 \end{equation}
+The stationary equation \cref{eq:general-stationary-HJBE} becomes
+\begin{align}
+\tilde{L} \tilde{u}(x) = \tilde{p}(x),\quad\tilde{L}\equiv r - \frac{1}{2}\partial_{xx}\label{HJBE_reflecting_barriers_PDE}
+\end{align}
 
-For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
+We discretize $[x^{\min},x^{\max}]$ uniformly and use the second-order finite difference approximation for $\D[xx]$. The discretized equation associated with \cref{HJBE_reflecting_barriers_PDE} is then
+\begin{align}
+	Au = p,\quad A = rI_M - \frac{1}{2}L_2Q_{RR}\label{HJBE_reflecting_barriers_discretized}
+\end{align}
+where $L_2$ is defined in \cref{eq:L-2} and $Q_{RR}$ is defined in \cref{eq:Q-RR}. Note that since both $L_2$ and $Q_{RR}$ are linear, \cref{HJBE_reflecting_barriers_discretized} is also a linear equation. It can be solved either by constructing the matrix $A$ explicitly and use a regular linear system solver, or by constructing the operator $A$ lazily and use a Krylov solver such as GMRES.
+
+To complete things, the restriction operator is $R_2$ \cref{eq:R-2} and the boundary operator is $B_{RR}$ \cref{eq:B-RR}. It is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+
+For this example, we still have \textbf{to do}:
 \begin{itemize}
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
-Consider
-\begin{align}
-r \tilde{u}(x) &= \tilde{L}^s \tilde{u}(x) - x\label{HJBE_reflecting_barriers_PDE}\\
-\intertext{Define the operator $\tilde{L}$ and rearrange,}
-\tilde{L} \tilde{u}(x) &= x\\
-\tilde{L}&\equiv r - \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
-\end{align}
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the previous section, the matrix form of operator $\tilde{L}$ can be defined, given as $A = \frac{L_2}{2}$.
-
-By reflecting barriers, we can define $B$ just like as $B_{RR}$ in \cref{eq:B-RR} and then we have
-\begin{equation}
-B\bar{u} = \begin{bmatrix}
-0\\
-0
-\end{bmatrix} \label{B_reflecting}
-\end{equation}
-Therefore, $\bar{u}(x_0) = \bar{u}(x_1)$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$. It is important to notice that our choice for $B$ defines the linear relationship between the interior points and the boundary conditions.
-
-Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-\begin{equation}
-Q_L = \begin{bmatrix}
-1& 0&\dots&0&0\\
- & & \mathbf{I}_M & & \\
-0&0&\dots&0&1
-\end{bmatrix}%_{\bar{M}\times M}
-\quad , \text{ } Q_b = \begin{matrix}
-\mathbf{0}_{\bar{M}}
-\end{matrix}\label{Q_reflecting}
-\end{equation}
-
-Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case. Additionally, it is worth to note that, since $Q_b = \mathbf{0}_{\bar{M}}$, $Q$ is a linear operator.
-
-To solve $\bar{u}(x)$, we first solve interiors according to \cref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
-\begin{align}
-L \bar{u} &= x\label{solve_u_hat_cond_1}\\
-Q R\bar{u} &= Q u = Q_L u+Q_b = \bar{u}\label{solve_u_hat_cond_2}
-\end{align}
-where the discretization of the linear operator $\tilde{L}$, defined on the extension, is
-\begin{equation}
-L \equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - L_2)
-\label{L_definition}
-\end{equation}
-Note that in doing the composition of the operator in \cref{L_definition}, we need to combine the $L_2$ (defined on $M+2$ for the extension) with $r I$, defined on $M$ points.  In order to compose these, we need to extend the $r I$ operator with $0$s.
-% \begin{align}
-% P &= \begin{bmatrix}
-% 0&r&0&\cdots&0&0&0\\
-% 0&0&r&\cdots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\cdots&r&0&0\\
-% 0&0&0&\cdots&0&r&0\\
-% \end{bmatrix}_{M\times\bar{M}}-A  \\
-% &= \begin{bmatrix}
-% -1&2(1+r\Delta^2)&-1&\dots&0&0&0\\
-% 0&-1&2(1+r\Delta^2)&\dots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\dots&2(1+r\Delta^2)&-1&0\\
-% 0&0&0&\cdots&-1&2(1+r\Delta^2)&-1
-% \end{bmatrix}\frac{1}{2\Delta^{2}}
-% \end{align}
-Substitute \cref{solve_u_hat_cond_2} into \cref{solve_u_hat_cond_1}, we get
-\begin{align}
-L Q u = L (Q_L u+Q_b) = x
-\end{align}
-Since $Q_b = 0$ in this case, interiors are solved as
-\begin{align}
-u = (L Q_L)^{-1}x
-\end{align}
-%Then, by \cref{solve_u_hat_cond_2}, we can solve the extended state vector by
-% \begin{align}
-% \bar{u} = Q_L R\bar{u}+Q_b\label{solve_u_hat_in_terms_of_interiors}
-% \end{align}
 
 \subsection{Stationary HJBE with a Lower Absorbing Barrier}
 Take the stochastic process
