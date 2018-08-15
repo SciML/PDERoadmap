@@ -101,10 +101,11 @@ r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L}^s \tilde{u}(x)\label{eq:general-stati
 \tilde{L} &\equiv r - \tilde{L}^s
 \end{align}
 
-The boundary conditions for $L$ are:
+Common boundary conditions for $L$ are:
 \begin{itemize}
-\item $\tilde{u}(x^{\min}) = \tilde{u}(x^{\max}) = 0$ for absorbing barriers.
-\item $\D[x]\tilde{u}(x^{\min}) = \D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers. (If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.)
+\item $\D[x]\tilde{u}(x^{\min}) = b^{\min}$, $\D[x]\tilde{u}(x^{\max}) = b^{\max}$ for Neumann boundaries ($b^{\min} = b^{\max} = 0$: reflecting boundaries).
+\item $\tilde{u}(x^{\min}) = b^{\min}$, $\tilde{u}(x^{\max}) = b^{\max}$ for Dirichlet boundaries ($b^{\min} = b^{\max} = 0$: absorbing boundaries).
+\item $\tilde{u}(x^{\min}) = b^{\min}$, $\D[x]\tilde{u}(x^{\max}) = b^{\max}$ for Dirichlet boundary at the bottom and Neumann boundary at the top.
 \end{itemize}
 
 The stencil operators used by the examples are:
@@ -146,40 +147,44 @@ All three stencil operators $L_2$, $L^{+}_1$ and $L^{-}_1$ require one ghost nod
 	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}
 \end{align}
 
-Define the boundary operators for the examples:
+Discretizing the continuous boundary conditions gives rise to the following boundary operators:
 \begin{itemize}
-\item Reflecting boundary at both sides:
+\item Neumann boundary at both sides:
 \begin{align}
 	B_{RR} &\equiv \begin{bmatrix}
 	-1&1&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&-1&1
 	\end{bmatrix}_{2\times (M+2)}\quad
-	b_{RR} = \begin{bmatrix}0\\0\end{bmatrix}\label{eq:B-RR}
+	b_{RR} = \begin{bmatrix}b^{\min}\Delta\\b^{\max}\Delta\end{bmatrix}\label{eq:B-RR}
 \end{align}
-\item Absorbing boundary at both sides:
+\item Dirichlet boundary at both sides:
 \begin{align}
 	B_{AA} &\equiv \begin{bmatrix}
 	1&0&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&0&1
 	\end{bmatrix}_{2\times (M+2)}\quad
-	b_{AA} = \begin{bmatrix}0\\0\end{bmatrix}\label{eq:B-AA}
+	b_{AA} = \begin{bmatrix}b^{\min}\\b^{\max}\end{bmatrix}\label{eq:B-AA}
 \end{align}
-\item Absorbing boundary at the bottom and reflecting boundary at the top:
+\item Dirichlet boundary at the bottom and Neumann boundary at the top:
 \begin{align}
 	B_{AR} &\equiv \begin{bmatrix}
 	1&0&0&\dots&0&0&0\\
 	0&0&0&\cdots&0&-1&1
 	\end{bmatrix}_{2\times (M+2)}\quad
-	b_{AR} = \begin{bmatrix}0\\0\end{bmatrix}\label{eq:B-AR}
+	b_{AR} = \begin{bmatrix}b^{\min}\\b^{\max}\Delta\end{bmatrix}\label{eq:B-AR}
 \end{align}
 \end{itemize}
 
-The corresponding boundary extrapolation operators for $R_2$ and the boundary operators are (they are all linear):
+The corresponding boundary extrapolation operators for $R_2$ and the boundary operators are:
 \begin{align}
-	Q_{RR} &\equiv \begin{bmatrix}1&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\label{eq:Q-RR}\\
-	Q_{AA} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&0\end{bmatrix}\label{eq:Q-AA}\\
-	Q_{AR} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\label{eq:Q-AR}
+	Q_{RR_L} &\equiv \begin{bmatrix}1&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\quad
+	Q_{RR_b} = \begin{bmatrix}-b^{\min}\Delta\\\mathbf{0}_M\\b^{\max}\Delta\end{bmatrix}\label{eq:Q-RR}\\
+	Q_{AA_L} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&0\end{bmatrix}\quad
+	Q_{AA_b} = \begin{bmatrix}b^{\min}\\\mathbf{0}_M\\b^{\max}\end{bmatrix}\label{eq:Q-AA}\\
+	Q_{AR_L} &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\quad
+	Q_{AR_b} = \begin{bmatrix}b^{\min}\\\mathbf{0}_M\\b^{\max}\Delta\end{bmatrix}\label{eq:Q-AR}
 \end{align}
+If $b^{\min} = b^{\max} = 0$ (i.e. the boundary conditions are all reflecting/absorbing), then the extrapolation operator in all three cases are linear, in which case we drop the $L$ subscript and directly refer to the operators as $Q_{RR}$, $Q_{AA}$ and $Q_{AR}$.
 
 \subsection{Stationary HJBE with Reflecting Barriers}\label{sec:simple-reflecting-example}
 Take the stochastic process
@@ -201,7 +206,7 @@ We discretize $[x^{\min},x^{\max}]$ uniformly and use the second-order finite di
 \end{align}
 where $L_2$ is defined in \cref{eq:L-2} and $Q_{RR}$ is defined in \cref{eq:Q-RR}. Note that since both $L_2$ and $Q_{RR}$ are linear, \cref{HJBE_reflecting_barriers_discretized} is also a linear equation. It can be solved either by constructing the matrix $A$ explicitly and use a regular linear system solver, or by constructing the operator $A$ lazily and use a Krylov solver such as GMRES.
 
-To complete things, the restriction operator is $R_2$ \cref{eq:R-2} and the boundary operator is $B_{RR}$ \cref{eq:B-RR}. It is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+To complete things, the restriction operator is $R_2$ \cref{eq:R-2} and the boundary operator is $B_{RR}$ \cref{eq:B-RR} with $b^{\min} = b^{\max} = 0$. It is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
 
 For this example, we still have \textbf{to do}:
 \begin{itemize}
