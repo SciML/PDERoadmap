@@ -229,74 +229,40 @@ A_Lu = p - A_b,\quad A_L = rI_M - \frac{1}{2}L_2Q_{AR_L},\quad A_b = -\frac{1}{2
 Again this can be solved using an ordinary linear solver or a Krylov solver.
 
 \subsection{Stationary HJBE with Only Drift}
-Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
-$$
+Consider the stochastic process with a constant drift term but no diffusion:
+\begin{align}
 d x_t = \mu dt
-$$
-With a generator
-\begin{equation}
+\end{align}
+Here $\mu \ne 0$ is a constant and the generator for the process is
+\begin{align}
 	\tilde{L}^s \equiv \mu \D[x]\label{eq:L-s-drift}
-\end{equation}
+\end{align}
+which gives rise to the stationary equation for payoff $\tilde{p}(x)$
+\begin{align}
+	\tilde{L} \tilde{u}(x) = \tilde{p}(x),\quad \tilde{L}&\equiv r - \mu\partial_{x}\label{HJBE_PDE_with_drifts}
+\end{align}
+The boundary conditions are $\tilde{u}(x^{\min}) = b^{\min}$ and $\tilde{u}(x^{\max}) = b^{\max}$.
 
-For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
+Since we are dealing with first-order derivative, we need to pay special attention to the upwind direction when discretizing the equation. The form of the discretized equation $Au = p$ depends on the sign of drift $\mu$:
+\begin{itemize}
+	\item $\mu > 0$: forward difference should be used and $A = rI_M - \mu L^+_1Q_{AA}$.
+	\item $\mu < 0$: backward difference should be used and $A = rI_M - \mu L^-_1Q_{AA}$.
+\end{itemize}
+Here $L^+_1$ and $L^-_1$ are defined in \cref{eq:L-1p} and \cref{eq:L-1m}. The affine boundary extrapolation operator $Q_{AA}$ is defined in \cref{eq:Q-AA}, and the boundary operator in conjunction is $B_{AA}$ defined in \cref{eq:B-AA} with $R_2$ the restriction operator.
+
+As with \ref{sec:simple-reflecting-example}, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+
+Solving the affine equation $Au = p$ can be done in a similar fashion as \ref{sec:simple-reflecting-example}. More specifically, we write out $A$'s linear and bias part and get the rearranged linear equation
+\begin{align}
+A_Lu = p - A_b,\quad A_L = rI_M - \mu L^d_1Q_{AA_L},\quad A_b = -\mu L^d_1Q_{AA_b}
+\end{align}
+where $d = +$ for $\mu > 0$ and $d = -$ for $\mu < 0$.
+
+We still have \textbf{to do}:
 \begin{itemize}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
-
-Since the choice of the first difference depends on the sign of drift $\mu$, we define $\mu^- =\min\{\mu, 0\}$ and $\mu^- =\max\{\mu, 0\}$.
-Consider
-\begin{align}
-\tilde{L} \tilde{u}(x) &= x\label{HJBE_PDE_with_drifts}\\
-\text{where }\tilde{L}&\equiv r - \mu\partial_{x}
-\end{align}
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
-
-Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^+$ as in \cref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^-$ as in \cref{eq:L-1m}.
-
-Considering the absorbing barriers, we can define $B$ just like as $B_{AA}$ in \cref{eq:B-AA} and then we have
-\begin{equation}
-B\bar{u} = \begin{bmatrix}
-b^{\min}\\
-b^{\max}
-\end{bmatrix}
-\end{equation}.\\
-Therefore, $\bar{u}(x_0) = x^{\min}$ and $\bar{u}(x_{M+1}) = x^{\max}$.
-
-Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-\begin{equation}
-Q_L = \begin{bmatrix}
-\mathbf{0}_{1\times M} \\
-\mathbf{I}_M  \\
-\mathbf{0}_{1\times M}
-\end{bmatrix}%_{\bar{M}\times M}
-\quad, \text{ } Q_b = \begin{bmatrix}
-b^{\min}\\
-0\\
-\vdots\\
-b^{\max}
-\end{bmatrix}%_{\bar{M}\times 1}
-\end{equation}
-
-Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
-
-
-% In this example, the matrix $P$ in \cref{solve_u_hat_cond_1} becomes
-% \begin{align}
-% P = \frac{1}{\Delta}
-% \begin{bmatrix}
-% \mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+&\dots&0&0&0\\
-% 0&\mu^-&r\Delta-(\mu^--\mu^+)&\dots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\dots&r\Delta-(\mu^--\mu^+)&-\mu^+&0\\
-% 0&0&0&s&\mu^-&r\Delta-(\mu^--\mu^+)&-\mu^+
-% \end{bmatrix}%_{\bar{M}\times\bar{M}}
-
-Similarly, as $L$ is defined by \cref{L_definition} and the interiors are solved by \cref{solve_u_hat_cond_1} and \cref{solve_u_hat_cond_2}:
-\begin{align}
-u = (L Q_L)^{-1}(x-L Q_b)
-\end{align}
-Thus, the extended state vector $\bar{u}$ again can be similarly solved by \cref{solve_u_hat_in_terms_of_interiors}.
 
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
