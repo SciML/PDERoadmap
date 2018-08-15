@@ -228,7 +228,7 @@ A_Lu = p - A_b,\quad A_L = rI_M - \frac{1}{2}L_2Q_{AR_L},\quad A_b = -\frac{1}{2
 \end{align}
 Again this can be solved using an ordinary linear solver or a Krylov solver.
 
-\subsection{Stationary HJBE with Only Drift}
+\subsection{Stationary HJBE with Only Drift}\label{sec:drift-only-example}
 Consider the stochastic process with a constant drift term but no diffusion:
 \begin{align}
 d x_t = \mu dt
@@ -265,48 +265,34 @@ We still have \textbf{to do}:
 \end{itemize}
 
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
-Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
-$$
+Now, consider the stochastic process with both drift and diffusion:
+\begin{align}
 d x_t = \mu dt + \sigma d W_t
-$$
-With a generator
-$$
+\end{align}
+Here both $\mu$ and $\sigma$ are non-zero constants. The corresponding generator is
+\begin{align}
 	\tilde{L}^s \equiv \mu \D[x] + \frac{\sigma^2}{2}\D[xx]
-$$
+\end{align}
+Reflecting barriers are present at both ends $x^{\min}$ and $x^{\max}$.
 
-For this process, we derive below all of the matrices of \cref{sec:general}, paying special attention to the upwind direction, and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
+As with \ref{sec:drift-only-example}, the system of equations to solve for is \cref{eq:general-stationary-HJBE} and we need to pay special attention to the upwind direction when discretizing it. It so happens that the first-order approximation to $\D[x]$ and the second-order approximation to $\D[xx]$ use the same extended grid, with $M_E = 2$, $\bar{M} = M + 2$ and $S_E = \{1,\bar{M}\}$. They share the same boundary operator ($B_{RR}$ in \cref{eq:B-RR}) and boundary extrapolation operator ($Q_{RR}$ in \cref{eq:Q-RR}). As a result, we can fuse the stencil operators of the drift and diffusion together as a single operator:
+\begin{align}
+	L^s &= \mu L_1^{-} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
+	L^s &=\mu L_1^{+} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0
+\end{align}
+which results in the discretized equation
+\begin{align}
+	Au = p,\quad A = rI_M - L^sQ_{RR}
+\end{align}
+Since the equation is linear just as in \ref{sec:simple-reflecting-example}, it can be solved easily using any linear solver.
+
+Again, with some simple algebras, we can easily verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
+
+We still have \textbf{to do}:
 \begin{itemize}
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
-
-We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
-
-By combining operators from previous sections, in this case $L^s$ is defined as
-\begin{align}
-L^s &= \mu L_1^{-} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu<0\\
-L^s &=\mu L_1^{+} +\frac{\sigma^2}{2}L_2\quad\text{if }\mu>0\\
-\intertext{And the composed operator,}
-	L &\equiv ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r -  L^s
-\end{align}
-
-Since barriers are reflecting, we can have the same boundary conditions as what we had in the case with reflecting barriers but no drifts. Hence, operators $R$, $B$ and $Q$ are defined by \cref{eq:R-2}, \cref{B_reflecting} and \cref{Q_reflecting}, respectively. Also, with some simple algebras, we can easily verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case.
-
-
-% In this example, the matrix $P$ in \cref{solve_u_hat_cond_1} becomes
-% \begin{align}
-% P = \frac{1}{\Delta^{2}}
-% \begin{bmatrix}
-% -X&r\Delta^2-Y&-Z&\dots&0&0&0\\
-% 0&-X&r\Delta^2-Y&\dots&0&0&0\\
-% \vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-% 0&0&0&\dots&r\Delta^2-Y&-Z&0\\
-% 0&0&0&\cdots&-X&r\Delta^2-Y&-Z
-% \end{bmatrix}
-% \end{align}
-
-Given $L$ defined by \cref{L_definition}, the rest steps for solving interiors, $u$, and the extended state vector $\bar{u}$, are similar with what we did for previous examples.
-
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
