@@ -21,6 +21,9 @@
 	\author{}
 	\date{}
 	\maketitle
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
 	\section{Overview of Notation}
 	Some general notation, independent of operators and discretization
 	\begin{itemize}
@@ -53,6 +56,8 @@
 		\item Hence, denote the grid on the extended domain as $\bar{x} \in \R^{\bar{M}}$.  The interior points on the grid match the grid on the extended domain, so that $\bar{x}_{m + M^{-}_E} = x_{m}$ for $m = 1, \ldots M$ for the $M^{-}_E$ is the number of points required for the boundary conditions to the left of the interior, $M^{+}_E$ is the number of points to the right, and $M_E = M^{-}_E + M^{+}_E$
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{M}$, $y$ has length $M$.
 	\end{itemize}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
 	Take a simple linear differential operator $\tilde{L}$, (possibly) affine boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.\footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
@@ -87,6 +92,7 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 	
 	Complex differential operators can be expressed as the composition of simple differential operators (the simplest being linear combination). Note that the component operators need not have the same $Q$ even though the same boundary condition $\tilde{B}$ apply to each of them (for example, $A = A_1 + A_2$ but $A_1$ and $A_2$ use different orders of numerical differentiation, resulting in different numbers of ghost nodes needed for $Q_1$ and $Q_2$). 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 \subsection{Definitions and Notation for Examples}
@@ -186,6 +192,8 @@ The corresponding boundary extrapolation operators for $R_2$ and the boundary op
 \end{align}
 If $b^{\min} = b^{\max} = 0$ (i.e. the boundary conditions are all reflecting/absorbing), then the extrapolation operator in all three cases are linear, in which case we drop the $L$ subscript and directly refer to the operators as $Q_{RR}$, $Q_{AA}$ and $Q_{AR}$.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Stationary HJBE with Reflecting Barriers}\label{sec:simple-reflecting-example}
 Take the stochastic process
 $$
@@ -213,6 +221,8 @@ For this example, we still have \textbf{to do}:
 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Stationary HJBE with a Lower Dirichlet boundary}
 The setup is the same as \ref{sec:simple-reflecting-example}, with the only difference being the boundary condition. The top boundary at $x^{\max}$ is still reflecting whereas the lower boundary is Dirichlet: $\tilde{u}(x^{\max}) = b^{\min}$.
 
@@ -227,6 +237,8 @@ To solve for $u$ in \cref{HJBE_reflecting_barriers_PDE}, plug in $Q_{AR}u = Q_{A
 A_Lu = p - A_b,\quad A_L = rI_M - \frac{1}{2}L_2Q_{AR_L},\quad A_b = -\frac{1}{2}L_2Q_{AR_b}
 \end{align}
 Again this can be solved using an ordinary linear solver or a Krylov solver.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Stationary HJBE with Only Drift}\label{sec:drift-only-example}
 Consider the stochastic process with a constant drift term but no diffusion:
@@ -264,6 +276,8 @@ We still have \textbf{to do}:
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Stationary HJBE with Reflecting Barriers and Drift}
 Now, consider the stochastic process with both drift and diffusion:
 \begin{align}
@@ -293,6 +307,8 @@ We still have \textbf{to do}:
 	\item Write julia code to solve for $\tilde{u}(x)$ with the grid
 	\item Check these for $\mu < 0$ and $\mu > 0$.
 \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Stationary Bellman Equation with Reflecting Barriers State Varying Drift/Variance}
 Now, do the same after adding in constant drift (and manually choose the correct upwind direction!)
@@ -362,6 +378,8 @@ Again, since barriers are reflecting, we can have the same boundary conditions a
 
 Again, given $L$ defined by \cref{L_definition}, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \appendix
 \section{More on Gaussian Elimination and $Q$}
 \subsection{Linear Case with Reflecting Boundaries}
@@ -400,6 +418,9 @@ First, define the stochastic process/etc.
 		\tilde{B}\end{bmatrix} u(x) &\equiv \begin{bmatrix}\tilde{c}(x) \\ b\end{bmatrix}
 	\end{align}
 \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Discretizing}
 To discretize, let  Let $\Delta x = 1$ with a uniform grid.  Therefore, $M = 3, \bar{M} = 5$,
 \begin{align}
@@ -433,6 +454,7 @@ B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{(
 \end{align}
 Notice that we need a row in $B$ for every extra point added from the composed operators in forming $L$
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Stacking the System}
 Stacking up the definitions for $L, B, b,c,u$, we see that the system of equations for this is,
@@ -488,6 +510,9 @@ To see the role of Gaussian-elimination, add the 4th row to the first row to get
 &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:reduced-example-1}
 \end{align}
 Also, notice that this allowed us to solve for $u$ directly, instead of taking a restriction.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Operators}
 First lets write down what we know works.  Define
 \begin{align}
@@ -570,6 +595,8 @@ The $Q$ is useful there only in that it lazily allows a modification of the unde
 % \end{equation}
 %
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Case with Drift}\label{sec:simple-reflecting-drift-example}
 Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another component with a drift at rate $\mu \leq 0$.  Because the drift is negative, we know the correct upwind direction.
 \begin{itemize}
@@ -589,6 +616,9 @@ Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another
 \end{align}
 \end{itemize}
 Otherwise, the problem remains the same.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsubsection{Discretizing}
 Use the previous definitions, and now define the discretization of the $\tilde{L}_3$ operator with first differences (already extended for simplicity
 \begin{align}
@@ -648,7 +678,7 @@ L Q u &= c\\
 \end{align}
 So,the $L Q$ still generated the same matrix as before.
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		\subsection{Affine Relations and Intuition:}
 		The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
