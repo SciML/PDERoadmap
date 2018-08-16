@@ -539,17 +539,17 @@ Notice that we need a row in $B$ for every extra point added from the composed o
 
 
 \subsubsection{Stacking the System}
-Stacking up the definitions for $L, B, b,c,u$, we see that the system of equations for this is,
+Stacking up the definitions for $L, B, b,p,u$, we see that the system of equations for this is,
 \begin{align}
 \begin{bmatrix} L \\ B
-\end{bmatrix} \bar{u} &= \begin{bmatrix}c\\b\end{bmatrix}
+\end{bmatrix} \bar{u} &= \begin{bmatrix}p\\b\end{bmatrix}
 \intertext{Which is a square $\bar{M} \times \bar{M}$ system.  Note that if this matrix is singular, then the problem is not well-specified and no solutions exist?  Given the solution, we can define the restriction operator to remove one from the first and one from the last as,}
 R &\equiv E_{11}^{\top} = \begin{bmatrix}\textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}\in\R^{M\times \bar{M}}
 \intertext{Then find the appropriate value as,}	
 u &= R \bar{u}
 \intertext{These could be combined,}
 u &= R \begin{bmatrix} L \\ B
-\end{bmatrix}^{-1} \begin{bmatrix} c \\ b \end{bmatrix}
+\end{bmatrix}^{-1} \begin{bmatrix} p \\ b \end{bmatrix}
 \end{align}
 Note: the extension and restriction operators are transposes in this case?  Also, note that some sort of pseudo-inverse of the $R$ matrix is its transpose.  That is $R R^{\top} = I$.
 
@@ -605,7 +605,7 @@ Q &\equiv \begin{bmatrix}
 \end{align}\label{eq:Q-example}
 With this, we can write,
 \begin{align}
-L Q u &= c\\
+L Q u &= p\\
 \begin{bmatrix}
 -1 & 2 + r & -1 & 0 & 0\\
 0 & -1 & 2+r & -1 & 0\\
