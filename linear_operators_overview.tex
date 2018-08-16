@@ -754,50 +754,50 @@ So,the $L Q$ still generated the same matrix as before.
 
 
 
-		\subsection{Affine Relations and Intuition:}
-		The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
-		\begin{itemize}
-		\item Define $S_E$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non-interior point, let's say, the first one and the last two grid points, then $M_E = 3$ and $S_E = \{1,\bar{M}-1,\bar{M}\}$\footnote{Notice that, by construction, the number of elements in $S_E$ is always $M_E$}.
-			\item Now let's focus on solving an expression like $\bar{u} = A \bar{u}$ where $A$ is affine.\footnote{\textbf{Fernando/Steven}: Is this a particular operator you have in mind from our setup, or a general affine operator you are going through?  Point it out from above, and differentiate the $\tilde{A}$ from the discretized $A$} Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $M_E$ columns, that $J[:,S_E]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in S_E$.
-			Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
-			%
-			\begin{align}
-			A [:,S] \left(B[:,S_E]^{-1} b \right) = A  Q_b\label{affine_relation_1}\\
-			(A -A [:,S_E] (B[:,S_E]^{-1} B)) R^{\top} = A  Q_L\label{affine_relation_2}
-			\end{align}
+\section{Affine Relations and Intuition}
+The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
+\begin{itemize}
+\item Define $S_E$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non-interior point, let's say, the first one and the last two grid points, then $M_E = 3$ and $S_E = \{1,\bar{M}-1,\bar{M}\}$\footnote{Notice that, by construction, the number of elements in $S_E$ is always $M_E$}.
+	\item Now let's focus on solving an expression like $\bar{u} = A \bar{u}$ where $A$ is affine.\footnote{\textbf{Fernando/Steven}: Is this a particular operator you have in mind from our setup, or a general affine operator you are going through?  Point it out from above, and differentiate the $\tilde{A}$ from the discretized $A$} Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $M_E$ columns, that $J[:,S_E]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in S_E$.
+	Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
+	%
+	\begin{align}
+	A [:,S] \left(B[:,S_E]^{-1} b \right) = A  Q_b\label{affine_relation_1}\\
+	(A -A [:,S_E] (B[:,S_E]^{-1} B)) R^{\top} = A  Q_L\label{affine_relation_2}
+	\end{align}
 
-			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{M}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).\footnote{\textbf{Typo From Chris}
-				\cref{affine_relation_1} is actually defined from \cref{affine_relation_2} which is defined from the next one.  Looking at it like that, it's clear to see the error
-				since 89 is just saying
-				$(A - AQb)*R^T = AQL$
-				substitute in 88 for AQb)
-				you see the substitution was done incorrectly
-				has a big B instead of a little b.
-			}
-			
-			  Recall \cref{B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
+	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{M}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).\footnote{\textbf{Typo From Chris}
+		\cref{affine_relation_1} is actually defined from \cref{affine_relation_2} which is defined from the next one.  Looking at it like that, it's clear to see the error
+		since 89 is just saying
+		$(A - AQb)*R^T = AQL$
+		substitute in 88 for AQb)
+		you see the substitution was done incorrectly
+		has a big B instead of a little b.
+	}
+	
+		Recall \cref{B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
 
-			Multiply both sides of \cref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
-			\begin{equation}
-			(A \bar{u}-A  Q_b)  R^{\top} = A  Q_L u
-			\end{equation}
-			so $A \bar{u}-A   Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A  Q_b$.
+	Multiply both sides of \cref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
+	\begin{equation}
+	(A \bar{u}-A  Q_b)  R^{\top} = A  Q_L u
+	\end{equation}
+	so $A \bar{u}-A   Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A  Q_b$.
 
-			However, we are not sure if $R$ should exist on the left of \cref{affine_relation_2} since R by definition is a restriction operator and $(A  \bar{u}-A  Q_b) R^{\top}$ only contains information from interiors.
-			%  % we already solved this by changing R place in the equation. It seems to be right, since Steven reported that now both affine relationships hold for the examples
-			% Also the size of the LHS of \cref{affine_relation_2} is $M\times \bar{M}$, but the size of the RHS is $\bar{I}\times I$ .
-			%
-			For now, while we work on better understanding those expressions, we will take them as given.
+	However, we are not sure if $R$ should exist on the left of \cref{affine_relation_2} since R by definition is a restriction operator and $(A  \bar{u}-A  Q_b) R^{\top}$ only contains information from interiors.
+	%  % we already solved this by changing R place in the equation. It seems to be right, since Steven reported that now both affine relationships hold for the examples
+	% Also the size of the LHS of \cref{affine_relation_2} is $M\times \bar{M}$, but the size of the RHS is $\bar{I}\times I$ .
+	%
+	For now, while we work on better understanding those expressions, we will take them as given.
 
 
-			Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\bar{u} = Q u$.
+	Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\bar{u} = Q u$.
 
-			Therefore, we actually want to solve $\bar{u} = A Q u$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
-			\begin{equation}
-			\bar{u} = A Q_L u + A Q_b
-			\end{equation}
-			Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
-		\end{itemize}
+	Therefore, we actually want to solve $\bar{u} = A Q u$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
+	\begin{equation}
+	\bar{u} = A Q_L u + A Q_b
+	\end{equation}
+	Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
+\end{itemize}
 
 \end{document}
 
