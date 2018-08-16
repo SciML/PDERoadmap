@@ -476,17 +476,17 @@ First, define the stochastic process/etc.
 	\item The stochastic process is $X_t$ is $d X_t = \sigma d W_t$
 	\item Let $\sigma \equiv \sqrt{2}$,  Consequently, the infinitesimal generator is
 \begin{align}
-		\tilde{L}_2 &\equiv \D[xx]\\
+		\tilde{L}^s &\equiv \D[xx]\\
 		\intertext{Furthermore, define the simple operator of the identity,}
 		\tilde{L}_0 u &\equiv u
 	\end{align}
-	\item Let $\rho > 0$ be a discount rate and the payoff be $\tilde{c}(x) = x^2$, then the simple stationary HJBE in the interior is
+	\item Let $r > 0$ be a discount rate and the payoff be $\tilde{p}(x) = x^2$, then the simple stationary HJBE in the interior is
 	\begin{align}
-		\rho u(x) &= c(x) + \tilde{L}_2 u(x)\\		
+		r u(x) &= p(x) + \tilde{L}^s u(x)\\		
 		\intertext{Rearrange}
-		\tilde{L} &\equiv \rho - \tilde{L}_2\\
-		&= \rho \tilde{L}_0 - \tilde{L}_2\\
-		\tilde{L} u(x) &= \tilde{c}(x)
+		\tilde{L} &\equiv r - \tilde{L}^s\\
+		&= r \tilde{L}_0 - \tilde{L}^s\\
+		\tilde{L} u(x) &= \tilde{p}(x)
 	\end{align}
 	\item For the boundaries, we will have reflecting barriers at $x^{\min} = 0$ and $x^{\max} = 2$.  Denote the application of a derivative at a point as $\partial_x\mid_{x=0}$, etc. This means,
 	\begin{align}
@@ -501,7 +501,7 @@ First, define the stochastic process/etc.
 	\item Summarizing, we are looking for a solution to the system
 	\begin{align}
 		\begin{bmatrix}\tilde{L}\\
-		\tilde{B}\end{bmatrix} u(x) &\equiv \begin{bmatrix}\tilde{c}(x) \\ b\end{bmatrix}
+		\tilde{B}\end{bmatrix} u(x) &\equiv \begin{bmatrix}\tilde{p}(x) \\ b\end{bmatrix}
 	\end{align}
 \end{itemize}
 \subsubsection{Discretizing}
@@ -509,11 +509,11 @@ To discretize, let  Let $\Delta x = 1$ with a uniform grid.  Therefore, $M = 3, 
 \begin{align}
 	x &\equiv \begin{bmatrix} 0 & 1 & 2\end{bmatrix}^{\top}\\
 \bar{x} &\equiv \begin{bmatrix} -1 & 0 & 1 & 2 & 3\end{bmatrix}^{\top}\\
-c &\equiv \tilde{c}(x) = \begin{bmatrix} 0 & 1 & 4\end{bmatrix}^{\top}\\
+p &\equiv \tilde{p}(x) = \begin{bmatrix} 0 & 1 & 4\end{bmatrix}^{\top}\\
 u &\equiv \tilde{u}(x) = \begin{bmatrix} \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2)\end{bmatrix}^{\top}\\
 \bar{u} &\equiv \tilde{u}(\bar{x}) = \begin{bmatrix} \tilde{u}(-1)  & \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2) &  \tilde{u}(3)\end{bmatrix}^{\top}
 \end{align}
-To determine the discretization of $\tilde{L}$, first do the $\tilde{L}_1$ operator, which has the stencil.  Note that this stencil had to add the extra points $-1$ and $3$ on the grid in $\bar{x}$
+To determine the discretization of $\tilde{L}$, first do the $\tilde{L}_2$ operator, which has the stencil.  Note that this stencil had to add the extra points $-1$ and $3$ on the grid in $\bar{x}$
 \begin{align}
 L_2 &= \begin{bmatrix}
 	1 & -2 & 1 & 0 & 0\\
@@ -531,9 +531,9 @@ E_{11} &\equiv \begin{bmatrix}\textbf{0}_M^{\top}\\  I_M \\ \textbf{0}_M^{\top}\
 \intertext{Then, the extension of the $L_2$ operator is,}
 L_0^E &\equiv E_{11} L_0 = \begin{bmatrix} \textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}
 \intertext{Finally, we can compose the operators to form the discretization of $\tilde{L}$ as,}
-L &= \rho L_0^E - L_2^E\in\R^{M\times\bar{M}}
+L &= r L_0^E - L_2^E\in\R^{M\times\bar{M}}
 \intertext{Discretizing $\tilde{B}$ is done on the grid,}
-B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{(\bar{M}-M) \times \bar{M}}
+B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{M_E \times \bar{M}}
 \end{align}
 Notice that we need a row in $B$ for every extra point added from the composed operators in forming $L$
 
@@ -556,40 +556,40 @@ Note: the extension and restriction operators are transposes in this case?  Also
 Writing out the matrices in more detail for this example,
 \begin{align}
 \begin{bmatrix}
-	-1 & 2 + \rho & -1 & 0 & 0\\
-	0 & -1 & 2+\rho & -1 & 0\\
-	0 & 0 & -1 & 2+\rho & -1\\
+	-1 & 2 + r & -1 & 0 & 0\\
+	0 & -1 & 2+r & -1 & 0\\
+	0 & 0 & -1 & 2+r & -1\\
 	1 & -1 & 0 & 0 & 0\\
 	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}\label{eq:stacked-example-1}
+\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}\label{eq:stacked-example-1}
 \end{align}
-This is a well defined linear system.  As an example, when $\rho = 0.25$, the solution is $u \approx \begin{bmatrix} 5.2 & 6.5 & 8.4\end{bmatrix}$.  Note that the boundaries can be used for Gaussian elimination on the irrelevant corners of $\bar{u}$.
+This is a well defined linear system.  As an example, when $r = 0.25$, the solution is $u \approx \begin{bmatrix} 5.2 & 6.5 & 8.4\end{bmatrix}$.  Note that the boundaries can be used for Gaussian elimination on the irrelevant corners of $\bar{u}$.
 
 To see the role of Gaussian-elimination, add the 4th row to the first row to get
 \begin{align}
 \begin{bmatrix}
-	1-1 & -1+2+\rho & -1 & 0 & 0\\
-	0 & -1 & 2+\rho & -1 & 0\\
-	0 & 0 & -1 & 2+\rho & -1\\
+	1-1 & -1+2+r & -1 & 0 & 0\\
+	0 & -1 & 2+r & -1 & 0\\
+	0 & 0 & -1 & 2+r & -1\\
 	1 & -1 & 0 & 0 & 0\\
 	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
 \intertext{Next, add the 5th row to the 3rd row and simplify,}
 \begin{bmatrix}
-0 & 1+\rho & -1 & 0 & 0\\
-0 & -1 & 2+\rho & -1 & 0\\
-0 & 0 & -1 & 1+\rho & 0\\
+0 & 1+r & -1 & 0 & 0\\
+0 & -1 & 2+r & -1 & 0\\
+0 & 0 & -1 & 1+r & 0\\
 1 & -1 & 0 & 0 & 0\\
 0 & 0 & 0 & -1 & 1
 \end{bmatrix} \begin{bmatrix}\bar{u}(-1)\\ \bar{u}(0) \\ \bar{u}(1)\\ \bar{u}(2) \\ \bar{u}(3) \end{bmatrix}
- &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+ &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
 \intertext{Notice that we have eliminated the extension nodes from all of the equations involving the $L$.  Consequently, can just take out the sub-matrix between columns 2-4 and rows 1-3 to get}
 \begin{bmatrix}
-	1+\rho & -1 & 0\\
-	-1 & 2+\rho & -1\\
-	0 & -1 & 1+\rho
+	1+r & -1 & 0\\
+	-1 & 2+r & -1\\
+	0 & -1 & 1+r
 \end{bmatrix}u
-&= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:reduced-example-1}
+&= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:reduced-example-1}
 \end{align}
 Also, notice that this allowed us to solve for $u$ directly, instead of taking a restriction.
 \subsubsection{Operators}
@@ -607,21 +607,21 @@ With this, we can write,
 \begin{align}
 L Q u &= c\\
 \begin{bmatrix}
--1 & 2 + \rho & -1 & 0 & 0\\
-0 & -1 & 2+\rho & -1 & 0\\
-0 & 0 & -1 & 2+\rho & -1\\
+-1 & 2 + r & -1 & 0 & 0\\
+0 & -1 & 2+r & -1 & 0\\
+0 & 0 & -1 & 2+r & -1\\
 \end{bmatrix}\begin{bmatrix}
 1 & 0 & 0\\
 1 & 0 & 0\\
 0 & 1& 0\\
 0 & 0& 1\\
 0 & 0& 1
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\\
+\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\\
 \begin{bmatrix}
-1 + \rho & -1 & 0\\
--1 & 2+\rho & -1\\
-0 & -1 & 1+\rho
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:stacked-example-2}
+1 + r & -1 & 0\\
+-1 & 2+r & -1\\
+0 & -1 & 1+r
+\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:stacked-example-2}
 \end{align}
 Solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives the same solution, which shoudl be clear comparing the reduced version in \cref{eq:reduced-example-1} with \cref{eq:stacked-example-2}.\footnote{But will the $Q$ approach work work lazily for an arbitrary setup.  Basically, you can see that $Q$ shows how to construct the constrained version using only the $L$ matrix.  The question is whether you can do that in general, as I am not sure if you can really get by with taking combinations of $L$ itself as opposed to the $B$?}
 
@@ -686,10 +686,10 @@ Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another
 \intertext{And the new one,}
 \tilde{L}_3 &\equiv \D[x]\\
 \end{align}
-\item Let $\rho > 0$ be a discount rate and the payoff be $\tilde{c}(x) = x^2$, then the simple stationary HJBE in the interior is
+\item Let $r > 0$ be a discount rate and the payoff be $\tilde{p}(x) = x^2$, then the simple stationary HJBE in the interior is
 \begin{align}
-\tilde{L} &\equiv \rho\tilde{L}_2 - \tilde{L}_1 - \mu \tilde{L}_3\\
-\tilde{L} u(x) &= \tilde{c}(x)
+\tilde{L} &\equiv r\tilde{L}_2 - \tilde{L}_1 - \mu \tilde{L}_3\\
+\tilde{L} u(x) &= \tilde{p}(x)
 \end{align}
 \end{itemize}
 Otherwise, the problem remains the same.
@@ -702,53 +702,53 @@ Use the previous definitions, and now define the discretization of the $\tilde{L
 	0 & 0 & -1 & 1 & 0
 	\end{bmatrix}
 	\intertext{Then the composed operator is,}
-	L &= \rho L_0^E - L_2^E - \mu L_1^{-E}
+	L &= r L_0^E - L_2^E - \mu L_1^{-E}
 \end{align}	
 Stack and write the equation,
 \begin{align}
 \begin{bmatrix}
-	-1 + \mu & 2 -\mu + \rho & -1 & 0 & 0\\
-	0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
-	0 & 0 & -1 + \mu & 2 - \mu +\rho & -1\\
+	-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
+	0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+	0 & 0 & -1 + \mu & 2 - \mu +r & -1\\
 	1 & -1 & 0 & 0 & 0\\
 	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
 \end{align}
 Now, the Gaussian elimination is slightly trickier.  Add $(1-\mu)$ times row 4 to row 1, and add row 5 to row 3.  This gives,
 \begin{align}
 \begin{bmatrix}
-0 & 1 + \rho & -1 & 0 & 0\\
-0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
-0 & 0 & -1 + \mu & 1 - \mu +\rho & 0\\
+0 & 1 + r & -1 & 0 & 0\\
+0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+0 & 0 & -1 + \mu & 1 - \mu +r & 0\\
 1 & -1 & 0 & 0 & 0\\
 0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}\\
+\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}\\
 \intertext{Extract the interior of the matrix to get,}
 \begin{bmatrix}
-1 + \rho & -1 & 0\\
--1 + \mu & 2 - \mu +\rho & -1\\
-0 & -1 + \mu & 1 - \mu +\rho\\
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}
+1 + r & -1 & 0\\
+-1 + \mu & 2 - \mu +r & -1\\
+0 & -1 + \mu & 1 - \mu +r\\
+\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}
 \end{align}
 At this point, there is no reason to think that you could just use the $L$ rows to perform Gaussian elimination.  But lets try it with the same $Q$ as in \cref{eq:Q-example}
 \begin{align}
-L Q u &= c\\
+L Q u &= p\\
 \begin{bmatrix}
-	-1 + \mu & 2 -\mu + \rho & -1 & 0 & 0\\
-0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
-0 & 0 & -1 + \mu & 2 - \mu +\rho & -1
+	-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
+0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+0 & 0 & -1 + \mu & 2 - \mu +r & -1
 \end{bmatrix}\begin{bmatrix}
 1 & 0 & 0\\
 1 & 0 & 0\\
 0 & 1& 0\\
 0 & 0& 1\\
 0 & 0& 1
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\\
+\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\\
 \begin{bmatrix}
-1 + \rho & -1 & 0\\
--1 + \mu & 2 - \mu +\rho & -1\\
-0 & -1 + \mu & 1 - \mu +\rho\\
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}
+1 + r & -1 & 0\\
+-1 + \mu & 2 - \mu +r & -1\\
+0 & -1 + \mu & 1 - \mu +r\\
+\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}
 \end{align}
 So,the $L Q$ still generated the same matrix as before.
 
