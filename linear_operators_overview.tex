@@ -485,92 +485,90 @@ The two linear equations have the same number of unknowns, so they can stacked u
 
 In the examples we shall see that the extended equation \cref{eq:extended-stack} can be transformed to an equation on the interior by way of Gaussian elimination. We wish to show that the $Q^B$ matrix can be naturally generated using the elementary matrices associated with the elimination process, however the algebra is not in place yet. Nevertheless, for a known $Q^B$ the equivalence between the equations can be proved easily.
 
-\subsection{Linear Case with Reflecting Boundaries}
-Use the simple example from \cref{sec:simple-reflecting-example}
-\subsubsection{System of Operators/Equations}
-First, define the stochastic process/etc.
-\begin{itemize}
-	\item The stochastic process is $X_t$ is $d X_t = \sigma d W_t$
-	\item Let $\sigma \equiv \sqrt{2}$,  Consequently, the infinitesimal generator is
+\subsection{Example 1: Diffusion with Reflecting Boundaries}\label{sec:appendixA-example1}
+\subsubsection{Continuous Equation}
+We consider a slightly modified example from \cref{sec:simple-reflecting-example}. The stochastic process in question is $dx_t = \sqrt{2}dW_t$ and a reflecting boundary is present at $x^{\min} = 0$ and $x^{\max} = 2$. The infinitesimal generator is then simply $\tilde{L}^s = \D[xx]$.
+
+For discount rate $r > 0$ and payoff $\tilde{p}(x)$, the stationiary HJBE is then
 \begin{align}
-		\tilde{L}^s &\equiv \D[xx]\\
-		\intertext{Furthermore, define the simple operator of the identity,}
-		\tilde{L}_0 u &\equiv u
-	\end{align}
-	\item Let $r > 0$ be a discount rate and the payoff be $\tilde{p}(x) = x^2$, then the simple stationary HJBE in the interior is
+	\tilde{L}u(x) &= \tilde{p}(x)\\
+	\tilde{L} &\equiv r\tilde{I} - \D[xx] \\
+	\D[x]\tilde{u}(0) &= \D[x]\tilde{u}(2) = 0
+\end{align}
+Here $\tilde{I}$ is the (continuous) identity operator.
+
+\subsubsection{Discretized Equation}
+We'll be using a uniform grid with $\Delta x = 1$, in other words $M = 3$ interior nodes. A second-order approximation to $\D[xx]$ is used which require $M_E = 2$ addition nodes, and a total of $\bar{M} = 5$ nodes on the whole domain. The discretized grid entities are:
+\begin{align}
+	p &= \begin{bmatrix} \tilde{p}(0) & \tilde{p}(1) & \tilde{p}(2)\end{bmatrix}^{\top}\\
+	u &= \begin{bmatrix} \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2)\end{bmatrix}^{\top}\\
+	\bar{u} &= \begin{bmatrix} \tilde{u}(-1)  & \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2) &  \tilde{u}(3)\end{bmatrix}^{\top}
+\end{align}
+
+The boundary operator for simple reflecting boundaries is given in \cref{eq:B-RR}. In particular, for this case we have
+\begin{align}
+	B &= \begin{bmatrix}
+			1 & -1 & 0 & 0 & 0\\
+			0 & 0 & 0 & -1 & 1
+		 \end{bmatrix}\in\R^{M_E \times \bar{M}},\quad
+	b = \begin{bmatrix}0 \\ 0\end{bmatrix}
+\end{align}
+
+For the discretization of $\tilde{L} = r\tilde{I} - \D[xx]$, since it is composed of two parts we shall first discretize the components:
+\begin{itemize}
+	\item The scaling operator $r\tilde{I}$ is discretized simply as $rI_M$, defined on the interior
+	\item The discrete stencil operator for $\D[xx]$ is defined in \cref{eq:L-2}, specifically for this case it is
 	\begin{align}
-		r u(x) &= p(x) + \tilde{L}^s u(x)\\		
-		\intertext{Rearrange}
-		\tilde{L} &\equiv r - \tilde{L}^s\\
-		&= r \tilde{L}_0 - \tilde{L}^s\\
-		\tilde{L} u(x) &= \tilde{p}(x)
-	\end{align}
-	\item For the boundaries, we will have reflecting barriers at $x^{\min} = 0$ and $x^{\max} = 2$.  Denote the application of a derivative at a point as $\partial_x\mid_{x=0}$, etc. This means,
-	\begin{align}
-			\partial_x u(0) &= 0\\
-			\partial_x u(2) &= 0\\
-			\intertext{Which we  write as,}
-			\tilde{B} &\equiv \begin{bmatrix}\partial_x\mid_{x=0} \\ \partial_x\mid_{x=2}\end{bmatrix}
-			\intertext{Then we can write the boundary condition as}
-			\tilde{B} u(x) &= 0\\
-			b &= \textbf{0}_{2\times 1}
-	\end{align}
-	\item Summarizing, we are looking for a solution to the system
-	\begin{align}
-		\begin{bmatrix}\tilde{L}\\
-		\tilde{B}\end{bmatrix} u(x) &\equiv \begin{bmatrix}\tilde{p}(x) \\ b\end{bmatrix}
+		L_2 &= \begin{bmatrix}
+			1 & -2 & 1 & 0 & 0\\
+			0 & 1 & -2 & 1 & 0\\	
+			0 & 0 & 1 & -2 & 1\\	
+			\end{bmatrix}\in \R^{M \times \bar{M}}
 	\end{align}
 \end{itemize}
-\subsubsection{Discretizing}
-To discretize, let  Let $\Delta x = 1$ with a uniform grid.  Therefore, $M = 3, \bar{M} = 5$,
-\begin{align}
-	x &\equiv \begin{bmatrix} 0 & 1 & 2\end{bmatrix}^{\top}\\
-\bar{x} &\equiv \begin{bmatrix} -1 & 0 & 1 & 2 & 3\end{bmatrix}^{\top}\\
-p &\equiv \tilde{p}(x) = \begin{bmatrix} 0 & 1 & 4\end{bmatrix}^{\top}\\
-u &\equiv \tilde{u}(x) = \begin{bmatrix} \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2)\end{bmatrix}^{\top}\\
-\bar{u} &\equiv \tilde{u}(\bar{x}) = \begin{bmatrix} \tilde{u}(-1)  & \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2) &  \tilde{u}(3)\end{bmatrix}^{\top}
-\end{align}
-To determine the discretization of $\tilde{L}$, first do the $\tilde{L}_2$ operator, which has the stencil.  Note that this stencil had to add the extra points $-1$ and $3$ on the grid in $\bar{x}$
-\begin{align}
-L_2 &= \begin{bmatrix}
-	1 & -2 & 1 & 0 & 0\\
-	0 & 1 & -2 & 1 & 0\\	
-	0 & 0 & 1 & -2 & 1\\	
-	\end{bmatrix}\in \R^{M \times \bar{M}}
-	\intertext{Since this is the ``largest'' operator we have (in terms of extra points) the extension of it is easy enough}
-	L_2^E &= L_2
-\end{align}	
-Next, look at the stencil for the the identity operator, above in $L_0$.  Unlike the previous example, it needs to extend to the largest grid in order to sum up the linear operator tersms.
-\begin{align}
-L_0 &\equiv I_M
-\intertext{However, in order to compose operators we will extend it to the extra points required on the grid with an extension.  While we could add in arbitrary points in the extension, the algebra will be easier if we add $0$s.  Define the extension operator adding one point to the left and one to the right of the grid as,}
-E_{11} &\equiv \begin{bmatrix}\textbf{0}_M^{\top}\\  I_M \\ \textbf{0}_M^{\top}\end{bmatrix}\in\R^{\bar{M} \times M}
-\intertext{Then, the extension of the $L_2$ operator is,}
-L_0^E &\equiv E_{11} L_0 = \begin{bmatrix} \textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}
-\intertext{Finally, we can compose the operators to form the discretization of $\tilde{L}$ as,}
-L &= r L_0^E - L_2^E\in\R^{M\times\bar{M}}
-\intertext{Discretizing $\tilde{B}$ is done on the grid,}
-B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{M_E \times \bar{M}}
-\end{align}
-Notice that we need a row in $B$ for every extra point added from the composed operators in forming $L$
 
+However, we cannot simply add the two operators since they're defined on different domains. In cases like this, we need to first extend the ``smaller'' component operators to the largest common grid and then combine them. In this case, $L_2$'s domain is the largest so we need only extend $I_M$.
 
-\subsubsection{Stacking the System}
-Stacking up the definitions for $L, B, b,p,u$, we see that the system of equations for this is,
+While we could add in arbitrary points in the extension, the algebra will be easier if we add $0$s. Define the extension operator adding one point to the left and one to the right of the grid as
 \begin{align}
-\begin{bmatrix} L \\ B
-\end{bmatrix} \bar{u} &= \begin{bmatrix}p\\b\end{bmatrix}
-\intertext{Which is a square $\bar{M} \times \bar{M}$ system.  Note that if this matrix is singular, then the problem is not well-specified and no solutions exist?  Given the solution, we can define the restriction operator to remove one from the first and one from the last as,}
-R &\equiv E_{11}^{\top} = \begin{bmatrix}\textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}\in\R^{M\times \bar{M}}
-\intertext{Then find the appropriate value as,}	
-u &= R \bar{u}
-\intertext{These could be combined,}
-u &= R \begin{bmatrix} L \\ B
-\end{bmatrix}^{-1} \begin{bmatrix} p \\ b \end{bmatrix}
+	E_{11} &\equiv \begin{bmatrix}
+						\textbf{0}_M^{\top}\\ 
+						I_M\\
+						\textbf{0}_M^{\top}
+					\end{bmatrix}\in\R^{\bar{M} \times M}
 \end{align}
-Note: the extension and restriction operators are transposes in this case?  Also, note that some sort of pseudo-inverse of the $R$ matrix is its transpose.  That is $R R^{\top} = I$.
+Using this, we can extend the identity operator to
+\begin{align}
+	I^E \equiv E_{11}I_M &= \begin{bmatrix} \textbf{0}_M & I_M & \textbf{0}_M\end{bmatrix}\\
+		&= \begin{bmatrix}
+				0 & 1 & 0 & 0 & 0\\
+				0 & 0 & 1 & 0 & 0\\
+				0 & 0 & 0 & 1 & 0
+			\end{bmatrix}
+\end{align}
+and get the composed stencil as
+\begin{align}
+	L &= rI^E - L_2\\
+	  &= \begin{bmatrix}
+			-1 & 2 + r & -1 & 0 & 0\\
+			0 & -1 & 2+r & -1 & 0\\
+			0 & 0 & -1 & 2+r & -1
+	  	\end{bmatrix}\label{eq:L-example1}
+\end{align}
 
-Writing out the matrices in more detail for this example,
+\subsubsection{Solving the Stacked Equation}
+% Note that if this matrix is singular, then the problem is not well-specified and no solutions exist?  Given the solution, we can define the restriction operator to remove one from the first and one from the last as,
+% \begin{align}
+% R &\equiv E_{11}^{\top} = \begin{bmatrix}\textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}\in\R^{M\times \bar{M}}
+% \intertext{Then find the appropriate value as,}	
+% u &= R \bar{u}
+% \intertext{These could be combined,}
+% u &= R \begin{bmatrix} L \\ B
+% \end{bmatrix}^{-1} \begin{bmatrix} p \\ b \end{bmatrix}
+% \end{align}
+% Note: the extension and restriction operators are transposes in this case?  Also, note that some sort of pseudo-inverse of the $R$ matrix is its transpose.  That is $R R^{\top} = I$.
+
+Substituting $L$, $p$, $B$ and $b$ into the stacked extended equation \cref{eq:extended-stack}, we get
 \begin{align}
 \begin{bmatrix}
 	-1 & 2 + r & -1 & 0 & 0\\
@@ -580,9 +578,9 @@ Writing out the matrices in more detail for this example,
 	0 & 0 & 0 & -1 & 1
 \end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}\label{eq:stacked-example-1}
 \end{align}
-This is a well defined linear system.  As an example, when $r = 0.25$, the solution is $u \approx \begin{bmatrix} 5.2 & 6.5 & 8.4\end{bmatrix}$.  Note that the boundaries can be used for Gaussian elimination on the irrelevant corners of $\bar{u}$.
-
-To see the role of Gaussian-elimination, add the 4th row to the first row to get
+This is a well defined linear system.  As an example, when $r = 0.25$, the solution is $u \approx \begin{bmatrix} 5.2 & 6.5 & 8.4\end{bmatrix}$.
+	
+We will now show that the rows corresponding to $B$ can be used in Gaussian elimination to reduce the system to one defined in the interior. First, add the 4th row to the first row to get
 \begin{align}
 \begin{bmatrix}
 	1-1 & -1+2+r & -1 & 0 & 0\\
@@ -608,41 +606,18 @@ To see the role of Gaussian-elimination, add the 4th row to the first row to get
 \end{bmatrix}u
 &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:reduced-example-1}
 \end{align}
-Also, notice that this allowed us to solve for $u$ directly, instead of taking a restriction.
-\subsubsection{Operators}
-First lets write down what we know works.  Define
-\begin{align}
-Q &\equiv \begin{bmatrix}
-1 & 0 & 0\\
-1 & 0 & 0\\
-0 & 1& 0\\
-0 & 0& 1\\
-0 & 0& 1
-\end{bmatrix}
-\end{align}\label{eq:Q-example}
-With this, we can write,
-\begin{align}
-L Q u &= p\\
-\begin{bmatrix}
--1 & 2 + r & -1 & 0 & 0\\
-0 & -1 & 2+r & -1 & 0\\
-0 & 0 & -1 & 2+r & -1\\
-\end{bmatrix}\begin{bmatrix}
-1 & 0 & 0\\
-1 & 0 & 0\\
-0 & 1& 0\\
-0 & 0& 1\\
-0 & 0& 1
-\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\\
-\begin{bmatrix}
-1 + r & -1 & 0\\
--1 & 2+r & -1\\
-0 & -1 & 1+r
-\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:stacked-example-2}
-\end{align}
-Solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives the same solution, which shoudl be clear comparing the reduced version in \cref{eq:reduced-example-1} with \cref{eq:stacked-example-2}.\footnote{But will the $Q$ approach work work lazily for an arbitrary setup.  Basically, you can see that $Q$ shows how to construct the constrained version using only the $L$ matrix.  The question is whether you can do that in general, as I am not sure if you can really get by with taking combinations of $L$ itself as opposed to the $B$?}
 
-The $Q$ is useful there only in that it lazily allows a modification of the underlying $L$ matrix.  Otherwise, it is only the $L Q$ product that is useful.  
+On the other hand, for the reflecting boundaries, we know the boundary extrapolation operator is
+\begin{align}
+	Q^B &\equiv \begin{bmatrix}
+		1 & 0 & 0\\
+		1 & 0 & 0\\
+		0 & 1& 0\\
+		0 & 0& 1\\
+		0 & 0& 1
+	\end{bmatrix}\label{eq:Q-example}
+\end{align}
+and the associated discretized equation on the interior is $LQ^Bu = p$. It is easy to check that plugging $L$ from \cref{eq:L-example1} and $Q^B$ from \cref{eq:Q-example} also gives \cref{eq:reduced-example-1}, which proves the equivalence between the two equations.
 
 %
 % For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
