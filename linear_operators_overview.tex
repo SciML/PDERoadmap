@@ -511,7 +511,7 @@ The boundary operator for simple reflecting boundaries is given in \cref{eq:B-RR
 			1 & -1 & 0 & 0 & 0\\
 			0 & 0 & 0 & -1 & 1
 		 \end{bmatrix}\in\R^{M_E \times \bar{M}},\quad
-	b = \begin{bmatrix}0 \\ 0\end{bmatrix}
+	b = \begin{bmatrix}0 \\ 0\end{bmatrix}\label{eq:B-example-A1}
 \end{align}
 
 For the discretization of $\tilde{L} = r\tilde{I} - \D[xx]$, since it is composed of two parts we shall first discretize the components:
@@ -666,85 +666,74 @@ and the associated discretized equation on the interior is $LQ^Bu = p$. It is ea
 % \end{equation}
 %
 
-\subsection{Case with Drift}\label{sec:simple-reflecting-drift-example}
-Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another component with a drift at rate $\mu \leq 0$.  Because the drift is negative, we know the correct upwind direction.
-\begin{itemize}
-	\item The stochastic process is $X_t$ is $d X_t = \mu d t + \sqrt{2} d W_t$
-\item Let $\sigma \equiv \sqrt{2}$,  Consequently, define
+\subsection{Example 2: Diffusion and Drift with Reflecting Boundaries}\label{sec:appendixA-example2}
+\subsubsection{Continuous Equations}
+Let's add a drift term to \ref{sec:appendixA-example1} with constant rate $\mu < 0$ and keep everything else the same. The stochastic process is now $d x_t = \mu d t + \sqrt{2} d W_t$ and the corresponding stationary HJBE becomes
 \begin{align}
-\tilde{L}_1 &\equiv \D[xx]\\
-\intertext{Furthermore, define the simple operator of the identity,}
-\tilde{L}_2 u &\equiv u
-\intertext{And the new one,}
-\tilde{L}_3 &\equiv \D[x]\\
+	\tilde{L} u(x) &= \tilde{p}(x)\\
+	\tilde{L} &\equiv r\tilde{I} - \D[xx] - \mu \D[x]\\
+	\D[x]\tilde{u}(0) &= \D[x]\tilde{u}(2) = 0
 \end{align}
-\item Let $r > 0$ be a discount rate and the payoff be $\tilde{p}(x) = x^2$, then the simple stationary HJBE in the interior is
+
+\subsubsection{Discretized Equation}
+We have the same $B$ and $b$ as \cref{eq:B-example-A1}. For the stencils, $rI_M$ along with its extension $rI^E$ and $L_2$ are also the same. Because $\mu < 0$, backward difference should be used to discretize $\D[x]$ and that gives the stencil operator \cref{eq:L-1m}, which in this case is
 \begin{align}
-\tilde{L} &\equiv r\tilde{L}_2 - \tilde{L}_1 - \mu \tilde{L}_3\\
-\tilde{L} u(x) &= \tilde{p}(x)
+	L^-_1 &= \begin{bmatrix}
+			-1 & 1 & 0 & 0 \\
+			0 & -1 & 1 & 0 \\
+			0 & 0 & -1 & 1
+		\end{bmatrix}
 \end{align}
-\end{itemize}
-Otherwise, the problem remains the same.
-\subsubsection{Discretizing}
-Use the previous definitions, and now define the discretization of the $\tilde{L}_3$ operator with first differences (already extended for simplicity
+and again we need to extend $L^-_1$ to the whole domain, which include one extra node at the top end. This gives the extended operator
 \begin{align}
 	L^{-E}_1 &= \begin{bmatrix}
-	-1 & 1 & 0 & 0 & 0\\
-	0 & -1 & 1 & 0 & 0\\
-	0 & 0 & -1 & 1 & 0
-	\end{bmatrix}
-	\intertext{Then the composed operator is,}
-	L &= r L_0^E - L_2^E - \mu L_1^{-E}
-\end{align}	
-Stack and write the equation,
-\begin{align}
-\begin{bmatrix}
-	-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
-	0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
-	0 & 0 & -1 + \mu & 2 - \mu +r & -1\\
-	1 & -1 & 0 & 0 & 0\\
-	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
+			-1 & 1 & 0 & 0 & 0\\
+			0 & -1 & 1 & 0 & 0\\
+			0 & 0 & -1 & 1 & 0
+		\end{bmatrix}
 \end{align}
-Now, the Gaussian elimination is slightly trickier.  Add $(1-\mu)$ times row 4 to row 1, and add row 5 to row 3.  This gives,
-\begin{align}
-\begin{bmatrix}
-0 & 1 + r & -1 & 0 & 0\\
-0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
-0 & 0 & -1 + \mu & 1 - \mu +r & 0\\
-1 & -1 & 0 & 0 & 0\\
-0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}\\
-\intertext{Extract the interior of the matrix to get,}
-\begin{bmatrix}
-1 + r & -1 & 0\\
--1 + \mu & 2 - \mu +r & -1\\
-0 & -1 + \mu & 1 - \mu +r\\
-\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}
-\end{align}
-At this point, there is no reason to think that you could just use the $L$ rows to perform Gaussian elimination.  But lets try it with the same $Q$ as in \cref{eq:Q-example}
-\begin{align}
-L Q u &= p\\
-\begin{bmatrix}
-	-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
-0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
-0 & 0 & -1 + \mu & 2 - \mu +r & -1
-\end{bmatrix}\begin{bmatrix}
-1 & 0 & 0\\
-1 & 0 & 0\\
-0 & 1& 0\\
-0 & 0& 1\\
-0 & 0& 1
-\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\\
-\begin{bmatrix}
-1 + r & -1 & 0\\
--1 + \mu & 2 - \mu +r & -1\\
-0 & -1 + \mu & 1 - \mu +r\\
-\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}
-\end{align}
-So,the $L Q$ still generated the same matrix as before.
 
+Finally, the composed operator is
+\begin{align}
+	L &= rI^E - L_2 - \mu L^{-E}_1 \\
+	  &= \begin{bmatrix}
+		-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
+		0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+		0 & 0 & -1 + \mu & 2 - \mu +r & -1
+	  \end{bmatrix}
+\end{align}
+and the stacked equation \cref{eq:extended-stack} is
+\begin{align}
+	\begin{bmatrix}
+		-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
+		0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+		0 & 0 & -1 + \mu & 2 - \mu +r & -1\\
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
+\end{align}
 
+\subsubsection{Solving the Stacked Equation}
+Again we solve the stacked equation \cref{eq:extended-stack} using Gaussian elimination on the $B$ rows. First add $(1-\mu)$ times row 4 to row 1, and then add row 5 to row 3. This gives
+\begin{align}
+	\begin{bmatrix}
+		0 & 1 + r & -1 & 0 & 0\\
+		0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+		0 & 0 & -1 + \mu & 1 - \mu +r & 0\\
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
+\end{align}
+Extract the interior of the matrix to get
+\begin{align}
+	\begin{bmatrix}
+		1 + r & -1 & 0\\
+		-1 + \mu & 2 - \mu +r & -1\\
+		0 & -1 + \mu & 1 - \mu +r
+	\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:reduced-example-2}
+\end{align}
+
+The $Q^B$ in this example is the same as \cref{eq:Q-example}. It is easy to check that the interior equation $LQ^Bu = p$ also gives \cref{eq:reduced-example-2}, again confirming that the extended equation gives the same resuls.
 
 \section{Affine Relations and Intuition}
 The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
