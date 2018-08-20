@@ -483,7 +483,7 @@ The two linear equations have the same number of unknowns, so they can stacked u
 	\begin{bmatrix} p \\ b \end{bmatrix}\label{eq:extended-stack}
 \end{align}
 
-In the examples we shall see that the extended equation \cref{eq:extended-stack} can be transformed to an equation on the interior by way of Gaussian elimination. We wish to show that the $Q^B$ matrix can be naturally generated using the elementary matrices associated with the elimination process, however the algebra is not in place yet. Nevertheless, for a known $Q^B$ the equivalence between the equations can be proved easily.
+In the examples we shall see that the extended equation \cref{eq:extended-stack} can be transformed to an equation on the interior by way of Gaussian elimination. We wish to show that the $Q^B$ matrix can be naturally generated using the elementary matrices associated with the elimination process, however the algebra is not in place yet. Nevertheless, for a known $Q^B$ the equivalence between the equations can be proved easily. \footnote{Note that the equation \cref{eq:extended-stack} does not necessarily have a unique solution. Nevertheless the reduced equation from Gaussian elimination should be the same we get from $LQ^Bu = p$.}
 
 \subsection{Example 1: Diffusion with Reflecting Boundaries}\label{sec:appendixA-example1}
 \subsubsection{Continuous Equation}
@@ -667,7 +667,7 @@ and the associated discretized equation on the interior is $LQ^Bu = p$. It is ea
 %
 
 \subsection{Example 2: Diffusion and Drift with Reflecting Boundaries}\label{sec:appendixA-example2}
-\subsubsection{Continuous Equations}
+\subsubsection{Continuous Equation}
 Let's add a drift term to \ref{sec:appendixA-example1} with constant rate $\mu < 0$ and keep everything else the same. The stochastic process is now $d x_t = \mu d t + \sqrt{2} d W_t$ and the corresponding stationary HJBE becomes
 \begin{align}
 	\tilde{L} u(x) &= \tilde{p}(x)\\
