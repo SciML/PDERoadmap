@@ -735,6 +735,64 @@ Extract the interior of the matrix to get
 
 The $Q^B$ in this example is the same as \cref{eq:Q-example}. It is easy to check that the interior equation $LQ^Bu = p$ also gives \cref{eq:reduced-example-2}, again confirming that the extended equation gives the same resuls.
 
+\subsection{Example 3: Diffusion with Inhomogeneous Boundaries}\label{sec:appendixA-example3}
+\subsubsection{Continuous Equation}
+Let's consider \ref{sec:appendixA-example1} again but change the boudnary conditions to be inhomogeneous. The stationary HJBE:
+\begin{align}
+	\tilde{L}u(x) &= \tilde{p}(x)\\
+	\tilde{L} &\equiv r\tilde{I} - \D[xx] \\
+	\D[x]\tilde{u}(0) &= b^{\min}\\
+	\D[x]\tilde{u}(2) &= b^{\max}
+\end{align}
+
+\subsubsection{Discretized Equation}
+The discretized $L$, $B$ and $p$ are the same as \ref{sec:appendixA-example1}. Since the boundary conditions are now inhomogeneous $b$ is no longer the zero vector. Recalling \cref{eq:B-RR}, for this example we have
+\begin{align}
+	b &= \begin{bmatrix}-b^{\min}\\b^{\max}\end{bmatrix}
+\end{align}
+and the stacked equation \cref{eq:extended-stack} is now
+\begin{align}
+	\begin{bmatrix}
+		-1 & 2 + r & -1 & 0 & 0\\
+		0 & -1 & 2+r & -1 & 0\\
+		0 & 0 & -1 & 2+r & -1\\
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ -b^{\min} \\ b^{\max}\end{bmatrix}
+\end{align}
+
+\subsubsection{Solving the Stacked Equation}
+Since the left hand side coefficient matrix is the same, we can use the same Gaussian elimination procedure as \ref{sec:appendixA-example1}. This gives the reduced equation
+\begin{align}
+	\begin{bmatrix}
+		1+r & -1 & 0\\
+		-1 & 2+r & -1\\
+		0 & -1 & 1+r
+	\end{bmatrix}u
+	&= \begin{bmatrix}
+		p_1 - b^{\min}\\ p_2 \\ p_3 + b^{\max}
+	\end{bmatrix}\label{eq:reduced-example-3}
+\end{align}
+
+For the $LQ^Bu = p$ route, $Q^B$ is now affine and from \cref{eq:Q-A2} we have
+\begin{align}
+	Q^B_L = \begin{bmatrix}
+		1 & 0 & 0 \\
+		1 & 0 & 0 \\
+		0 & 1 & 0 \\
+		0 & 0 & 1 \\
+		0 & 0 & 1
+	\end{bmatrix}\quad
+	Q^B_b = \begin{bmatrix}
+		-b^{\min}\\0\\0\\0\\b^{\max}
+	\end{bmatrix}
+\end{align}
+and the equation is
+\begin{align}
+	LQ^B_Lu &= p - LQ^B_b
+\end{align}
+substituting $L$, $p$, $Q^B_L$ and $Q^B_b$, we get back \cref{eq:reduced-example-3}, again proving the equivalence.
+
 \section{Affine Relations and Intuition}
 The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
 \begin{itemize}
