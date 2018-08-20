@@ -63,12 +63,14 @@ Take a simple linear or affine differential operator $\tilde{A}$, (possibly affi
 \end{align}
 For linear $\tilde{A}$, we will denote it as $\tilde{L}$ to emphasize the fact that it's not affine. The discretization process generates the following objects:
 \begin{itemize}
-	\item $B\in \R^{M_E \times \bar{M}}$ is the linear \textit{boundary condition operator} and $b \in \R^{M_E}$ the vector \textit{boundary condition value} with
+	\item $B\in \R^{M_E \times \bar{M}}$ is the (possibly affine) \textit{boundary condition operator}, which satisfies the equation
 	\begin{align}
-		B \bar{u} = b\label{eq:B_operator_block}
+		B \bar{u} = \mathbf{0}_{M_E}\label{eq:B_operator_block}
 	\end{align}
-	for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$.\footnote{
-Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.}
+	for any $\bar{u}$ in the space of functions that satisfy the discretized boundary conditions. \footnote{Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.} For affine $B$, we can write out \cref{eq:B_operator_block} as
+	\begin{align}
+		B_L\bar{u} = -B_b
+	\end{align}
 	\item $R\in \R^{M\times \bar{M}}$ is the linear \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. It fulfills
 	\begin{align}
 		R \bar{u} = u \label{eq:R_operator}
@@ -76,8 +78,8 @@ Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choi
 
 	\item $Q^B : \R^M \to \R^{\bar{M}}$ is the (potentially affine) \textit{boundary extrapolation operator} associated with $B$. The operator $Q^B$ is defined as fulfilling the following relationships (keeping in mind that $Q^B$ is affine and $R$ is linear)
 	\begin{align}
-		Q^B  R\bar{u} = \bar{u}\label{eq:Q_operator_1}\\
-		B Q^B u  = b	\label{eq:Q_operator_2}
+		Q^B  R\bar{u} &= \bar{u}\label{eq:Q_operator_1}\\
+		B Q^B u &= \mathbf{0}_{M_E}	\label{eq:Q_operator_2}
 	\end{align}
 	To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{eq:Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{eq:Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{eq:Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
 	\item $A : \R^{\bar{M}} \to \R^M$ is the (possibly affine) \textit{stencil operator}. It maps the extended domain to the interior by applying a stencil, which is determined by the derivative operator and the numerical differentiation scheme. As with the continous case, we will denote the stencil operator as $L$ if it is linear.
