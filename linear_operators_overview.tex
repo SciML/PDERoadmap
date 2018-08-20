@@ -54,36 +54,37 @@
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{M}$, $y$ has length $M$.
 	\end{itemize}
 
-	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
-	Take an linear differential operator $\tilde{L}$, (possibly) affine boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.\footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
+\section{General Overview of Discretization and Boundary Values}\label{sec:general}
+Take a simple linear or affine differential operator $\tilde{A}$, (possibly affine) boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.
+% \footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
+\begin{align}
+	\tilde{A} \tilde{u}(x) &= 0\label{eq:A-u-DE}\\
+	\tilde{B} \tilde{u}(x) &= \tilde{b}(x)\label{eq:B-u-DE}
+\end{align}
+For linear $\tilde{A}$, we will denote it as $\tilde{L}$ to emphasize the fact that it's not affine. The discretization process generates the following objects:
+\begin{itemize}
+	\item $B\in \R^{M_E \times \bar{M}}$ is the linear \textit{boundary condition operator} and $b \in \R^{M_E}$ the vector \textit{boundary condition value} with
 	\begin{align}
-		\tilde{L} \tilde{u}(x) &= \tilde{p}(x)\label{eq:L-u-DE}\\
-		\tilde{B} \tilde{u}(x) &= \tilde{b}(x)\label{eq:B-u-DE}
+		B \bar{u} = b\label{eq:B_operator_block}
 	\end{align}
-
-	The discretization process generates the following objects:
-	\begin{itemize}
-	%	\item $A$ is the \textit{discretization of the differential operator}, and is independent of the boundary conditions.  Think of it as the stencil for the interior of the operator expanded to the extended domain.
-		\item $B\in \R^{M_E \times \bar{M}}$ is the linear \textit{boundary condition operator} and $b \in \R^{M_E}$ the vector \textit{boundary condition value} with
-		\begin{equation}
-		B \bar{u} = b
-		\label{B_operator_block}
-		\end{equation}
-		for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$.\footnote{
+	for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$.\footnote{
 Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.}
-		\item $R\in \R^{M\times \bar{M}}$ is the linear \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. It fulfills
-		\begin{equation}
-		R \bar{u} = u \label{R_operator}
-		\end{equation}
-
-		\item $Q : \R^M \to \R^{\bar{M}}$ is the (potentially) affine \textit{boundary extrapolation operator}.  This can be decomposed into a linear $Q_L \in \R^{\bar{M}\times M}$ and a \textit{bias} vector $Q_b \in \R^{\bar{M}}$.  The operator $Q$ is defined as fulfilling the following relationships (keeping in mind that $Q$ is affine and $R$ is linear)
-		\begin{align}
-		Q  R\bar{u} = \bar{u}\label{Q_operator_1}\\
-		B Q u  = b	\label{Q_operator_2}
+	\item $R\in \R^{M\times \bar{M}}$ is the linear \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. It fulfills
+	\begin{align}
+		R \bar{u} = u \label{eq:R_operator}
 	\end{align}
-	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
-		\end{itemize}
 
+	\item $Q^B : \R^M \to \R^{\bar{M}}$ is the (potentially affine) \textit{boundary extrapolation operator} associated with $B$. The operator $Q^B$ is defined as fulfilling the following relationships (keeping in mind that $Q^B$ is affine and $R$ is linear)
+	\begin{align}
+		Q^B  R\bar{u} = \bar{u}\label{eq:Q_operator_1}\\
+		B Q^B u  = b	\label{eq:Q_operator_2}
+	\end{align}
+	To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{eq:Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{eq:Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{eq:Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
+	\item $A : \R^{\bar{M}} \to \R^M$ is the (possibly affine) \textit{stencil operator}. It maps the extended domain to the interior by applying a stencil, which is determined by the derivative operator and the numerical differentiation scheme. As with the continous case, we will denote the stencil operator as $L$ if it is linear.
+	\item The \textit{discretized derivative operator} is $A^B : \R^M \to \R^M$. We use the $B$ superscript to emphasize the operator's dependence on the boundary condition.
+	
+	The operator is composed as $A^B = AQ^B$. The intuition is that first $Q^B$ is applied to the interior points to add the ``ghost nodes'' corresponding to the boundary condition, and then the stencil operator $A$ is applied to the whole domain, including the ghost nodes. $A^B$ is in general affine if $A$ and/or $Q^B$ are affine, and linear if both of them are linear, in which case we will denote it as $L^B$ to emphasize the linearity.
+\end{itemize}
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 \subsection{Definitions and Notation for Examples}
@@ -471,10 +472,10 @@ Again, given $L$ defined by \cref{L_definition}, the remaining steps for solving
 \subsection{Overview}
 The document focuses on solving the discretized equation on the interior $u$, and the information for the boundary condition is encoded in the boundary extrapolation operator $Q^B$. Alternatively, we can consider the discretized equation on the extended domain $\bar{u}$. We wish to demonstrate in this section that the two equations are indeed equivalent.
 
-The starting point is again the continuous equation \cref{eq:L-u-DE} and \cref{eq:B-u-DE}. We discretize the domain and get the stencil operator $L$ and boundary operator $B$. For simplicity, we shall assume $L$ to be linear in this section, but the boundary conditions need not be homogenous. The discretized equations on the extended domain $\bar{u}$ are then:
+The starting point is again the continuous equation \cref{eq:A-u-DE} and \cref{eq:B-u-DE}. We discretize the domain and get the stencil operator $L$ and boundary operator $B$. For simplicity, we shall assume $L$ to be linear in this section, but the boundary conditions need not be homogenous. The discretized equations on the extended domain $\bar{u}$ are then:
 \begin{itemize}
-	\item From \cref{eq:L-u-DE}: $L\bar{u} = p$.
-	\item From \cref{eq:B-u-DE}: $B\bar{u} = b$ (the same as \cref{B_operator_block}).
+	\item From \cref{eq:A-u-DE}: $L\bar{u} = p$.
+	\item From \cref{eq:B-u-DE}: $B\bar{u} = b$ (the same as \cref{eq:B_operator_block}).
 \end{itemize}
 
 The two linear equations have the same number of unknowns, so they can stacked up:
@@ -814,7 +815,7 @@ The following provides intuition on the relationships above:\footnote{\textbf{TO
 		has a big B instead of a little b.
 	}
 	
-		Recall \cref{B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
+		Recall \cref{eq:B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
 
 	Multiply both sides of \cref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
 	\begin{equation}
@@ -902,7 +903,7 @@ The following provides intuition on the relationships above:\footnote{\textbf{TO
 % 		%\text{z}_{1, L}&\text{z}_{2, L}&\dots&\text{z}_{n, L}\\
 % 		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
 % 		%\end{bmatrix}
-% 		\label{B_operator_block}
+% 		\label{eq:B_operator_block}
 % 	\end{equation}
 % 	for any $\bar{u}$ in the space of functions that satisfy the boundary conditions and where B$_{x^j,k}$ is a block matrix satisfying B$_{x^j,k}\cdot \bar{u}_{x^j} = \text{z}_{j,k}$ for $k \in \{L,H\}$ and $j = 1, 2,\dots n$. The size of B$_{x^j,k}$ is $I_{j,k} \times \bar{I}_j$.
 %
@@ -911,7 +912,7 @@ The following provides intuition on the relationships above:\footnote{\textbf{TO
 % 	\item R is the restriction operator which is defined by the domain. It removes columns which are not in the interior.
 % 	For an univariate process, we have:
 % 	\begin{equation}
-% 		R\cdot \bar{u}  \equiv\set{u(x_j)}_{j \in \{1,...,I\}} \in \R^{I} \label{R_operator}
+% 		R\cdot \bar{u}  \equiv\set{u(x_j)}_{j \in \{1,...,I\}} \in \R^{I} \label{eq:R_operator}
 % 	\end{equation}
 % 	Notice that R has size $I \times \bar{I}$ and R is defined as
 % 	\begin{equation}
@@ -936,7 +937,7 @@ The following provides intuition on the relationships above:\footnote{\textbf{TO
 %
 % 	\item Q is the operator that is defined as
 % 	\begin{equation}
-% 		Q \cdot R\cdot\bar{u} = \bar{u}\label{Q_operator_1}
+% 		Q \cdot R\cdot\bar{u} = \bar{u}\label{eq:Q_operator_1}
 % 	\end{equation}
 % 	for any $\bar{u}$ that satisfies the border conditions. (Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary). Formally, we define $Q$ as a matrix of size $\bar{I} \times I$ given by:
 % 	\begin{equation}
@@ -989,7 +990,7 @@ The following provides intuition on the relationships above:\footnote{\textbf{TO
 % 		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
 % 		%\end{bmatrix}
 % 		%\end{bmatrix}
-% 		\label{Q_operator_2}
+% 		\label{eq:Q_operator_2}
 % 	\end{equation}
 %
 % 	basically saying that it's a map from discretizations of functions in the interior to functions which satisfy the border conditions. In order to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.\\
@@ -1006,7 +1007,7 @@ The following provides intuition on the relationships above:\footnote{\textbf{TO
 % 	\begin{align}
 % 		(A-[A[:,1:I_L] A[:,\bar{I}-I_H+1:\bar{I}]]\cdot([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1} B))\cdot R^{\top} = A\cdot Q_A\label{affine_relation_2}
 % 	\end{align}
-% 	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \cref{B_operator_block}, so $\left([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1}\begin{bmatrix}
+% 	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \cref{eq:B_operator_block}, so $\left([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1}\begin{bmatrix}
 % 	\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
 % 	\text{z}_{x^{2},H} & ... & \text{z}_{x^{N},H}
 % 	\end{bmatrix}\right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
