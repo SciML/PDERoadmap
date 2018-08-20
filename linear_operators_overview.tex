@@ -49,12 +49,12 @@
 		\item Denote a typical affine operator on the space of continuous functions as $\tilde{A}$, and $\tilde{L}$ for a linear operator.  When these are discretized on a particular grid, denote them as $A$ and $L$ accordingly.
 		\item The baseline domain of the operator is on $[x^{\min}, x^{\max}]$.
 		\item Form a grid on the domain with $M$ points, $\set{x_m}_{m=1}^{M}$ with $x_1 = x^{\min}$ and $x_{M} = x^{\max}$ when. After discretizing, we can sometimes denote the grid with the variable name, i.e. $x \equiv \set{x_m}_{m=1}^M$. In the simple case of a uniform grid, $\Delta \equiv x_{m+1} - x_m$ for all $m < M$.
-		\item A core part of the discretization process will be to expand the variable onto the \textit{extension} (i.e. including any boundary points required for the boundary conditions).  If there are $M$ points in the grid, and $M_E$ points required for the boundary conditions, then define $\bar{M} = M + M_E$ as the total set of points on the extended domain.
-		\item Hence, denote the grid on the extended domain as $\bar{x} \in \R^{\bar{M}}$.  The interior points on the grid match the grid on the extended domain, so that $\bar{x}_{m + M^{-}_E} = x_{m}$ for $m = 1, \ldots M$ for the $M^{-}_E$ is the number of points required for the boundary conditions to the left of the interior, $M^{+}_E$ is the number of points to the right, and $M_E = M^{-}_E + M^{+}_E$
+		\item A core part of the discretization process will be to expand the variable onto the \textit{extension} (i.e. including any boundary points required for the boundary conditions). The set of boundary points will be referred to as $S_E$. If there are $M$ points in the grid, and $M_E$ points required for the boundary conditions (i.e. $|S_E| = M_E$), then define $\bar{M} = M + M_E$ as the total set of points on the extended domain. We will denote the extended domain as $\bar{x} \in \R^{\bar{M}}$.
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{M}$, $y$ has length $M$.
 	\end{itemize}
 
 \section{General Overview of Discretization and Boundary Values}\label{sec:general}
+\subsection{Simple Differential Operators}\label{sec:general-simple}
 Take a simple linear or affine differential operator $\tilde{A}$, (possibly affine) boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.
 % \footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
 \begin{align}
