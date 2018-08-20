@@ -88,6 +88,29 @@ For linear $\tilde{A}$, we will denote it as $\tilde{L}$ to emphasize the fact t
 	The operator is composed as $A^B = AQ^B$. The intuition is that first $Q^B$ is applied to the interior points to add the ``ghost nodes'' corresponding to the boundary condition, and then the stencil operator $A$ is applied to the whole domain, including the ghost nodes. $A^B$ is in general affine if $A$ and/or $Q^B$ are affine, and linear if both of them are linear, in which case we will denote it as $L^B$ to emphasize the linearity.
 \end{itemize}
 
+\subsection{Composite Differential Operators}\label{sec:general-composite}
+The discretization of a composite differential operator follows the same framework as \ref{sec:general-simple}. However, instead of deriving the stencil operator $A$ directly it is customary to think of it as being composed of several component operators. For this document we will only consider the simplest of compositions: linear combinations. For more complex examples, especially high-dimensional ones, we may encounter more advanced form of compositions such as tensor products/sums.
+
+Let $\tilde{A}$ be the linear combination of several differential operators: $\tilde{A} = \tilde{A}_1 + \tilde{A}_2 + \cdots + \tilde{A}_n$. To get the discretized entities of \ref{sec:general-simple}, we will proceed as follows:
+
+\begin{itemize}
+	\item First, discretize each $\tilde{A}_k$ separately and get its $B_k$, $R_k$, $Q^{B_k}$ and $A_k$ along with the extended domain $\bar{u}_k$.\footnote{Even if the physical boundary condition is the same for all components, the required boundary points may still be different because of the order of differentiation and/or numerical approximation. For example, a second-order approximation to $\D[xx]$ requires one boundary point at each end, whereas a fourth-order approximation requires two.}
+
+	\item Let $\bar{u}$ be the union of all the $\bar{u}_k$, i.e. the largest common extended domain. Usually this is just the $\bar{u}_k$ corresponding to the ``biggest'' component operator. We need to work out the $B$, $R$ and $Q_B$ for $\bar{u}$, which is trivial if it coincides with one of the $\bar{u}_k$.
+
+	\item The composed stencil operator defined on $\bar{u}$ is $A = A_1E_1 + A_2E_2 + \cdots + A_nE_n$, with $E_k \in \R^{M_{E,k} \times M_E}$ the \textit{extension operator} for $A_k$. In practice we don't need $E_k$ explicitly as $A_kE_k$ can be constructed easily by padding $A_k$ with zeros at columns corresponding to boundary points that are not used. For example, if $L_1 \in \R^{2 \times 3}$ but the common extended domain include an extra boundary point at the end, then
+	\begin{align*}
+		L_kE_k &= \begin{bmatrix}
+			L_k & \mathbf{0}_2
+		\end{bmatrix} \in \R^{2 \times 4}
+	\end{align*}
+	which extends $L_k$ to the common extended domain.\footnote{For affine $A_k$, the rule of affine algebra applies: $(A_kE_k)_L = A_{k,L}E_k$, $(A_kE_k)_b = A_{k,b}$. In other words, the bias term remains unchanged and the linear part gets padded with zeros.} The extended stencil operators can now be linearly combined as they are of the same shape.
+
+	Alternatively, $E_k$ can be viewed as the \textit{restriction operator} mapping $\bar{u}$ to $\bar{u}_k$ by stripping away unused boundary points. In other words, instead of viewing $A_kE_k\bar{u}$ as $(A_kE_k)\bar{u}$ we can view it as $A_k(E_k\bar{u}) = A_k\bar{u}_k$.\footnote{This can make a big difference in application depending on the details of implemnetation: whether $A_k$ is sparese or not, how the grid is implemented, etc.}
+
+	\item The discretized derivative operator is still $A^B = AQ^B$.
+\end{itemize}
+
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 \subsection{Definitions and Notation for Examples}
 Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
