@@ -656,7 +656,7 @@ We will now show that the rows corresponding to $B$ can be used in Gaussian elim
 &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:reduced-example-1}
 \end{align}
 
-On the other hand, for the reflecting boundaries, we know from \cref{eq:Q-A2} the boundary extrapolation operator is
+On the other hand, for the reflecting boundaries, we know from \cref{eq:Q-RR} the boundary extrapolation operator is
 \begin{align}
 	Q^B &\equiv \begin{bmatrix}
 		1 & 0 & 0\\
@@ -680,7 +680,7 @@ Let's add a drift term to \ref{sec:appendixA-example1} with constant rate $\mu <
 \subsubsection{Discretized Equation}
 Again we follow the procedure of \ref{sec:general-composite} for the discretization of $\tilde{L}$. The biggest common extended domain is still the one used by $L_2$ so the parts regarding $rI^E$, $L_2$ and $B$ in \ref{sec:appendixA-example1} remain the same.
 
-For $\D[x]$, because $\mu < 0$ backward difference should be used and that gives the stencil operator \cref{eq:L-1m}, which in this case is
+For $\D[x]$, because $\mu < 0$ backward difference should be used and that gives the stencil operator $L^-_1$ \cref{eq:L-1}, which in this case is
 \begin{align}
 	L^-_1 &= \begin{bmatrix}
 			-1 & 1 & 0 & 0 \\
@@ -782,7 +782,7 @@ Since the left hand side coefficient matrix is the same, we can use the same Gau
 	\end{bmatrix}\label{eq:reduced-example-3}
 \end{align}
 
-For the $LQ^Bu = p$ route, $Q^B$ is now affine and from \cref{eq:Q-A2} we have
+For the $LQ^Bu = p$ route, $Q^B$ is now affine and from \cref{eq:Q-RR} we have
 \begin{align}
 	Q^B_L = \begin{bmatrix}
 		1 & 0 & 0 \\
