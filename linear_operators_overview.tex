@@ -49,102 +49,162 @@
 		\item Denote a typical affine operator on the space of continuous functions as $\tilde{A}$, and $\tilde{L}$ for a linear operator.  When these are discretized on a particular grid, denote them as $A$ and $L$ accordingly.
 		\item The baseline domain of the operator is on $[x^{\min}, x^{\max}]$.
 		\item Form a grid on the domain with $M$ points, $\set{x_m}_{m=1}^{M}$ with $x_1 = x^{\min}$ and $x_{M} = x^{\max}$ when. After discretizing, we can sometimes denote the grid with the variable name, i.e. $x \equiv \set{x_m}_{m=1}^M$. In the simple case of a uniform grid, $\Delta \equiv x_{m+1} - x_m$ for all $m < M$.
-		\item A core part of the discretization process will be to expand the variable onto the \textit{extension} (i.e. including any boundary points required for the boundary conditions).  If there are $M$ points in the grid, and $M_E$ points required for the boundary conditions, then define $\bar{M} = M + M_E$ as the total set of points on the extended domain.
-		\item Hence, denote the grid on the extended domain as $\bar{x} \in \R^{\bar{M}}$.  The interior points on the grid match the grid on the extended domain, so that $\bar{x}_{m + M^{-}_E} = x_{m}$ for $m = 1, \ldots M$ for the $M^{-}_E$ is the number of points required for the boundary conditions to the left of the interior, $M^{+}_E$ is the number of points to the right, and $M_E = M^{-}_E + M^{+}_E$
+		\item A core part of the discretization process will be to expand the variable onto the \textit{extension} (i.e. including any boundary points required for the boundary conditions). The set of boundary points will be referred to as $S_E$. If there are $M$ points in the grid, and $M_E$ points required for the boundary conditions (i.e. $|S_E| = M_E$), then define $\bar{M} = M + M_E$ as the total set of points on the extended domain. We will denote the extended domain as $\bar{x} \in \R^{\bar{M}}$.
 		\item For any arbitrary continuous function $\tilde{y}(x)$ defined in the whole space of $x$, we define $\bar{y}$ as its discretization on the whole domain of $x$ and $y$ as the discretization only for interior points of the domain. So while $\bar{y}$ has length $\bar{M}$, $y$ has length $M$.
 	\end{itemize}
 
-	\section{General Overview of Discretization and Boundary Values}\label{sec:general}
-	Take an linear differential operator $\tilde{L}$, (possibly) affine boundary conditions $\tilde{B}$, boundary value function $\tilde{b}(x)$ and the function of interest $\tilde{u}(x)$.  The general problem to solve is to find the $\tilde{u}(x)$ such that.\footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
+\section{General Overview of Discretization and Boundary Values}\label{sec:general}
+\subsection{Simple Differential Operators}\label{sec:general-simple}
+Take a simple linear or affine differential operator $\tilde{A}$, (possibly affine) boundary conditions $\tilde{B}$ and the function of interest $\tilde{u}(x)$. The general problem to solve is to find the $\tilde{u}(x)$ such that.
+% \footnote{\textbf{TODO:} Is this correct? Can the $\tilde{L}$ really be a more general $\tilde{A}$?  Also, is the $\tilde{B}\tilde{u}(x) = \tilde{b}(x)$ really a good way to write down the possibly affine boundary conditions?}
+\begin{align}
+	\tilde{A} \tilde{u}(x) &= 0\label{eq:A-u-DE}\\
+	\tilde{B} \tilde{u}(x) &= 0\label{eq:B-u-DE}
+\end{align}
+For linear $\tilde{A}$, we will denote it as $\tilde{L}$ to emphasize the fact that it's not affine. The discretization process generates the following objects:
+\begin{itemize}
+	\item $B\in \R^{M_E \times \bar{M}}$ is the (possibly affine) \textit{boundary condition operator}, which satisfies the equation
 	\begin{align}
-		\tilde{L} \tilde{u}(x) &= 0\label{eq:L-u-DE}\\
-		\tilde{B} \tilde{u}(x) &= \tilde{b}(x)\label{eq:B-u-DE}
+		B \bar{u} = \mathbf{0}_{M_E}\label{eq:B_operator_block}
+	\end{align}
+	for any $\bar{u}$ in the space of functions that satisfy the discretized boundary conditions. \footnote{Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.} For affine $B$, we can write out \cref{eq:B_operator_block} as
+	\begin{align}
+		B_L\bar{u} = -B_b\label{eq:B_operator_block_expanded}
+	\end{align}
+	\item $R\in \R^{M\times \bar{M}}$ is the linear \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. It fulfills
+	\begin{align}
+		R \bar{u} = u \label{eq:R_operator}
 	\end{align}
 
-	The discretization process generates the following objects:
-	\begin{itemize}
-	%	\item $A$ is the \textit{discretization of the differential operator}, and is independent of the boundary conditions.  Think of it as the stencil for the interior of the operator expanded to the extended domain.
-		\item $B\in \R^{M_E \times \bar{M}}$ is the linear \textit{boundary condition operator} and $b \in \R^{M_E}$ the vector \textit{boundary condition value} with
-		\begin{equation}
-		B \bar{u} = b
-		\label{B_operator_block}
-		\end{equation}
-		for any $\bar{u}$ in the space of functions that satisfy the boundary conditions $b$.\footnote{
-Notice that $B$ is not necessarily unique. The choice of $B$ is exactly the choice of boundary value discretization. For instance, choosing to do first or second order Neumann border conditions is simply the choice of the operator $B$.}
-		\item $R\in \R^{M\times \bar{M}}$ is the linear \textit{restriction operator} which is defined by the domain. It removes columns which are not in the interior. It fulfills
-		\begin{equation}
-		R \bar{u} = u \label{R_operator}
-		\end{equation}
-
-		\item $Q : \R^M \to \R^{\bar{M}}$ is the (potentially) affine \textit{boundary extrapolation operator}.  This can be decomposed into a linear $Q_L \in \R^{\bar{M}\times M}$ and a \textit{bias} vector $Q_b \in \R^{\bar{M}}$.  The operator $Q$ is defined as fulfilling the following relationships (keeping in mind that $Q$ is affine and $R$ is linear)
-		\begin{align}
-		Q  R\bar{u} = \bar{u}\label{Q_operator_1}\\
-		B Q u  = b	\label{Q_operator_2}
+	\item $Q^B : \R^M \to \R^{\bar{M}}$ is the (potentially affine) \textit{boundary extrapolation operator} associated with $B$. The operator $Q^B$ is defined as fulfilling the following relationships (keeping in mind that $Q^B$ is affine and $R$ is linear)
+	\begin{align}
+		Q^B  R\bar{u} &= \bar{u}\label{eq:Q_operator_1}\\
+		B Q^B u &= \mathbf{0}_{M_E}	\label{eq:Q_operator_2}
 	\end{align}
-	\item To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
-		\end{itemize}
+	To give intuition, for any $\bar{u}$ that satisfies the border conditions:\footnote{Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary.  Furthermore, in order for \cref{eq:Q_operator_1} to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.} \cref{eq:Q_operator_1} says that finding the restriction of the function and then extrapolating to extension yields the same function, and \cref{eq:Q_operator_2} says that the boundary extrapolation of the interior of the function, $u$, fulfills the boundary value.
+	\item $A : \R^{\bar{M}} \to \R^M$ is the (possibly affine) \textit{stencil operator}. It maps the extended domain to the interior by applying a stencil, which is determined by the derivative operator and the numerical differentiation scheme. As with the continous case, we will denote the stencil operator as $L$ if it is linear.
+	\item The \textit{discretized derivative operator} is $A^B : \R^M \to \R^M$. We use the $B$ superscript to emphasize the operator's dependence on the boundary condition.
+	
+	The operator is composed as $A^B = AQ^B$. The intuition is that first $Q^B$ is applied to the interior points to add the ``ghost nodes'' corresponding to the boundary condition, and then the stencil operator $A$ is applied to the whole domain, including the ghost nodes. $A^B$ is in general affine if $A$ and/or $Q^B$ are affine, and linear if both of them are linear, in which case we will denote it as $L^B$ to emphasize the linearity.
+\end{itemize}
 
+\subsection{Composite Differential Operators}\label{sec:general-composite}
+The discretization of a composite differential operator follows the same framework as \ref{sec:general-simple}. However, instead of deriving the stencil operator $A$ directly it is customary to think of it as being composed of several component operators. For this document we will only consider the simplest of compositions: linear combinations. For more complex examples, especially high-dimensional ones, we may encounter more advanced form of compositions such as tensor products/sums.
+
+Let $\tilde{A}$ be the linear combination of several differential operators: $\tilde{A} = \tilde{A}_1 + \tilde{A}_2 + \cdots + \tilde{A}_n$. To get the discretized entities of \ref{sec:general-simple}, we will proceed as follows:
+
+\begin{itemize}
+	\item First, discretize each $\tilde{A}_k$ separately and get its $B_k$, $R_k$, $Q^{B_k}$ and $A_k$ along with the extended domain $\bar{u}_k$.\footnote{Even if the physical boundary condition is the same for all components, the required boundary points may still be different because of the order of differentiation and/or numerical approximation. For example, a second-order approximation to $\D[xx]$ requires one boundary point at each end, whereas a fourth-order approximation requires two.}
+
+	\item Let $\bar{u}$ be the union of all the $\bar{u}_k$, i.e. the largest common extended domain. Usually this is just the $\bar{u}_k$ corresponding to the ``biggest'' component operator. We need to work out the $B$, $R$ and $Q_B$ for $\bar{u}$, which is trivial if it coincides with one of the $\bar{u}_k$.
+
+	\item The composed stencil operator defined on $\bar{u}$ is $A = A_1E_1 + A_2E_2 + \cdots + A_nE_n$, with $E_k \in \R^{M_{E,k} \times M_E}$ the \textit{extension operator} for $A_k$. In practice we don't need $E_k$ explicitly as $A_kE_k$ can be constructed easily by padding $A_k$ with zeros at columns corresponding to boundary points that are not used. For example, if $L_1 \in \R^{2 \times 3}$ but the common extended domain include an extra boundary point at the end, then
+	\begin{align*}
+		L_kE_k &= \begin{bmatrix}
+			L_k & \mathbf{0}_2
+		\end{bmatrix} \in \R^{2 \times 4}
+	\end{align*}
+	which extends $L_k$ to the common extended domain.\footnote{For affine $A_k$, the rule of affine algebra applies: $(A_kE_k)_L = A_{k,L}E_k$, $(A_kE_k)_b = A_{k,b}$. In other words, the bias term remains unchanged and the linear part gets padded with zeros.} The extended stencil operators can now be linearly combined as they are of the same shape.
+
+	Alternatively, $E_k$ can be viewed as the \textit{restriction operator} mapping $\bar{u}$ to $\bar{u}_k$ by stripping away unused boundary points. In other words, instead of viewing $A_kE_k\bar{u}$ as $(A_kE_k)\bar{u}$ we can view it as $A_k(E_k\bar{u}) = A_k\bar{u}_k$.\footnote{This can make a big difference in application depending on the details of implemnetation: whether $A_k$ is sparese or not, how the grid is implemented, etc.}
+
+	\item The discretized derivative operator is still $A^B = AQ^B$.
+\end{itemize}
 
 \section{Time-Invariant Stochastic Process Examples}\label{sec:examples}
 \subsection{Definitions and Notation for Examples}
-Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant.
+Let $x_t$ be a stochastic process for a univariate function defined on a continuous domain $x \in (x^{\min}, x^{\max})$ where $-\infty < x^{\min} < x^{\max} < \infty$.  We will assume throughout that the domain is time-invariant. The infinitesimal generator associated with $x_t$ is denoted as $\tilde{L}^s$.
 
-For a given $\tilde{L}^s$ as the infinitesimal generate for a stochastic process. Then, if the payoff in state $x$ is $\tilde{p}(x)$, and payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is,
+Let the payoff in state $x$ be $\tilde{p}(x)$ (for a simple example, we can choose $\tilde{p}(x) = x$). If payoffs are discounted at rate $r > 0$, then the simple HJBE for $\tilde{u}(x)$ is
 \begin{align}
-r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L}^s \tilde{u}(x)\label{eq:general-stationary-HJBE}\\
-\intertext{Rearranging and defining an intermediate,}
-\tilde{L} \tilde{u}(x) &= \tilde{p}(x)
-\intertext{where the differential operator is}
-\tilde{L} &\equiv r - \tilde{L}^s
+	r \tilde{u}(x) &= \tilde{p}(x) + \tilde{L}^s \tilde{u}(x)\label{eq:general-stationary-HJBE}
 \end{align}
-subject to $\D[x]\tilde{u}(x^{\min}) = 0$ and $\D[x]\tilde{u}(x^{\max}) = 0$ for reflecting barriers.  If it is a lower absorbing barrier, then denote $\D[x]\tilde{u}(x^{\min}) = \underline{u}$ which may be non-zero.
-
-For a simple example of a payoff, choose $\tilde{p}(x) = x$.
-
-Since many of the examples will use the same boundary values and discretizations of the operators: define the discretization of the second-order derivative with central differences as
+We can define another operator $\tilde{L} \equiv r\tilde{I} - \tilde{L}^s$ where $\tilde{I}$ is the identity operator. With this we can rearrange \cref{eq:general-stationary-HJBE} as
 \begin{align}
-	L_2 &\equiv \frac{1}{\Delta^2}\begin{bmatrix}
-	1&-2&1&\dots&0&0&0\\
-	0&1&-2&\dots&0&0&0\\
-	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-	0&0&0&\dots&-2&1&0\\
-	0&0&0&\cdots&1&-2&1
-\end{bmatrix}\label{eq:L-2}
-	\intertext{Next, define the discretization of the first-derivative (forward and backward) as}
-	L^{+}_1 &= \frac{1}{\Delta}\begin{bmatrix}
-	0&-1&1&0&\dots&0&0&0\\
-	0&0&-1&1&\dots&0&0&0\\
-	\vdots&\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
-	0&0&0&0&\dots&-1&1&0\\
-	0&0&0&0&\cdots&0&-1&1
-	\end{bmatrix}\label{eq:L-1p}\\
-	L^{-}_1 &= \frac{1}{\Delta}\begin{bmatrix}
-	-1&1&0&\dots&0&0&0&0\\
-	0&-1&1&\dots&0&0&0&0\\
-	\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots&\vdots\\
-	0&0&0&\dots&-1&1&0&0\\
-	0&0&0&\cdots&0&-1&1&0
-\end{bmatrix}\label{eq:L-1m}
-	\intertext{Next, notice that many of the $R$ matrix follow a simple pattern.  When $M_E = 2$ with a boundary point at both sides, }
-	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}\\
-	\intertext{A common $Q$ setup for this is,}
-	Q_{A,2} &\equiv \begin{bmatrix} \mathbf{0}_{1\times M} \\ \mathbf{I}_M \\ \mathbf{0}_{1\times M}\end{bmatrix}\label{eq:Q-A2}
-	\intertext{Next, define the $B$ associated with a reflection at both sides}
-	B_{RR} &\equiv \begin{bmatrix}
-	-1&1&0&\dots&0&0&0\\
-	0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-RR}
-	\intertext{Another for the $B$ associated with an absorbing barrier at both sides}
-	B_{AA} &\equiv \begin{bmatrix}
-	1&0&0&\dots&0&0&0\\
-	0&0&0&\cdots&0&0&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-AA}
-\intertext{And another for an absorbing at the bottom and reflecting at the top,}
-B_{AR} &\equiv \begin{bmatrix}
-1&0&0&\dots&0&0&0\\
-0&0&0&\cdots&0&-1&1
-\end{bmatrix}_{2\times (M+2)}\label{eq:B-AR}
+	\tilde{L} \tilde{u}(x) &= \tilde{p}(x)
 \end{align}
+
+Common boundary conditions for $\tilde{L}$ are:
+\begin{itemize}
+	\item $\D[x]\tilde{u}(x^{\min}) = b^{\min}$, $\D[x]\tilde{u}(x^{\max}) = b^{\max}$ for \textit{Neumann boundaries}.
+	\item $\tilde{u}(x^{\min}) = b^{\min}$, $\tilde{u}(x^{\max}) = b^{\max}$ for \textit{Dirichlet boundaries}.
+	\item Mixed boundaries, e.g. $\tilde{u}(x^{\min}) = b^{\min}$, $\D[x]\tilde{u}(x^{\max}) = b^{\max}$ for Dirichlet boundary at the bottom and Neumann boundary at the top.
+\end{itemize}
+It is customary to refer to homogeneous (i.e. $b^{\min} = b^{\max} = 0$) Neumann boundaries as \textit{reflecting barriers/boundaries}, and homogeneous Dirichlet boundaries as \textit{absorbing barriers/boundaries}.
+
+The stencil operators used by the examples are:
+\begin{itemize}
+	\item Second-order approximation to $\D[xx]$ (central differencing):
+	\begin{align}
+		L_2 &\equiv \frac{1}{\Delta^2}\begin{bmatrix}
+		1&-2&1&\dots&0&0&0\\
+		0&1&-2&\dots&0&0&0\\
+		\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+		0&0&0&\dots&-2&1&0\\
+		0&0&0&\cdots&1&-2&1
+		\end{bmatrix}_{M\times(M+2)}\label{eq:L-2}
+	\end{align}
+	$L_2$ requires one boundary point at each end of the domain.
+
+	\item First-order approximation to $\D[x]$:
+	\begin{align}
+		L_1 &\equiv \frac{1}{\Delta}\begin{bmatrix}
+		-1&1&0&\dots&0&0&0\\
+		0&-1&1&\dots&0&0&0\\
+		\vdots&\vdots&\vdots&\ddots&\vdots&\vdots&\vdots\\
+		0&0&0&\dots&-1&1&0\\
+		0&0&0&\cdots&0&-1&1
+		\end{bmatrix}_{M\times(M+1)}\label{eq:L-1}
+	\end{align}
+	$L_1$ requires one boundary point at the top or bottom end of the domain. For \textit{forward differencing} the extra point is at the top, while for \textit{backward differencing} it is at the bottom. To avoid ambiguity we shall refer to the forward and backward stencils as $L^+_1$ and $L^-_1$ respectively.
+\end{itemize}
+
+In most examples the largest common extended domain is the same one used by $L_2$, which has $M_E = 2$ with $S_E = \{0, M+1\}$. The restriction operator is
+\begin{align}
+	R_2 &\equiv \begin{bmatrix} \mathbf{0}_M & \mathbf{I}_M & \mathbf{0}_M\end{bmatrix}\label{eq:R-2}
+\end{align}
+
+The boundary operators for this domain with the most common boundary conditions are:
+\begin{itemize}
+	\item Neumann boundary at both sides:
+	\begin{align}
+		B_{RR,L} &\equiv \begin{bmatrix}
+		1&-1&0&\dots&0&0&0\\
+		0&0&0&\cdots&0&-1&1
+		\end{bmatrix}_{2\times (M+2)}\quad
+		B_{RR,b} = \begin{bmatrix}b^{\min}\Delta\\-b^{\max}\Delta\end{bmatrix}\label{eq:B-RR}
+	\end{align}
+
+	\item Dirichlet boundary at both sides:
+	\begin{align}
+		B_{AA,L} &\equiv \begin{bmatrix}
+		1&0&0&\dots&0&0&0\\
+		0&0&0&\cdots&0&0&1
+		\end{bmatrix}_{2\times (M+2)}\quad
+		B_{AA,b} = \begin{bmatrix}-b^{\min}\\-b^{\max}\end{bmatrix}\label{eq:B-AA}
+	\end{align}
+
+	\item Dirichlet boundary at the bottom and Neumann boundary at the top:
+	\begin{align}
+		B_{AR,L} &\equiv \begin{bmatrix}
+		1&0&0&\dots&0&0&0\\
+		0&0&0&\cdots&0&-1&1
+		\end{bmatrix}_{2\times (M+2)}\quad
+		B_{AR,b} = \begin{bmatrix}-b^{\min}\\-b^{\max}\Delta\end{bmatrix}\label{eq:B-AR}
+	\end{align}
+\end{itemize}
+For homogeneous boundaries (i.e. reflecting/absorbing) the $B$ operators are linear. In this case we will slightly abuse the notation and simply drop the $L$ subscript when referring to the linear operator.
+
+The corresponding boundary extrapolation operators are:
+\begin{align}
+	Q^{B_{RR}}_L &\equiv \begin{bmatrix}1&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\quad
+	Q^{B_{RR}}_b = \begin{bmatrix}-b^{\min}\Delta\\\mathbf{0}_M\\b^{\max}\Delta\end{bmatrix}\label{eq:Q-RR}\\
+	Q^{B_{AA}}_L &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&0\end{bmatrix}\quad
+	Q^{B_{AA}}_b = \begin{bmatrix}b^{\min}\\\mathbf{0}_M\\b^{\max}\end{bmatrix}\label{eq:Q-AA}\\
+	Q^{B_{AR}}_L &\equiv \begin{bmatrix}0&0&\cdots&0&0\\&&\mathbf{I}_M&&\\0&0&\cdots&0&1\end{bmatrix}\quad
+	Q^{B_{AR}}_b = \begin{bmatrix}b^{\min}\\\mathbf{0}_M\\b^{\max}\Delta\end{bmatrix}\label{eq:Q-AR}
+\end{align}
+Again when the boundaries are homogeneous, we will drop the $L$ subscript.
 
 \subsection{Stationary HJBE with Reflecting Barriers}\label{sec:simple-reflecting-example}
 Take the stochastic process
@@ -467,337 +527,324 @@ Again, since barriers are reflecting, we can have the same boundary conditions a
 Again, given $L$ defined by \cref{L_definition}, the remaining steps for solving interiors, $u$, and the extended state vector, $\bar{u}$, are similar with what we did for previous examples.
 
 \appendix
-\section{More on Gaussian Elimination and $Q$}
-\subsection{Linear Case with Reflecting Boundaries}
-Use the simple example from \cref{sec:simple-reflecting-example}
-\subsubsection{System of Operators/Equations}
-First, define the stochastic process/etc.
+\section{Extended Equation and Gaussian Elimination}
+\subsection{Overview}
+The document focuses on solving the discretized equation on the interior $u$, and the information for the boundary condition is encoded in the boundary extrapolation operator $Q^B$. Alternatively, we can consider the discretized equation on the extended domain $\bar{u}$. We wish to demonstrate in this section that the two equations are indeed equivalent.
+
+The starting point is again the continuous equation \cref{eq:A-u-DE} and \cref{eq:B-u-DE}. We discretize the domain and get the stencil operator $L$ and boundary operator $B$. For simplicity, we shall assume $L$ to be linear in this section, but the boundary conditions need not be homogenous. The discretized equations on the extended domain $\bar{u}$ are then:
 \begin{itemize}
-	\item The stochastic process is $X_t$ is $d X_t = \sigma d W_t$
-	\item Let $\sigma \equiv \sqrt{2}$,  Consequently, the infinitesimal generator is
+	\item From \cref{eq:A-u-DE}: $L\bar{u} = p$.
+	\item From \cref{eq:B-u-DE}: $B_L\bar{u} = -B_b$ (this is just \cref{eq:B_operator_block_expanded}).
+\end{itemize}
+
+The two linear equations have the same number of unknowns, so they can stacked up:
 \begin{align}
-		\tilde{L}_2 &\equiv \D[xx]\\
-		\intertext{Furthermore, define the simple operator of the identity,}
-		\tilde{L}_0 u &\equiv u
-	\end{align}
-	\item Let $\rho > 0$ be a discount rate and the payoff be $\tilde{c}(x) = x^2$, then the simple stationary HJBE in the interior is
+	\begin{bmatrix} L \\ B_L \end{bmatrix} \bar{u} &=
+	\begin{bmatrix} p \\ -B_b \end{bmatrix}\label{eq:extended-stack}
+\end{align}
+
+In the examples we shall see that the extended equation \cref{eq:extended-stack} can be transformed to an equation on the interior by way of Gaussian elimination. We wish to show that the $Q^B$ matrix can be naturally generated using the elementary matrices associated with the elimination process, however the algebra is not in place yet. Nevertheless, for a known $Q^B$ the equivalence between the equations can be proved easily.\footnote{Note that the equation \cref{eq:extended-stack} does not necessarily have a unique solution. Nevertheless the reduced equation from Gaussian elimination should be the same we get from $LQ^Bu = p$.}
+
+\subsection{Example 1: Diffusion with Reflecting Boundaries}\label{sec:appendixA-example1}
+\subsubsection{Continuous Equation}
+We consider a slightly modified example from \cref{sec:simple-reflecting-example}. The stochastic process in question is $dx_t = \sqrt{2}dW_t$ and a reflecting boundary is present at $x^{\min} = 0$ and $x^{\max} = 2$. The infinitesimal generator is then simply $\tilde{L}^s = \D[xx]$.
+
+For discount rate $r > 0$ and payoff $\tilde{p}(x)$, the stationiary HJBE is then
+\begin{align}
+	\tilde{L}u(x) &= \tilde{p}(x)\\
+	\tilde{L} &\equiv r\tilde{I} - \D[xx] \\
+	\D[x]\tilde{u}(0) &= \D[x]\tilde{u}(2) = 0
+\end{align}
+Here $\tilde{I}$ is the (continuous) identity operator.
+
+\subsubsection{Discretized Equation}
+We'll be using a uniform grid with $\Delta x = 1$, in other words $M = 3$ interior nodes. A second-order approximation to $\D[xx]$ is used which require $M_E = 2$ addition nodes, and a total of $\bar{M} = 5$ nodes on the whole domain. The discretized grid entities are:
+\begin{align}
+	p &= \begin{bmatrix} \tilde{p}(0) & \tilde{p}(1) & \tilde{p}(2)\end{bmatrix}^{\top}\\
+	u &= \begin{bmatrix} \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2)\end{bmatrix}^{\top}\\
+	\bar{u} &= \begin{bmatrix} \tilde{u}(-1)  & \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2) &  \tilde{u}(3)\end{bmatrix}^{\top}
+\end{align}
+
+For the discretization of $\tilde{L} = r\tilde{I} - \D[xx]$, since it is composed of two parts we shall follow the procedure in \ref{sec:general-composite}:
+\begin{itemize}
+	\item The scaling operator $r\tilde{I}$ is discretized simply as $rI_M$, defined on the interior. There's no boundary points associated with it.
+
+	\item The discrete stencil operator for $\D[xx]$ is defined in \cref{eq:L-2}, specifically for this case it is
 	\begin{align}
-		\rho u(x) &= c(x) + \tilde{L}_2 u(x)\\		
-		\intertext{Rearrange}
-		\tilde{L} &\equiv \rho - \tilde{L}_2\\
-		&= \rho \tilde{L}_0 - \tilde{L}_2\\
-		\tilde{L} u(x) &= \tilde{c}(x)
+		L_2 &= \begin{bmatrix}
+			1 & -2 & 1 & 0 & 0\\
+			0 & 1 & -2 & 1 & 0\\	
+			0 & 0 & 1 & -2 & 1\\	
+			\end{bmatrix}\in \R^{M \times \bar{M}}
 	\end{align}
-	\item For the boundaries, we will have reflecting barriers at $x^{\min} = 0$ and $x^{\max} = 2$.  Denote the application of a derivative at a point as $\partial_x\mid_{x=0}$, etc. This means,
+	$L_2$ needs an extra boundary point at each end. Its associated boundary operator is given in \cref{eq:B-RR}. In particular, for this case we have a linear $B$ with
 	\begin{align}
-			\partial_x u(0) &= 0\\
-			\partial_x u(2) &= 0\\
-			\intertext{Which we  write as,}
-			\tilde{B} &\equiv \begin{bmatrix}\partial_x\mid_{x=0} \\ \partial_x\mid_{x=2}\end{bmatrix}
-			\intertext{Then we can write the boundary condition as}
-			\tilde{B} u(x) &= 0\\
-			b &= \textbf{0}_{2\times 1}
+		B_L &= \begin{bmatrix}
+				1 & -1 & 0 & 0 & 0\\
+				0 & 0 & 0 & -1 & 1
+			 \end{bmatrix}\in\R^{M_E \times \bar{M}},\quad
+		B_b = \begin{bmatrix}0 \\ 0\end{bmatrix}\label{eq:B-example-A1}
 	\end{align}
-	\item Summarizing, we are looking for a solution to the system
+
+	\item To extend $rI_M$ to $L_2$'s boundary, we simply pad a column of zeros to each end of the identity operator:
 	\begin{align}
-		\begin{bmatrix}\tilde{L}\\
-		\tilde{B}\end{bmatrix} u(x) &\equiv \begin{bmatrix}\tilde{c}(x) \\ b\end{bmatrix}
+		I^E &\equiv \begin{bmatrix}
+			0 & 1 & 0 & 0 & 0\\
+			0 & 0 & 1 & 0 & 0\\
+			0 & 0 & 0 & 1 & 0
+		\end{bmatrix}
+	\end{align}
+
+	\item The composed stencil is then
+	\begin{align}
+		L &= rI^E - L_2\\
+		  &= \begin{bmatrix}
+				-1 & 2 + r & -1 & 0 & 0\\
+				0 & -1 & 2+r & -1 & 0\\
+				0 & 0 & -1 & 2+r & -1
+			  \end{bmatrix}\label{eq:L-example1}
 	\end{align}
 \end{itemize}
-\subsubsection{Discretizing}
-To discretize, let  Let $\Delta x = 1$ with a uniform grid.  Therefore, $M = 3, \bar{M} = 5$,
-\begin{align}
-	x &\equiv \begin{bmatrix} 0 & 1 & 2\end{bmatrix}^{\top}\\
-\bar{x} &\equiv \begin{bmatrix} -1 & 0 & 1 & 2 & 3\end{bmatrix}^{\top}\\
-c &\equiv \tilde{c}(x) = \begin{bmatrix} 0 & 1 & 4\end{bmatrix}^{\top}\\
-u &\equiv \tilde{u}(x) = \begin{bmatrix} \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2)\end{bmatrix}^{\top}\\
-\bar{u} &\equiv \tilde{u}(\bar{x}) = \begin{bmatrix} \tilde{u}(-1)  & \tilde{u}(0) & \tilde{u}(1) & \tilde{u}(2) &  \tilde{u}(3)\end{bmatrix}^{\top}
-\end{align}
-To determine the discretization of $\tilde{L}$, first do the $\tilde{L}_1$ operator, which has the stencil.  Note that this stencil had to add the extra points $-1$ and $3$ on the grid in $\bar{x}$
-\begin{align}
-L_2 &= \begin{bmatrix}
-	1 & -2 & 1 & 0 & 0\\
-	0 & 1 & -2 & 1 & 0\\	
-	0 & 0 & 1 & -2 & 1\\	
-	\end{bmatrix}\in \R^{M \times \bar{M}}
-	\intertext{Since this is the ``largest'' operator we have (in terms of extra points) the extension of it is easy enough}
-	L_2^E &= L_2
-\end{align}	
-Next, look at the stencil for the the identity operator, above in $L_0$.  Unlike the previous example, it needs to extend to the largest grid in order to sum up the linear operator tersms.
-\begin{align}
-L_0 &\equiv I_M
-\intertext{However, in order to compose operators we will extend it to the extra points required on the grid with an extension.  While we could add in arbitrary points in the extension, the algebra will be easier if we add $0$s.  Define the extension operator adding one point to the left and one to the right of the grid as,}
-E_{11} &\equiv \begin{bmatrix}\textbf{0}_M^{\top}\\  I_M \\ \textbf{0}_M^{\top}\end{bmatrix}\in\R^{\bar{M} \times M}
-\intertext{Then, the extension of the $L_2$ operator is,}
-L_0^E &\equiv E_{11} L_0 = \begin{bmatrix} \textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}
-\intertext{Finally, we can compose the operators to form the discretization of $\tilde{L}$ as,}
-L &= \rho L_0^E - L_2^E\in\R^{M\times\bar{M}}
-\intertext{Discretizing $\tilde{B}$ is done on the grid,}
-B &= \begin{bmatrix}1 & -1 & 0 & 0 & 0\\ 0 & 0 & 0 & -1 & 1\end{bmatrix}\in\R^{(\bar{M}-M) \times \bar{M}}
-\end{align}
-Notice that we need a row in $B$ for every extra point added from the composed operators in forming $L$
 
+\subsubsection{Solving the Stacked Equation}
+% Note that if this matrix is singular, then the problem is not well-specified and no solutions exist?  Given the solution, we can define the restriction operator to remove one from the first and one from the last as,
+% \begin{align}
+% R &\equiv E_{11}^{\top} = \begin{bmatrix}\textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}\in\R^{M\times \bar{M}}
+% \intertext{Then find the appropriate value as,}	
+% u &= R \bar{u}
+% \intertext{These could be combined,}
+% u &= R \begin{bmatrix} L \\ B
+% \end{bmatrix}^{-1} \begin{bmatrix} p \\ b \end{bmatrix}
+% \end{align}
+% Note: the extension and restriction operators are transposes in this case?  Also, note that some sort of pseudo-inverse of the $R$ matrix is its transpose.  That is $R R^{\top} = I$.
 
-\subsubsection{Stacking the System}
-Stacking up the definitions for $L, B, b,c,u$, we see that the system of equations for this is,
-\begin{align}
-\begin{bmatrix} L \\ B
-\end{bmatrix} \bar{u} &= \begin{bmatrix}c\\b\end{bmatrix}
-\intertext{Which is a square $\bar{M} \times \bar{M}$ system.  Note that if this matrix is singular, then the problem is not well-specified and no solutions exist?  Given the solution, we can define the restriction operator to remove one from the first and one from the last as,}
-R &\equiv E_{11}^{\top} = \begin{bmatrix}\textbf{0}_M & I_	M & \textbf{0}_M\end{bmatrix}\in\R^{M\times \bar{M}}
-\intertext{Then find the appropriate value as,}	
-u &= R \bar{u}
-\intertext{These could be combined,}
-u &= R \begin{bmatrix} L \\ B
-\end{bmatrix}^{-1} \begin{bmatrix} c \\ b \end{bmatrix}
-\end{align}
-Note: the extension and restriction operators are transposes in this case?  Also, note that some sort of pseudo-inverse of the $R$ matrix is its transpose.  That is $R R^{\top} = I$.
-
-Writing out the matrices in more detail for this example,
+Substituting $L$, $p$ and $B$ into the stacked extended equation \cref{eq:extended-stack}, we get
 \begin{align}
 \begin{bmatrix}
-	-1 & 2 + \rho & -1 & 0 & 0\\
-	0 & -1 & 2+\rho & -1 & 0\\
-	0 & 0 & -1 & 2+\rho & -1\\
+	-1 & 2 + r & -1 & 0 & 0\\
+	0 & -1 & 2+r & -1 & 0\\
+	0 & 0 & -1 & 2+r & -1\\
 	1 & -1 & 0 & 0 & 0\\
 	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}\label{eq:stacked-example-1}
+\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}\label{eq:stacked-example-1}
 \end{align}
-This is a well defined linear system.  As an example, when $\rho = 0.25$, the solution is $u \approx \begin{bmatrix} 5.2 & 6.5 & 8.4\end{bmatrix}$.  Note that the boundaries can be used for Gaussian elimination on the irrelevant corners of $\bar{u}$.
-
-To see the role of Gaussian-elimination, add the 4th row to the first row to get
+	
+We will now show that the rows corresponding to $B$ can be used in Gaussian elimination to reduce the system to one defined in the interior. First, add the 4th row to the first row to get
 \begin{align}
 \begin{bmatrix}
-	1-1 & -1+2+\rho & -1 & 0 & 0\\
-	0 & -1 & 2+\rho & -1 & 0\\
-	0 & 0 & -1 & 2+\rho & -1\\
+	1-1 & -1+2+r & -1 & 0 & 0\\
+	0 & -1 & 2+r & -1 & 0\\
+	0 & 0 & -1 & 2+r & -1\\
 	1 & -1 & 0 & 0 & 0\\
 	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
 \intertext{Next, add the 5th row to the 3rd row and simplify,}
 \begin{bmatrix}
-0 & 1+\rho & -1 & 0 & 0\\
-0 & -1 & 2+\rho & -1 & 0\\
-0 & 0 & -1 & 1+\rho & 0\\
+0 & 1+r & -1 & 0 & 0\\
+0 & -1 & 2+r & -1 & 0\\
+0 & 0 & -1 & 1+r & 0\\
 1 & -1 & 0 & 0 & 0\\
 0 & 0 & 0 & -1 & 1
 \end{bmatrix} \begin{bmatrix}\bar{u}(-1)\\ \bar{u}(0) \\ \bar{u}(1)\\ \bar{u}(2) \\ \bar{u}(3) \end{bmatrix}
- &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
+ &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
 \intertext{Notice that we have eliminated the extension nodes from all of the equations involving the $L$.  Consequently, can just take out the sub-matrix between columns 2-4 and rows 1-3 to get}
 \begin{bmatrix}
-	1+\rho & -1 & 0\\
-	-1 & 2+\rho & -1\\
-	0 & -1 & 1+\rho
+	1+r & -1 & 0\\
+	-1 & 2+r & -1\\
+	0 & -1 & 1+r
 \end{bmatrix}u
-&= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:reduced-example-1}
+&= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:reduced-example-1}
 \end{align}
-Also, notice that this allowed us to solve for $u$ directly, instead of taking a restriction.
-\subsubsection{Operators}
-First lets write down what we know works.  Define
-\begin{align}
-Q &\equiv \begin{bmatrix}
-1 & 0 & 0\\
-1 & 0 & 0\\
-0 & 1& 0\\
-0 & 0& 1\\
-0 & 0& 1
-\end{bmatrix}
-\end{align}\label{eq:Q-example}
-With this, we can write,
-\begin{align}
-L Q u &= c\\
-\begin{bmatrix}
--1 & 2 + \rho & -1 & 0 & 0\\
-0 & -1 & 2+\rho & -1 & 0\\
-0 & 0 & -1 & 2+\rho & -1\\
-\end{bmatrix}\begin{bmatrix}
-1 & 0 & 0\\
-1 & 0 & 0\\
-0 & 1& 0\\
-0 & 0& 1\\
-0 & 0& 1
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\\
-\begin{bmatrix}
-1 + \rho & -1 & 0\\
--1 & 2+\rho & -1\\
-0 & -1 & 1+\rho
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\label{eq:stacked-example-2}
-\end{align}
-Solving \cref{eq:stacked-example-1,eq:stacked-example-2} gives the same solution, which shoudl be clear comparing the reduced version in \cref{eq:reduced-example-1} with \cref{eq:stacked-example-2}.\footnote{But will the $Q$ approach work work lazily for an arbitrary setup.  Basically, you can see that $Q$ shows how to construct the constrained version using only the $L$ matrix.  The question is whether you can do that in general, as I am not sure if you can really get by with taking combinations of $L$ itself as opposed to the $B$?}
 
-The $Q$ is useful there only in that it lazily allows a modification of the underlying $L$ matrix.  Otherwise, it is only the $L Q$ product that is useful.  
-
-%
-% For this process, we derive below all of the matrices of \cref{sec:general} and the system of equations to solve for $\tilde{u}(x)$ in \cref{eq:general-stationary-HJBE}. We still have \textbf{to do}:
-% \begin{itemize}
-% 	\item Check that the code \url{operator_examples\simple_stationary_HJBE_reflecting.jl} is correct
-% \end{itemize}
-% Consider
-% \begin{align}
-% (r - \tilde{L} )\tilde{u}(x) &= x\label{HJBE_reflecting_barriers_PDE}\\
-% \text{where }\tilde{L}&\equiv \frac{1}{2}\partial_{xx}\label{HJBE_operator_first_example}
-% \end{align}
-% We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$, $S_E = \{1,\bar{M}\}$, thereby $\Delta  = \frac{x^{max}-x^{min}}{\bar{M}}$, and $\bar{M} = M+2$. From \cref{HJBE_operator_first_example} and given \cref{eq:L-2} from the previous section, the matrix form of operator $\tilde{L}$ can be defined, given as $A = \frac{L_2}{2}$.
-%
-% By reflecting barriers, we can define $B$ just like as $B_{RR}$ in \cref{eq:B-RR} and then we have
-% \begin{equation}
-% B\bar{u} = \begin{bmatrix}
-% 0\\
-% 0
-% \end{bmatrix} \label{B_reflecting}
-% \end{equation}
-% Therefore, $\bar{u}(x_0) = \bar{u}(x_1)$ and $\bar{u}(x_{M+1}) = \bar{u}(x_M)$. It is important to notice that our choice for $B$ defines the linear relationship between the interior points and the boundary conditions.
-%
-% Moreover, $R$ is again defined as in \cref{eq:R-2} and $Q$ is defined by $Q R\bar{u}\equiv Q_L R\bar{u}+Q_b = \bar{u}$, where
-% \begin{equation}
-% Q_L = \begin{bmatrix}
-% 1& 0&\dots&0&0\\
-%  & & \mathbf{I}_M & & \\
-% 0&0&\dots&0&1
-% \end{bmatrix}%_{\bar{M}\times M}
-% \quad , \text{ } Q_b = \begin{matrix}
-% \mathbf{0}_{\bar{M}}
-% \end{matrix}\label{Q_reflecting}
-% \end{equation}
-%
-% Then, it is easy to verify that \cref{affine_relation_1} and \cref{affine_relation_2} hold in this case. Additionally, it is worth to note that, since $Q_b = \mathbf{0}_{\bar{M}}$, $Q$ is a linear operator.
-%
-% To solve $\bar{u}(x)$, we first solve interiors according to \cref{HJBE_reflecting_barriers_PDE} and the definition of operator $Q$, which provides us with two conditions:
-% \begin{align}
-% P\bar{u} &= x\label{solve_u_hat_cond_1}\\
-% Q R\bar{u} &= Q u = Q_L u+Q_b = \bar{u}\label{solve_u_hat_cond_2}
-% \end{align}
-% where
-% \begin{equation}
-% P = ([\mathbf{0}_{M} \text{ } \mathbf{I}_{M} \text{ } \mathbf{0}_{M}] r - A)
-% \label{L_definition}
-% \end{equation}
-%
-
-\subsection{Case with Drift}\label{sec:simple-reflecting-drift-example}
-Doing a variation on \cref{sec:simple-reflecting-example}, but adding in another component with a drift at rate $\mu \leq 0$.  Because the drift is negative, we know the correct upwind direction.
-\begin{itemize}
-	\item The stochastic process is $X_t$ is $d X_t = \mu d t + \sqrt{2} d W_t$
-\item Let $\sigma \equiv \sqrt{2}$,  Consequently, define
+On the other hand, for the reflecting boundaries, we know from \cref{eq:Q-RR} the boundary extrapolation operator is
 \begin{align}
-\tilde{L}_1 &\equiv \D[xx]\\
-\intertext{Furthermore, define the simple operator of the identity,}
-\tilde{L}_2 u &\equiv u
-\intertext{And the new one,}
-\tilde{L}_3 &\equiv \D[x]\\
+	Q^B &\equiv \begin{bmatrix}
+		1 & 0 & 0\\
+		1 & 0 & 0\\
+		0 & 1& 0\\
+		0 & 0& 1\\
+		0 & 0& 1
+	\end{bmatrix}\label{eq:Q-example}
 \end{align}
-\item Let $\rho > 0$ be a discount rate and the payoff be $\tilde{c}(x) = x^2$, then the simple stationary HJBE in the interior is
+and the associated discretized equation on the interior is $LQ^Bu = p$. It is easy to check that plugging $L$ from \cref{eq:L-example1} and $Q^B$ from \cref{eq:Q-example} also gives \cref{eq:reduced-example-1}, which proves the equivalence between the two equations.
+
+\subsection{Example 2: Diffusion and Drift with Reflecting Boundaries}\label{sec:appendixA-example2}
+\subsubsection{Continuous Equation}
+Let's add a drift term to \ref{sec:appendixA-example1} with constant rate $\mu < 0$ and keep everything else the same. The stochastic process is now $d x_t = \mu d t + \sqrt{2} d W_t$ and the corresponding stationary HJBE becomes
 \begin{align}
-\tilde{L} &\equiv \rho\tilde{L}_2 - \tilde{L}_1 - \mu \tilde{L}_3\\
-\tilde{L} u(x) &= \tilde{c}(x)
+	\tilde{L} u(x) &= \tilde{p}(x)\\
+	\tilde{L} &\equiv r\tilde{I} - \D[xx] - \mu \D[x]\\
+	\D[x]\tilde{u}(0) &= \D[x]\tilde{u}(2) = 0
 \end{align}
-\end{itemize}
-Otherwise, the problem remains the same.
-\subsubsection{Discretizing}
-Use the previous definitions, and now define the discretization of the $\tilde{L}_3$ operator with first differences (already extended for simplicity
+
+\subsubsection{Discretized Equation}
+Again we follow the procedure of \ref{sec:general-composite} for the discretization of $\tilde{L}$. The biggest common extended domain is still the one used by $L_2$ so the parts regarding $rI^E$, $L_2$ and $B$ in \ref{sec:appendixA-example1} remain the same.
+
+For $\D[x]$, because $\mu < 0$ backward difference should be used and that gives the stencil operator $L^-_1$ \cref{eq:L-1}, which in this case is
+\begin{align}
+	L^-_1 &= \begin{bmatrix}
+			-1 & 1 & 0 & 0 \\
+			0 & -1 & 1 & 0 \\
+			0 & 0 & -1 & 1
+		\end{bmatrix}
+\end{align}
+The extended domain for $L^-_1$ only needs a boundary point at the bottom. We need to extend it to the whole domain, which include one extra node at the top end. This can be achieved by padding a column of zeros to $L^-_1$:
 \begin{align}
 	L^{-E}_1 &= \begin{bmatrix}
-	-1 & 1 & 0 & 0 & 0\\
-	0 & -1 & 1 & 0 & 0\\
-	0 & 0 & -1 & 1 & 0
+			-1 & 1 & 0 & 0 & 0\\
+			0 & -1 & 1 & 0 & 0\\
+			0 & 0 & -1 & 1 & 0
+		\end{bmatrix}
+\end{align}
+
+Finally, the composed operator is
+\begin{align}
+	L &= rI^E - L_2 - \mu L^{-E}_1 \\
+	  &= \begin{bmatrix}
+		-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
+		0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+		0 & 0 & -1 + \mu & 2 - \mu +r & -1
+	  \end{bmatrix}
+\end{align}
+and the stacked equation \cref{eq:extended-stack} is
+\begin{align}
+	\begin{bmatrix}
+		-1 + \mu & 2 -\mu + r & -1 & 0 & 0\\
+		0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+		0 & 0 & -1 + \mu & 2 - \mu +r & -1\\
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
+\end{align}
+
+\subsubsection{Solving the Stacked Equation}
+Again we solve the stacked equation \cref{eq:extended-stack} using Gaussian elimination on the $B$ rows. First add $(1-\mu)$ times row 4 to row 1, and then add row 5 to row 3. This gives
+\begin{align}
+	\begin{bmatrix}
+		0 & 1 + r & -1 & 0 & 0\\
+		0 & -1 + \mu & 2 - \mu +r & -1 & 0\\
+		0 & 0 & -1 + \mu & 1 - \mu +r & 0\\
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ 0 \\ 0\end{bmatrix}
+\end{align}
+Extract the interior of the matrix to get
+\begin{align}
+	\begin{bmatrix}
+		1 + r & -1 & 0\\
+		-1 + \mu & 2 - \mu +r & -1\\
+		0 & -1 + \mu & 1 - \mu +r
+	\end{bmatrix} u &= \begin{bmatrix} p_1 \\ p_2 \\ p_3\end{bmatrix}\label{eq:reduced-example-2}
+\end{align}
+
+The $Q^B$ in this example is the same as \cref{eq:Q-example}. It is easy to check that the interior equation $LQ^Bu = p$ also gives \cref{eq:reduced-example-2}, again confirming that the extended equation gives the same resuls.
+
+\subsection{Example 3: Diffusion with Inhomogeneous Boundaries}\label{sec:appendixA-example3}
+\subsubsection{Continuous Equation}
+Let's consider \ref{sec:appendixA-example1} again but change the boudnary conditions to be inhomogeneous. The stationary HJBE:
+\begin{align}
+	\tilde{L}u(x) &= \tilde{p}(x)\\
+	\tilde{L} &\equiv r\tilde{I} - \D[xx] \\
+	\D[x]\tilde{u}(0) &= b^{\min}\\
+	\D[x]\tilde{u}(2) &= b^{\max}
+\end{align}
+
+\subsubsection{Discretized Equation}
+The discretized $L$ and $p$ are the same as \ref{sec:appendixA-example1}. Since the boundary conditions are now inhomogeneous $B$ is no longer linear. Recalling \cref{eq:B-RR}, for this example we have
+\begin{align}
+	B_L = \begin{bmatrix}
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix}\in\R^{M_E \times \bar{M}}\quad
+	B_b = \begin{bmatrix}b^{\min}\\-b^{\max}\end{bmatrix}
+\end{align}
+and the stacked equation \cref{eq:extended-stack} is now
+\begin{align}
+	\begin{bmatrix}
+		-1 & 2 + r & -1 & 0 & 0\\
+		0 & -1 & 2+r & -1 & 0\\
+		0 & 0 & -1 & 2+r & -1\\
+		1 & -1 & 0 & 0 & 0\\
+		0 & 0 & 0 & -1 & 1
+	\end{bmatrix} \bar{u} &= \begin{bmatrix} p_1 \\ p_2 \\ p_3 \\ -b^{\min} \\ b^{\max}\end{bmatrix}
+\end{align}
+
+\subsubsection{Solving the Stacked Equation}
+Since the left hand side coefficient matrix is the same, we can use the same Gaussian elimination procedure as \ref{sec:appendixA-example1}. This gives the reduced equation
+\begin{align}
+	\begin{bmatrix}
+		1+r & -1 & 0\\
+		-1 & 2+r & -1\\
+		0 & -1 & 1+r
+	\end{bmatrix}u
+	&= \begin{bmatrix}
+		p_1 - b^{\min}\\ p_2 \\ p_3 + b^{\max}
+	\end{bmatrix}\label{eq:reduced-example-3}
+\end{align}
+
+For the $LQ^Bu = p$ route, $Q^B$ is now affine and from \cref{eq:Q-RR} we have
+\begin{align}
+	Q^B_L = \begin{bmatrix}
+		1 & 0 & 0 \\
+		1 & 0 & 0 \\
+		0 & 1 & 0 \\
+		0 & 0 & 1 \\
+		0 & 0 & 1
+	\end{bmatrix}\quad
+	Q^B_b = \begin{bmatrix}
+		-b^{\min}\\0\\0\\0\\b^{\max}
 	\end{bmatrix}
-	\intertext{Then the composed operator is,}
-	L &= \rho L_0^E - L_2^E - \mu L_1^{-E}
-\end{align}	
-Stack and write the equation,
-\begin{align}
-\begin{bmatrix}
-	-1 + \mu & 2 -\mu + \rho & -1 & 0 & 0\\
-	0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
-	0 & 0 & -1 + \mu & 2 - \mu +\rho & -1\\
-	1 & -1 & 0 & 0 & 0\\
-	0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}
 \end{align}
-Now, the Gaussian elimination is slightly trickier.  Add $(1-\mu)$ times row 4 to row 1, and add row 5 to row 3.  This gives,
+and the equation is
 \begin{align}
-\begin{bmatrix}
-0 & 1 + \rho & -1 & 0 & 0\\
-0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
-0 & 0 & -1 + \mu & 1 - \mu +\rho & 0\\
-1 & -1 & 0 & 0 & 0\\
-0 & 0 & 0 & -1 & 1
-\end{bmatrix} \bar{u} &= \begin{bmatrix} c_1 \\ c_2 \\ c_3 \\ 0 \\ 0\end{bmatrix}\\
-\intertext{Extract the interior of the matrix to get,}
-\begin{bmatrix}
-1 + \rho & -1 & 0\\
--1 + \mu & 2 - \mu +\rho & -1\\
-0 & -1 + \mu & 1 - \mu +\rho\\
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}
+	LQ^B_Lu &= p - LQ^B_b
 \end{align}
-At this point, there is no reason to think that you could just use the $L$ rows to perform Gaussian elimination.  But lets try it with the same $Q$ as in \cref{eq:Q-example}
-\begin{align}
-L Q u &= c\\
-\begin{bmatrix}
-	-1 + \mu & 2 -\mu + \rho & -1 & 0 & 0\\
-0 & -1 + \mu & 2 - \mu +\rho & -1 & 0\\
-0 & 0 & -1 + \mu & 2 - \mu +\rho & -1
-\end{bmatrix}\begin{bmatrix}
-1 & 0 & 0\\
-1 & 0 & 0\\
-0 & 1& 0\\
-0 & 0& 1\\
-0 & 0& 1
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}\\
-\begin{bmatrix}
-1 + \rho & -1 & 0\\
--1 + \mu & 2 - \mu +\rho & -1\\
-0 & -1 + \mu & 1 - \mu +\rho\\
-\end{bmatrix} u &= \begin{bmatrix} c_1 \\ c_2 \\ c_3\end{bmatrix}
-\end{align}
-So,the $L Q$ still generated the same matrix as before.
+substituting $L$, $p$, $Q^B_L$ and $Q^B_b$, we get back \cref{eq:reduced-example-3}, again proving the equivalence.
+
+\section{Affine Relations and Intuition}
+The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
+\begin{itemize}
+\item Define $S_E$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non-interior point, let's say, the first one and the last two grid points, then $M_E = 3$ and $S_E = \{1,\bar{M}-1,\bar{M}\}$\footnote{Notice that, by construction, the number of elements in $S_E$ is always $M_E$}.
+	\item Now let's focus on solving an expression like $\bar{u} = A \bar{u}$ where $A$ is affine.\footnote{\textbf{Fernando/Steven}: Is this a particular operator you have in mind from our setup, or a general affine operator you are going through?  Point it out from above, and differentiate the $\tilde{A}$ from the discretized $A$} Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $M_E$ columns, that $J[:,S_E]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in S_E$.
+	Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
+	%
+	\begin{align}
+	A [:,S] \left(B[:,S_E]^{-1} b \right) = A  Q_b\label{affine_relation_1}\\
+	(A -A [:,S_E] (B[:,S_E]^{-1} B)) R^{\top} = A  Q_L\label{affine_relation_2}
+	\end{align}
+
+	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{M}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).\footnote{\textbf{Typo From Chris}
+		\cref{affine_relation_1} is actually defined from \cref{affine_relation_2} which is defined from the next one.  Looking at it like that, it's clear to see the error
+		since 89 is just saying
+		$(A - AQb)*R^T = AQL$
+		substitute in 88 for AQb)
+		you see the substitution was done incorrectly
+		has a big B instead of a little b.
+	}
+	
+		Recall \cref{eq:B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
+
+	Multiply both sides of \cref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
+	\begin{equation}
+	(A \bar{u}-A  Q_b)  R^{\top} = A  Q_L u
+	\end{equation}
+	so $A \bar{u}-A   Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A  Q_b$.
+
+	However, we are not sure if $R$ should exist on the left of \cref{affine_relation_2} since R by definition is a restriction operator and $(A  \bar{u}-A  Q_b) R^{\top}$ only contains information from interiors.
+	%  % we already solved this by changing R place in the equation. It seems to be right, since Steven reported that now both affine relationships hold for the examples
+	% Also the size of the LHS of \cref{affine_relation_2} is $M\times \bar{M}$, but the size of the RHS is $\bar{I}\times I$ .
+	%
+	For now, while we work on better understanding those expressions, we will take them as given.
 
 
+	Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\bar{u} = Q u$.
 
-		\subsection{Affine Relations and Intuition:}
-		The following provides intuition on the relationships above:\footnote{\textbf{TODO: Fernando/Steven} I think you will need to rewrite this with the modified notation and go through it carefully.  I don't quite get it, and the notation was slightly different than the rest of the text...  Also, I think that abusing notation for the discretized and non-discretized is part of the problem.  We might want to rewrite this a little after the expanding operator setup is dine.}
-		\begin{itemize}
-		\item Define $S_E$ as the set of non interior grid point indexes, e.g, if we have a univariate problem with just three non-interior point, let's say, the first one and the last two grid points, then $M_E = 3$ and $S_E = \{1,\bar{M}-1,\bar{M}\}$\footnote{Notice that, by construction, the number of elements in $S_E$ is always $M_E$}.
-			\item Now let's focus on solving an expression like $\bar{u} = A \bar{u}$ where $A$ is affine.\footnote{\textbf{Fernando/Steven}: Is this a particular operator you have in mind from our setup, or a general affine operator you are going through?  Point it out from above, and differentiate the $\tilde{A}$ from the discretized $A$} Consider, with some abuse of notation, that such expression means both the discretized and non-discretized forms. Define, for any arbitrary matrix J with at least $M_E$ columns, that $J[:,S_E]$ is a submatrix whose columns are the concatenated vectors $J[:,s]$, $\forall s \in S_E$.
-			Then we have two relations\footnote{We could not find a way to clearly show two relations above are correct, but some intuitions are provided in the text}:
-			%
-			\begin{align}
-			A [:,S] \left(B[:,S_E]^{-1} b \right) = A  Q_b\label{affine_relation_1}\\
-			(A -A [:,S_E] (B[:,S_E]^{-1} B)) R^{\top} = A  Q_L\label{affine_relation_2}
-			\end{align}
-
-			Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{M}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).\footnote{\textbf{Typo From Chris}
-				\cref{affine_relation_1} is actually defined from \cref{affine_relation_2} which is defined from the next one.  Looking at it like that, it's clear to see the error
-				since 89 is just saying
-				$(A - AQb)*R^T = AQL$
-				substitute in 88 for AQb)
-				you see the substitution was done incorrectly
-				has a big B instead of a little b.
-			}
-			
-			  Recall \cref{B_operator_block}, so $\left(B[:,S_E]^{-1} b \right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
-
-			Multiply both sides of \cref{affine_relation_2} by $\bar{u}$, we can roughly rewrite the relation as
-			\begin{equation}
-			(A \bar{u}-A  Q_b)  R^{\top} = A  Q_L u
-			\end{equation}
-			so $A \bar{u}-A   Q_b$ will be a discretized $\bar{u}$ which contains the entire information of interiors and the rest part of boundary information that is not covered by $A  Q_b$.
-
-			However, we are not sure if $R$ should exist on the left of \cref{affine_relation_2} since R by definition is a restriction operator and $(A  \bar{u}-A  Q_b) R^{\top}$ only contains information from interiors.
-			%  % we already solved this by changing R place in the equation. It seems to be right, since Steven reported that now both affine relationships hold for the examples
-			% Also the size of the LHS of \cref{affine_relation_2} is $M\times \bar{M}$, but the size of the RHS is $\bar{I}\times I$ .
-			%
-			For now, while we work on better understanding those expressions, we will take them as given.
-
-
-			Given those relationships, in order to solve the differential equation, we now only have to solve for the interior. Otherwise, including the boundary values would imply having more points than there are degrees of freedom in the problem - thus making the numerical solution unstable. Moreover, the boundaries are given directly by the interior $\bar{u} = Q u$.
-
-			Therefore, we actually want to solve $\bar{u} = A Q u$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
-			\begin{equation}
-			\bar{u} = A Q_L u + A Q_b
-			\end{equation}
-			Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
-		\end{itemize}
+	Therefore, we actually want to solve $\bar{u} = A Q u$. Notice that the discretized A maps from the full domain to the interior\footnote{Notice that the PDE is only defined on the interior}. Notably, that means it's not square. Additionally, consider that, as described above, since $Q$ is in general affine, thus:
+	\begin{equation}
+	\bar{u} = A Q_L u + A Q_b
+	\end{equation}
+	Those are the linear equations which define the ODE or whose solution is the solution to the PDE.
+\end{itemize}
 
 \end{document}
 
@@ -863,7 +910,7 @@ So,the $L Q$ still generated the same matrix as before.
 % 		%\text{z}_{1, L}&\text{z}_{2, L}&\dots&\text{z}_{n, L}\\
 % 		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
 % 		%\end{bmatrix}
-% 		\label{B_operator_block}
+% 		\label{eq:B_operator_block}
 % 	\end{equation}
 % 	for any $\bar{u}$ in the space of functions that satisfy the boundary conditions and where B$_{x^j,k}$ is a block matrix satisfying B$_{x^j,k}\cdot \bar{u}_{x^j} = \text{z}_{j,k}$ for $k \in \{L,H\}$ and $j = 1, 2,\dots n$. The size of B$_{x^j,k}$ is $I_{j,k} \times \bar{I}_j$.
 %
@@ -872,7 +919,7 @@ So,the $L Q$ still generated the same matrix as before.
 % 	\item R is the restriction operator which is defined by the domain. It removes columns which are not in the interior.
 % 	For an univariate process, we have:
 % 	\begin{equation}
-% 		R\cdot \bar{u}  \equiv\set{u(x_j)}_{j \in \{1,...,I\}} \in \R^{I} \label{R_operator}
+% 		R\cdot \bar{u}  \equiv\set{u(x_j)}_{j \in \{1,...,I\}} \in \R^{I} \label{eq:R_operator}
 % 	\end{equation}
 % 	Notice that R has size $I \times \bar{I}$ and R is defined as
 % 	\begin{equation}
@@ -897,7 +944,7 @@ So,the $L Q$ still generated the same matrix as before.
 %
 % 	\item Q is the operator that is defined as
 % 	\begin{equation}
-% 		Q \cdot R\cdot\bar{u} = \bar{u}\label{Q_operator_1}
+% 		Q \cdot R\cdot\bar{u} = \bar{u}\label{eq:Q_operator_1}
 % 	\end{equation}
 % 	for any $\bar{u}$ that satisfies the border conditions. (Notice that $Q = R^{-1}$ if R is square, and this is only true as maps on functions which satisfy the boundary). Formally, we define $Q$ as a matrix of size $\bar{I} \times I$ given by:
 % 	\begin{equation}
@@ -950,7 +997,7 @@ So,the $L Q$ still generated the same matrix as before.
 % 		%\text{z}_{1, H}&\text{z}_{2, H}&\dots&\text{z}_{n, H}
 % 		%\end{bmatrix}
 % 		%\end{bmatrix}
-% 		\label{Q_operator_2}
+% 		\label{eq:Q_operator_2}
 % 	\end{equation}
 %
 % 	basically saying that it's a map from discretizations of functions in the interior to functions which satisfy the border conditions. In order to hold on trivial $u$, we need that the interior of $Q$ is identity, so it is defined by its first and last rows.\\
@@ -967,7 +1014,7 @@ So,the $L Q$ still generated the same matrix as before.
 % 	\begin{align}
 % 		(A-[A[:,1:I_L] A[:,\bar{I}-I_H+1:\bar{I}]]\cdot([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1} B))\cdot R^{\top} = A\cdot Q_A\label{affine_relation_2}
 % 	\end{align}
-% 	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \cref{B_operator_block}, so $\left([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1}\begin{bmatrix}
+% 	Our intuition is that the main idea here is using interiors to recover a relation that boundary conditions should satisfy. Since $Q_b$ is a length $\bar{I}$ vector containing zeros excepts two ends, the two non-zero elements in $Q_b$ capture partial information of boundary nodes (the part that is ``independent'' of interiors).  Recall \cref{eq:B_operator_block}, so $\left([B[:,1:I_L] B[:,\bar{I}-I_H+1:\bar{I}]]^{-1}\begin{bmatrix}
 % 	\text{z}_{x^{1},L} & ... & \text{z}_{x^{N},L}\\
 % 	\text{z}_{x^{2},H} & ... & \text{z}_{x^{N},H}
 % 	\end{bmatrix}\right)$ recovers the ``independent" part of boundary nodes. Then it is reasonable to expect that \cref{affine_relation_1} holds.
