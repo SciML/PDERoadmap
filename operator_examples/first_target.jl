@@ -66,3 +66,39 @@ function *(Q::QRobin, x::AbstractVector{Float64})
   return [xl; x; xr] # could optimize using LazyArrays.jl
 end
 
+######################################
+# Mock user interface
+# DerivativeOperator serves as a factory method to generate derivative operators.
+# It generates either stencil operators (for which xgrid is the extended domain),
+# or a square operator if BC is provided (for which xgrid is the interior).
+# For the mock interface, BC will always be Robin and is specified as the named tuple
+# (al, bl, ar, bl).
+function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder)
+  M = length(xgrid) - 2
+  dx = step(xgrid)
+  # This section will be replaced by DiffEqOperator's Fornberg functions
+  if dorder == 2 && aorder == 2
+    return UniformDiffusionStencil(M, dx)
+  elseif dorder == 1 && aorder == 1
+    return UniformDriftStencil(M, dx)
+  end
+end
+function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder, BC; direction=:forward)
+  M = length(xgrid) - 2
+  dx = step(xgrid)
+  if dorder == 2 && aorder == 2
+    L = UniformDiffusionStencil(M, dx)
+    QB = QRobin(M, dx, BC.al, BC.bl, BC.ar, BC.br)
+    return GenericDerivativeOperator(L, QB)
+  elseif dorder == 1 && aorder == 1
+    L = UniformDriftStencil(M, dx)
+    # Need to implement a one-sided Robin Q
+  end
+end
+
+function DerivativeOperator(xgrid::AbstractVector{Float64}, dorder, aorder)
+  error("Irregular grid not yet supported") # TODO
+end
+function DerivativeOperator(xgrid::AbstractVector{Float64}, dorder, aorder, BC; direction=:forward)
+  error("Irregular grid not yet supported") # TODO
+end
