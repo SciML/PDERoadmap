@@ -34,46 +34,56 @@ function convert(::Type{AbstractMatrix}, L::UniformDiffusionStencil)
   return mat / L.dx^2
 end
 
-struct UniformDriftStencil{CT} <: AbstractDiffEqLinearOperator{Float64}
-  M::Int
-  dx::Float64
+struct GenericUpwindOperator{LT,QT,CT} <: AbstractDiffEqLinearOperator{Float64}
+  L::LT
+  QB::QT
   coeff::CT
 end
-function UniformDriftStencil(M, dx)
+function GenericUpwindOperator(L, QB)
   coeff = DiffEqScalar(1.0)
-  UniformDriftStencil(M, dx, coeff)
+  GenericUpwindOperator(L, QB, coeff)
 end
-size(L::UniformDriftStencil) = (L.M, L.M+2)
-function *(L::UniformDriftStencil, x::AbstractVector{Float64})
+size(LB::GenericDerivativeOperator) = (size(LB.L, 1), size(LB.QB, 2))
+function *(LB::GenericUpwindOperator, x::AbstractVector{Float64})
+  xbar = LB.QB * x
   # This only covers the case when L.coeff is a scalar. Need to add support for
   # vector coefficients later.
-  c = convert(Number, L.coeff)
+  c = convert(Number, LB.coeff)
+  # This part should be changed to use the stencil coefficients in L
   if c > 0 # backwards difference
-    return [x[i+1] - x[i] for i = 1:L.M] * (c / L.dx)
+    return [xbar[i+1] - xbar[i] for i = 1:LB.L.M] * (c / LB.L.dx)
   else # forward difference
-    return [x[i+2] - x[i+1] for i = 1:L.M] * (c / L.dx)
+    return [xbar[i+2] - xbar[i+1] for i = 1:LB.L.M] * (c / LB.L.dx)
   end
 end
-function convert(::Type{AbstractMatrix}, L::UniformDriftStencil)
-  mat = zeros(size(L))
-  c = convert(Number, L.coeff)
+function convert(::Type{AbstractMatrix}, LB::GenericUpwindOperator)
+  Lmat = zeros(size(LB.L))
+  c = convert(Number, LB.coeff)
   if c > 0 # backwards difference
-    for i = 1:L.M
-      mat[i,i] = -1.0
-      mat[i,i+1] = 1.0
+    for i = 1:L.LB.M
+      Lmat[i,i] = -1.0
+      Lmat[i,i+1] = 1.0
     end
   else # forward difference
-    for i = 1:L.M
-      mat[i,i+1] = -1.0
-      mat[i,i+2] = 1.0
+    for i = 1:L.LB.M
+      Lmat[i,i+1] = -1.0
+      Lmat[i,i+2] = 1.0
     end
   end
-  return mat * (c / L.dx)
+  Lmat .*= (c / L.LB.dx)
+  Qmat = convert(AbstractMatrix, LB.QB)
+  return Lmat * Qmat
 end
-function *(a::DiffEqScalar, L::UniformDriftStencil)
+function *(a::DiffEqScalar, LB::GenericUpwindOperator)
   # Need to define *(::DiffEqScalar, ::DiffEqScalar) for this to work
-  return UniformDriftStencil(L.M, L.dx, a * L.coeff)
+  return GenericUpwindOperator(L.M, L.dx, a * L.coeff)
 end
+
+struct UniformDriftStencil <: AbstractDiffEqLinearOperator{Float64}
+  M::Int
+  dx::Float64
+end
+size(L::UniformDriftStencil) = (L.M, L.M+2)
 
 # TODO: stencil operators for irregular grids
 
@@ -119,7 +129,7 @@ function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder, BC)
   elseif dorder == 1 && aorder == 1
     L = UniformDriftStencil(M, dx)
     QB = QRobin(M, dx, BC.al, BC.bl, BC.ar, BC.br)
-    return GenericDerivativeOperator(L, QB)
+    return GenericUpwindOperator(L, QB)
   end
 end
 
