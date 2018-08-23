@@ -109,7 +109,7 @@ function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder)
     return UniformDriftStencil(M, dx)
   end
 end
-function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder, BC; direction=:forward)
+function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder, BC)
   M = length(xgrid) - 2
   dx = step(xgrid)
   if dorder == 2 && aorder == 2
@@ -118,13 +118,14 @@ function DerivativeOperator(xgrid::AbstractRange{Float64}, dorder, aorder, BC; d
     return GenericDerivativeOperator(L, QB)
   elseif dorder == 1 && aorder == 1
     L = UniformDriftStencil(M, dx)
-    # Need to implement a one-sided Robin Q
+    QB = QRobin(M, dx, BC.al, BC.bl, BC.ar, BC.br)
+    return GenericDerivativeOperator(L, QB)
   end
 end
 
 function DerivativeOperator(xgrid::AbstractVector{Float64}, dorder, aorder)
   error("Irregular grid not yet supported") # TODO
 end
-function DerivativeOperator(xgrid::AbstractVector{Float64}, dorder, aorder, BC; direction=:forward)
+function DerivativeOperator(xgrid::AbstractVector{Float64}, dorder, aorder, BC)
   error("Irregular grid not yet supported") # TODO
 end
