@@ -34,19 +34,45 @@ function convert(::Type{AbstractMatrix}, L::UniformDiffusionStencil)
   return mat / L.dx^2
 end
 
-struct UniformDriftStencil <: AbstractDiffEqLinearOperator{Float64}
+struct UniformDriftStencil{CT} <: AbstractDiffEqLinearOperator{Float64}
   M::Int
   dx::Float64
+  coeff::CT
 end
-size(L::UniformDriftStencil) = (L.M, L.M+1)
-*(L::UniformDriftStencil, x::AbstractVector{Float64}) = [x[i+1] - x[i] for i = 1:L.M] / L.dx
+function UniformDriftStencil(M, dx)
+  coeff = DiffEqScalar(1.0)
+  UniformDriftStencil(M, dx, coeff)
+end
+size(L::UniformDriftStencil) = (L.M, L.M+2)
+function *(L::UniformDriftStencil, x::AbstractVector{Float64})
+  # This only covers the case when L.coeff is a scalar. Need to add support for
+  # vector coefficients later.
+  c = convert(Number, L.coeff)
+  if c > 0 # backwards difference
+    return [x[i+1] - x[i] for i = 1:L.M] * (c / L.dx)
+  else # forward difference
+    return [x[i+2] - x[i+1] for i = 1:L.M] * (c / L.dx)
+  end
+end
 function convert(::Type{AbstractMatrix}, L::UniformDriftStencil)
   mat = zeros(size(L))
-  for i = 1:L.M
-    mat[i,i] = -1.0
-    mat[i,i+1] = 1.0
+  c = convert(Number, L.coeff)
+  if c > 0 # backwards difference
+    for i = 1:L.M
+      mat[i,i] = -1.0
+      mat[i,i+1] = 1.0
+    end
+  else # forward difference
+    for i = 1:L.M
+      mat[i,i+1] = -1.0
+      mat[i,i+2] = 1.0
+    end
   end
-  return mat / L.dx
+  return mat * (c / L.dx)
+end
+function *(a::DiffEqScalar, L::UniformDriftStencil)
+  # Need to define *(::DiffEqScalar, ::DiffEqScalar) for this to work
+  return UniformDriftStencil(L.M, L.dx, a * L.coeff)
 end
 
 # TODO: stencil operators for irregular grids
