@@ -1,4 +1,5 @@
 %!TeX shellEscape = restricted
+% !TEX program = pdflatex
 %!TeX enableSynctex = true
 \documentclass[11pt]{article}
 \usepackage{url,amsmath,amsfonts}
@@ -285,7 +286,7 @@ L Q u = L (Q_L u+Q_b) = x
 \end{align}
 Since $Q_b = 0$ in this case, interiors are solved as
 \begin{align}
-u = (L Q_L)^{-1}x
+u = (L Q_L)^{-1}x\label{solve_u_hat_in_terms_of_interiors}
 \end{align}
 %Then, by \cref{solve_u_hat_cond_2}, we can solve the extended state vector by
 % \begin{align}
@@ -368,7 +369,7 @@ Consider
 \end{align}
 We first consider a one-dimension case where $x\in [x^{\min},x^{\max}]$. Let $M_E = 2$ and thereby $\Delta  = \frac{x^{\max}-x^{\min}}{\bar{M}}$ and $\bar{M} = M+2$.
 
-Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^+$ as in \cref{eq:L-1p}. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^-$ as in \cref{eq:L-1m}.
+Considering $\mu>0$, we must choose the forward first difference, thus the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^+$. Analogously, for $\mu<0$, we must choose the backward first difference, which implies that the matrix form of operator $\tilde{L}$ can be defined as $L = \mu L_1^-$% as in \cref{eq:L-1m}.
 
 Considering the absorbing barriers, we can define $B$ just like as $B_{AA}$ in \cref{eq:B-AA} and then we have
 \begin{equation}
