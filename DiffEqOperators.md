@@ -32,9 +32,9 @@ We have generated an operator which produces the 2nd order approximation of the 
      -2.0
       1.0
 
-We can get the linear operator as a matrix as follows:-
+We can get the linear operator as a matrix as follows:
 
-    julia> full(A)
+    julia> Array(A)
     10×10 Array{Float64,2}:
      -2.0   1.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0
       1.0  -2.0   1.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0
@@ -76,8 +76,8 @@ The derivative values at the boundaries are in accordance with the `Dirichlet` b
 
 You can also take derivatives of matrices using `A*M` or `M*A` where the order of multiplication decides the axis along which we want to take derivatives.
 
-    julia> xarr = linspace(0,1,51)
-    julia> yarr = linspace(0,1,101)
+    julia> xarr = range(0, 1, length=51)
+    julia> yarr = range(0, 1, length=101)
     julia> dx = xarr[2]-xarr[1]
     julia> dy = yarr[2]-yarr[1]
     julia> F = [x^2+y for x = xarr, y = yarr]
